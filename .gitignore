@@ -1,7 +1,7 @@
 # Front
-./front/build
-./front/node_modules
+./ft_transcendence/srcs/front/build
+./ft_transcendence/srcs/front/node_modules
 
 # Back
-./back/node_modules
-./back/dist
+./ft_transcendence/srcs/back/node_modules
+./ft_transcendence/srcs/back/dist
