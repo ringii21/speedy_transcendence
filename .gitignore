@@ -1,1 +1,7 @@
+# Front
 ./front/build
+./front/node_modules
+
+# Back
+./back/node_modules
+./back/dist
