@@ -2,9 +2,9 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 const   Home = (props) => {
-    const { loggedIn, email } = props; 
+    const { loggedIn, email } = props;
     const navigate = useNavigate();
-    
+
     const onButtonClick = () => {
 
     }
@@ -18,7 +18,7 @@ const   Home = (props) => {
                 This is the home page.
             </div>
             <div className={"buttonContainer"}>
-                <input 
+                <input
                     className={"inputButton"}
                     type="button"
                     onClick={onButtonClick}
