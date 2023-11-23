@@ -1,7 +1,8 @@
+# All
+node_modules
+
 # Front
-./srcs/front/build
-./srcs/front/node_modules
+build
 
 # Back
-./srcs/back/node_modules
-./srcs/back/dist
+dist
