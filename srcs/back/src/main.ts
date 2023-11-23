@@ -7,6 +7,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   app.use(helmet())
   app.use(compression())
-  await app.listen(3001)
+  app.enableCors()
+  await app.listen(3000)
 }
 bootstrap()

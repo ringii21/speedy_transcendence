@@ -1,9 +1,9 @@
 import { User } from '@prisma/client'
-import { IsBoolean, IsEmail, IsString, Length } from 'class-validator'
+import { IsBoolean, IsDate, IsEmail, IsString, Length } from 'class-validator'
 
 type TCreateUserDto = Omit<
   User,
-  'id' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'lastSeen'
+  'id' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'refreshToken'
 >
 
 export class CreateUserDto implements TCreateUserDto {
@@ -19,4 +19,7 @@ export class CreateUserDto implements TCreateUserDto {
 
   @IsBoolean()
   twofaenabled: boolean
+
+  @IsDate()
+  expiresAt: Date
 }

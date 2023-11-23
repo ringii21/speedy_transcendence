@@ -31,16 +31,27 @@ export class UsersService {
     })
   }
 
-  async createUser(data: Prisma.UserCreateInput): Promise<User> {
+  async create(data: Prisma.UserCreateInput): Promise<User> {
     return this.prisma.user.create({
       data,
     })
   }
 
-  async deleteUser(where: Prisma.UserWhereUniqueInput): Promise<boolean> {
+  async delete(where: Prisma.UserWhereUniqueInput): Promise<boolean> {
     const user = await this.prisma.user.delete({
       where,
     })
     return !!user
+  }
+
+  async update(params: {
+    where: Prisma.UserWhereUniqueInput
+    data: Prisma.UserUpdateInput
+  }): Promise<User> {
+    const { where, data } = params
+    return this.prisma.user.update({
+      where,
+      data,
+    })
   }
 }

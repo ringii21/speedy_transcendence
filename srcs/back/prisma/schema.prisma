@@ -16,10 +16,11 @@ model User {
   username     String    @unique
   image        String
   twofaenabled Boolean   @default(false)
+  refreshToken String?   @map("refresh_token")
+  expiresAt    DateTime? @map("expires_at")
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
   deletedAt    DateTime? @map("deleted_at")
-  lastSeen     DateTime? @map("last_seen")
 
   @@map("users")
 }
