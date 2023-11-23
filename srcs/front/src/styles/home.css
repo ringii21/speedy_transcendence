@@ -1,11 +1,7 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 .mainContainer
 {
     position: fixed;
-    top: 35%;
+    top: 50%;
     left: 50%;
     margin-top: -100px;
     margin-left: -100px;
@@ -19,7 +15,7 @@
     margin-bottom: 1rem;
 }
 
-.text-info 
+.text-info
 {
     display: flex;
     justify-content:center;
@@ -32,4 +28,16 @@
     display: flex;
     justify-content:center;
     align-items: center;
+}
+
+.inputContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.inputContainer > .errorLabel {
+    color: red;
+    font-size: 12px;
 }

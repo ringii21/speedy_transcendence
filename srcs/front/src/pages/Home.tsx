@@ -1,8 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-// import '../styles/home.css'
+import "../styles/home.css"
 
-const   Home = (props) => {
+const   Home = (props:any) => {
     const { loggedIn, email } = props;
     var navigate = useNavigate();
 
@@ -10,7 +10,7 @@ const   Home = (props) => {
         navigate("/login")
     }
 
-    return (    
+    return (
         <div className="mainContainer" >
             <div className={"titleContainer"}>
                 <h1 className="is-size-1">Welcome!</h1>
@@ -22,7 +22,7 @@ const   Home = (props) => {
             </div>
             <div className={"buttonContainer"}>
                 <input
-                    className={"inputButton"}
+                    className={"inputContainer"}
                     type="button"
                     onClick={onButtonClick}
                     value={loggedIn ? "Log out" : "Log in"}

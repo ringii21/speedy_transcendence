@@ -1,0 +1,34 @@
+.titleContainer {
+	display: flex;
+	flex-direction: column;
+	font-size: 64px;
+	font-weight: bolder;
+	align-items: center;
+	justify-content: center;
+}
+
+.inputBox {
+	height: 5vh;
+	font-size: large;
+	border-radius: 8px;
+	border: 1px solid grey;
+	padding-left: 8px;
+}
+
+.inputContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.inputContainer > .errorLabel {
+    color: red;
+    font-size: 12px;
+}
+.inputContainer {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 1rem;
+}
