@@ -28,7 +28,7 @@ code {
 }
 
 
-input[type="button"] {
+button[type="button"] {
     border: none;
     background: cornflowerblue;
     color: white;

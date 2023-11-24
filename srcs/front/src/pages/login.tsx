@@ -1,100 +1,67 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import "../styles/login.css"
+import { useNavigate } from "react-router-dom"
+import axios from "axios"
 
 const	Login = (props:any) => {
+	const navigate = useNavigate()
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [emailError, setEmailError] = useState("");
 	const [passwordError, setPasswordError] = useState("");
 
-	const navigate = useNavigate();
-
-	const [user, setUser] = useState([])
-
-	const fetchData = () => {
-		fetch("http://10.32.1.6:3001/auth/42", {
-			method: "GET"
-		})
-			.then((response) => response.json())
-			.then((data) => {
-				setUser(data);
-				console.log(data);
-			})
-			.catch((error) => console.log(error));
-	};
-
-	useEffect(() => {
-		fetchData();
-	}, [])
+	const [data, setData] = useState([])
+	const axiosInstance = axios.create()
+	axiosInstance.defaults.maxRedirects = 0
+	axiosInstance.interceptors.response.use(
+		response => response,
+		error => {
+			if (error.response && [301, 302].includes(error.response.status)) {
+				const redirectUrl = error.response.headers.location;
+				return axiosInstance.get(redirectUrl)
+			}
+			return Promise.reject(error)
+			}
+		)
 
 	const onButtonClick = () => {
-		// Set initial error values to empty
-		setEmailError("")
-		setPasswordError("")
-
-		// Check if the user has entered both fields correctly
-		if ("" === email) {
-			setEmailError("Please enter your email")
-			return
+		axiosInstance.get("http://10.32.1.6:3000/auth/42")
+		.then(response => {
+			window.location.href = response.request.responseURL
+			console.log(response)
+		})
+		.catch (error => {
+			if (error.response) {
+				console.error("Response error: ", error.response.data)
+				console.error("Status code:", error.response.Status)
+			} else if (error.request) {
+				console.error("No response received")
+			} else {
+				console.error("Request setup error:", error.message)
+			}
+			console.error("Error config:", error.config)
 		}
-
-		if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
-			setEmailError("Please enter a valid email")
-			return
-		}
-
-		if ("" === password) {
-			setPasswordError("Please enter a password")
-			return
-		}
-
-		if (password.length < 7) {
-			setPasswordError("The password must be 8 characters or longer")
-			return
-		}
+		)
 	}
 
 	return (
-		<div className="container">
+		<div className="mainContainer">
 			<div className="hero-body has-text-centered">
-				<form className="box columns is-mobile is-desktop is-multiline is-centered" action="">
+				<div className="box columns">
 					<div className="column">
 						<h1 className="column is-size-1">Login</h1>
 						<div className="column">
-							<input
-								value={email}
-								placeholder="Enter your email here"
-								onChange={ev => setEmail(ev.target.value)}
-								className={"inputBox"}
-								/>
-						</div>
-							<label className="errorLabel">{emailError}</label>
-						<div className="column">
-							<input
-								value={password}
-								placeholder="Enter your password here"
-								onChange={ev => setPassword(ev.target.value)}
-								className={"inputBox"}
-							/>
-							<label className="errorLabel">{passwordError}</label>
-						</div>
-						<div className="column">
-							<input
+							<button
 								className={"inputButton"}
 								type="button"
 								onClick={onButtonClick}
-								value={"Log in"}
-								/>
-							<input
-								className={"inputButton"}
-								type="button"
-								onClick={fetchData}
-								value={"Sign up"}
-								/>
+								value={"42 Log in"}
+								>
+								42 Log in
+							</button>
 						</div>
 					</div>
-				</form>
+				</div>
 			</div>
 		</div>
 	);
