@@ -6,3 +6,4 @@ build
 
 # Back
 dist
+.env

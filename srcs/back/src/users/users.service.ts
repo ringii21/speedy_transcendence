@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
-import { PrismaService } from './prisma.service'
-import { User, Prisma } from '@prisma/client'
+import { PrismaService } from 'src/prisma/prisma.service'
+import { Prisma, User } from '@prisma/client'
 
 @Injectable()
-export class UserService {
+export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async user(
@@ -31,26 +31,36 @@ export class UserService {
     })
   }
 
-  async createUser(data: Prisma.UserCreateInput): Promise<User> {
+  async create(data: Prisma.UserCreateInput): Promise<User> {
     return this.prisma.user.create({
       data,
     })
   }
 
-  async updateUser(params: {
+  async delete(where: Prisma.UserWhereUniqueInput): Promise<boolean> {
+    const user = await this.prisma.user.delete({
+      where,
+    })
+    return !!user
+  }
+
+  async update(params: {
     where: Prisma.UserWhereUniqueInput
     data: Prisma.UserUpdateInput
   }): Promise<User> {
     const { where, data } = params
     return this.prisma.user.update({
-      data,
       where,
+      data,
     })
   }
 
-  async deleteUser(where: Prisma.UserWhereUniqueInput): Promise<User> {
-    return this.prisma.user.delete({
-      where,
-    })
+  async findOrCreate(
+    userWhereUniqueInput: Prisma.UserWhereUniqueInput,
+    data: Prisma.UserCreateInput,
+  ): Promise<User> {
+    const user = await this.user(userWhereUniqueInput)
+    if (user) return user
+    return this.create(data)
   }
 }

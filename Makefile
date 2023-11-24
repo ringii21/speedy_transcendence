@@ -19,4 +19,7 @@ build			:
 
 clean			:	prune
 
-.PHONY	=		up start down build stop prune clean
+dev				:
+					docker compose -f ./srcs/docker-compose.dev.yml up
+
+.PHONY	=		up start down build stop prune clean dev
