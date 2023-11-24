@@ -21,15 +21,16 @@ const   Home = (props:any) => {
                 </p>
             </div>
             <div className={"buttonContainer"}>
-                <input
+                <button
                     className={"inputContainer"}
                     type="button"
                     onClick={onButtonClick}
                     value={loggedIn ? "Log out" : "Log in"}
-                />
+                >42 Log in
                 {(loggedIn ? <div>
                     Your email address is {email}
                 </div> : <div/>)}
+                </button>
             </div>
         </div>
     )
