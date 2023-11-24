@@ -3,7 +3,12 @@ import { IsBoolean, IsDate, IsEmail, IsString, Length } from 'class-validator'
 
 type TCreateUserDto = Omit<
   User,
-  'id' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'refreshToken'
+  | 'id'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'deletedAt'
+  | 'refreshToken'
+  | 'accessToken'
 >
 
 export class CreateUserDto implements TCreateUserDto {

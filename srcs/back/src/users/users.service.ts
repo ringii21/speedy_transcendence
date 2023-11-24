@@ -54,4 +54,13 @@ export class UsersService {
       data,
     })
   }
+
+  async findOrCreate(
+    userWhereUniqueInput: Prisma.UserWhereUniqueInput,
+    data: Prisma.UserCreateInput,
+  ): Promise<User> {
+    const user = await this.user(userWhereUniqueInput)
+    if (user) return user
+    return this.create(data)
+  }
 }
