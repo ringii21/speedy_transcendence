@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/login.css"
 
@@ -9,6 +9,24 @@ const	Login = (props:any) => {
 	const [passwordError, setPasswordError] = useState("");
 
 	const navigate = useNavigate();
+
+	const [user, setUser] = useState([])
+
+	const fetchData = () => {
+		fetch("http://10.32.1.6:3001/auth/42", {
+			method: "GET"
+		})
+			.then((response) => response.json())
+			.then((data) => {
+				setUser(data);
+				console.log(data);
+			})
+			.catch((error) => console.log(error));
+	};
+
+	useEffect(() => {
+		fetchData();
+	}, [])
 
 	const onButtonClick = () => {
 		// Set initial error values to empty
@@ -38,45 +56,45 @@ const	Login = (props:any) => {
 	}
 
 	return (
-		<div className="hero is-fullheight">
+		<div className="container">
 			<div className="hero-body has-text-centered">
-				<div className="columns">
-					<form className="box" action="">
-						<div className={"is-size-4-mobile is-flex is-justify-content-center is-align-content-center"}>
-							<h1 className="is-size-1">Login</h1>
-						</div>
-
+				<form className="box columns is-mobile is-desktop is-multiline is-centered" action="">
+					<div className="column">
+						<h1 className="column is-size-1">Login</h1>
 						<div className="column">
-							<div className={"column is-size-4-mobile"}>
-								<input
-									value={email}
-									placeholder="Enter your email here"
-									onChange={ev => setEmail(ev.target.value)}
-									className={"inputBox"}
-									/>
-								<label className="errorLabel">{emailError}</label>
-							</div>
-							<div className={"column is-size-4-mobile"}>
-								<input
-									value={password}
-									placeholder="Enter your password here"
-									onChange={ev => setPassword(ev.target.value)}
-									className={"inputBox"}
+							<input
+								value={email}
+								placeholder="Enter your email here"
+								onChange={ev => setEmail(ev.target.value)}
+								className={"inputBox"}
 								/>
-								<label className="errorLabel">{passwordError}</label>
-							</div>
 						</div>
-
-						<div className={"is-size-4-mobile is-flex is-justify-content-center is-align-content-center"}>
+							<label className="errorLabel">{emailError}</label>
+						<div className="column">
+							<input
+								value={password}
+								placeholder="Enter your password here"
+								onChange={ev => setPassword(ev.target.value)}
+								className={"inputBox"}
+							/>
+							<label className="errorLabel">{passwordError}</label>
+						</div>
+						<div className="column">
 							<input
 								className={"inputButton"}
 								type="button"
 								onClick={onButtonClick}
 								value={"Log in"}
 								/>
+							<input
+								className={"inputButton"}
+								type="button"
+								onClick={fetchData}
+								value={"Sign up"}
+								/>
 						</div>
-					</form>
-				</div>
+					</div>
+				</form>
 			</div>
 		</div>
 	);

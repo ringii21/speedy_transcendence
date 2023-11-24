@@ -1,11 +1,3 @@
-.titleContainer {
-	display: flex;
-	flex-direction: column;
-	font-size: 64px;
-	font-weight: bolder;
-	align-items: center;
-	justify-content: center;
-}
 
 .inputBox {
 	height: 5vh;
@@ -15,20 +7,11 @@
 	padding-left: 8px;
 }
 
-.inputContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-}
-
-.inputContainer > .errorLabel {
+.errorLabel {
     color: red;
     font-size: 12px;
 }
-.inputContainer {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	gap: 1rem;
+
+.container {
+	margin-top: 25%
 }

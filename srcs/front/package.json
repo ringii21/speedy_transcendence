@@ -20,8 +20,8 @@
     "web-vitals": "^3.5.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "BROWSER='google-chrome-stable' PORT=3001 react-scripts --max_old_space_size=8128 start",
+    "build": "BROWSER='google-chrome-stable' PORT=3001 react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
