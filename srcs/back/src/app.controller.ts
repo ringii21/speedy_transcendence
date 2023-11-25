@@ -1,20 +1,13 @@
-import { Controller, Get, Param, Post, Body } from '@nestjs/common'
-import { UserService } from './user.service'
-import { User as UserModel } from '@prisma/client'
+import { Controller, Get, UseGuards } from '@nestjs/common'
+import { JwtAuthGuard } from './auth/jwt/jwt-auth.guard'
 
 @Controller()
 export class AppController {
-  constructor(private readonly userService: UserService) {}
+  constructor() {}
 
-  @Get('user/:email')
-  async getUserByEmail(@Param('email') email: string): Promise<UserModel> {
-    return this.userService.user({ email })
-  }
-
-  @Post('user')
-  async signupUser(
-    @Body() userData: { name?: string; email: string },
-  ): Promise<UserModel> {
-    return this.userService.createUser(userData)
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async root() {
+    return 'ok'
   }
 }
