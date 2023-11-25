@@ -29,6 +29,7 @@ export class FortyTwoOAuthController {
     const jwt = await this.jwtAuthService.login(req.user)
     res.cookie('jwt', jwt, {
       httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
     })
     res.redirect(this.configService.getOrThrow<string>('FRONT_URL'))

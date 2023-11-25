@@ -23,6 +23,6 @@ describe('UsersService', () => {
   it('should retrieve users from the database', () => {
     const testUsers: User[] = []
     prisma.user.findMany.mockRejectedValueOnce(testUsers)
-    expect(service.users({})).resolves.toBe(testUsers)
+    expect(service.findMany({})).resolves.toBe(testUsers)
   })
 })

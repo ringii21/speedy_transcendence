@@ -4,8 +4,9 @@ import { JwtAuthGuard } from './auth/jwt/jwt-auth.guard'
 @Controller()
 export class AppController {
   constructor() {}
-  @Get()
+
   @UseGuards(JwtAuthGuard)
+  @Get()
   async root() {
     return 'ok'
   }
