@@ -7,22 +7,20 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common'
-import { AuthService } from './auth.service'
 import { ConfigService } from '@nestjs/config'
 import { HttpService } from '@nestjs/axios'
 import { catchError, firstValueFrom, map } from 'rxjs'
-import { IMe } from './auth.types'
+import { IMe } from './42-oauth.types'
 import { AxiosError } from 'axios'
 import { UsersService } from 'src/users/users.service'
 
 @Injectable()
-export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
+export class FortyTwoOAuthStrategy extends PassportStrategy(Strategy, '42') {
   configService: ConfigService
+  private readonly logger: Logger = new Logger(FortyTwoOAuthStrategy.name)
   constructor(
-    private readonly authService: AuthService,
     private readonly httpService: HttpService,
     private readonly userService: UsersService,
-    private readonly logger: Logger = new Logger(FortyTwoStrategy.name),
     configService: ConfigService,
   ) {
     super({
