@@ -1,9 +1,8 @@
 export interface IMe {
   email: string
   login: string
-  access_token: string
-  refresh_token: string
-  expires_in: number
+  accessToken: string
+  refreshToken: string
   image: {
     link: string
     versions: {

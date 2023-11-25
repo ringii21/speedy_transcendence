@@ -10,10 +10,14 @@ import { Response } from 'express'
 import { FortyTwoOAuthGuard } from './42-oauth.guard'
 import { JwtAuthService } from 'src/auth/jwt/jwt-auth.service'
 import { UnauthorizedExceptionFilter } from './42-oauth.exceptionfilter'
+import { ConfigService } from '@nestjs/config'
 
 @Controller('auth/42')
 export class FortyTwoOAuthController {
-  constructor(private readonly jwtAuthService: JwtAuthService) {}
+  constructor(
+    private readonly jwtAuthService: JwtAuthService,
+    private readonly configService: ConfigService,
+  ) {}
   @UseGuards(FortyTwoOAuthGuard)
   @Get()
   async auth() {}
@@ -27,6 +31,6 @@ export class FortyTwoOAuthController {
       httpOnly: true,
       sameSite: 'strict',
     })
-    res.redirect('/')
+    res.redirect(this.configService.getOrThrow<string>('FRONT_URL'))
   }
 }

@@ -41,17 +41,8 @@ export class FortyTwoOAuthStrategy extends PassportStrategy(Strategy, '42') {
     done: (err: any, user: any, info?: any) => void,
   ) {
     if (!profile) return done(new UnauthorizedException(), null)
-    const user = await this.userService.findOrCreate(
-      { email: profile.email },
-      {
-        email: profile.email,
-        username: profile.login,
-        image: profile.image.link,
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-      },
-    )
-    done(null, user)
+
+    done(null, { user: profile, accessToken, refreshToken })
   }
 
   async userProfile(

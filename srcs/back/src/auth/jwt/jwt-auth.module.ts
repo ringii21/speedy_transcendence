@@ -3,9 +3,11 @@ import { ConfigService } from '@nestjs/config'
 import { JwtModule } from '@nestjs/jwt'
 import { JwtAuthService } from './jwt-auth.service'
 import { JwtAuthStrategy } from './jwt-auth.strategy'
+import { UsersModule } from 'src/users/users.module'
 
 @Module({
   imports: [
+    UsersModule,
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => {
         return {
