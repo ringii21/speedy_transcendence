@@ -3,15 +3,14 @@ import { PassportStrategy } from '@nestjs/passport'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { UsersService } from 'src/users/users.service'
+import { JwtPayload } from './jwt-auth.strategy'
 import { extractJwtFromCookie } from './utils/jwt-extrator'
 
-export type JwtPayload = { sub: number; twoFaPassed: boolean }
-
 @Injectable()
-export class JwtAuthStrategy extends PassportStrategy(Strategy, 'jwt') {
+export class JwtTwoFaStrategy extends PassportStrategy(Strategy, 'jwt-two-fa') {
   constructor(
     configService: ConfigService,
-    private readonly usersService: UsersService,
+    private readonly userService: UsersService,
   ) {
     super({
       jwtFromRequest: extractJwtFromCookie,
@@ -21,8 +20,9 @@ export class JwtAuthStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: JwtPayload) {
-    const user = await this.usersService.find({ id: payload.sub })
+    const user = await this.userService.find({ id: payload.sub })
     if (!user) return null
-    return user
+    if (!user.twoFaEnabled) return user
+    if (payload.twoFaPassed) return user
   }
 }

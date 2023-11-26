@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt'
 import { JwtAuthService } from './jwt-auth.service'
 import { JwtAuthStrategy } from './jwt-auth.strategy'
 import { UsersModule } from 'src/users/users.module'
+import { JwtTwoFaStrategy } from './jwt-2fa.strategy'
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { UsersModule } from 'src/users/users.module'
       inject: [ConfigService],
     }),
   ],
-  providers: [JwtAuthStrategy, JwtAuthService],
+  providers: [JwtAuthStrategy, JwtAuthService, JwtTwoFaStrategy],
   exports: [JwtModule, JwtAuthService],
 })
 export class JwtAuthModule {}

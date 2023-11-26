@@ -1,11 +1,11 @@
 import { Controller, Get, UseGuards } from '@nestjs/common'
-import { JwtAuthGuard } from './auth/jwt/jwt-auth.guard'
+import JwtTwoFaGuard from './auth/jwt/jwt-2fa.guard'
 
 @Controller()
 export class AppController {
   constructor() {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFaGuard)
   @Get()
   async root() {
     return 'ok'

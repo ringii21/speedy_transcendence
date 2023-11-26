@@ -63,4 +63,17 @@ export class UsersService {
     if (user) return user
     return this.create(data)
   }
+
+  async is2faEnabled(userWhereUniqueInput: Prisma.UserWhereUniqueInput) {
+    const user = await this.find(userWhereUniqueInput)
+    if (!user) return false
+    return user.twoFaEnabled
+  }
+
+  async enable2fa(userWhereUniqueInput: Prisma.UserWhereUniqueInput) {
+    return this.update({
+      where: userWhereUniqueInput,
+      data: { twoFaEnabled: true },
+    })
+  }
 }
