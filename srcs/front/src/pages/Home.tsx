@@ -1,38 +1,65 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import "../styles/home.css"
+import React from 'react'
+import '../styles/home.css'
+import Pong from '../components/Pong'
+import { useAuth } from '../providers/AuthProvider'
+import { useNavigate } from 'react-router-dom'
 
-const   Home = (props:any) => {
-    const { loggedIn, email } = props;
-    var navigate = useNavigate();
+const Home = () => {
+  const { user, signout } = useAuth()
+  const navigate = useNavigate()
 
-    const onButtonClick = () => {
-        navigate("/login")
-    }
+  const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
+    await signout()
+    e.preventDefault()
+  }
 
-    return (
-        <div className="mainContainer" >
-            <div className={"titleContainer"}>
-                <h1 className="is-size-1">Welcome!</h1>
-            </div>
-            <div className="text-info">
-                <p>
-                    This is the home page.
-                </p>
-            </div>
-            <div className={"buttonContainer"}>
-                <input
-                    className={"inputContainer"}
-                    type="button"
-                    onClick={onButtonClick}
-                    value={loggedIn ? "Log out" : "Log in"}
-                />
-                {(loggedIn ? <div>
-                    Your email address is {email}
-                </div> : <div/>)}
-            </div>
+  return (
+    <div className="">
+      <div className="navbar bg-base-100">
+        <div className="flex-1">
+          <a
+            onClick={() => {
+              navigate('/')
+            }}
+            className="btn btn-ghost text-xl"
+          >
+            Pong
+          </a>
         </div>
-    )
+        <div className="flex-none gap-2">
+          <span>{user?.username}</span>
+          <div className="dropdown dropdown-end">
+            <label
+              tabIndex={0}
+              className="btn btn-ghost btn-circle avatar btn-lg"
+            >
+              <div className="rounded-full">
+                <img alt="avatar" src={user?.image} />
+              </div>
+            </label>
+            <ul
+              tabIndex={0}
+              className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52"
+            >
+              <li>
+                <a className="justify-between">
+                  Profile
+                  <span className="badge">New</span>
+                </a>
+              </li>
+              <li>
+                <a>Settings</a>
+              </li>
+              <li>
+                <a onClick={onButtonClick}>Logout</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <Pong />
+    </div>
+  )
 }
 
-export default Home;
+export default Home
