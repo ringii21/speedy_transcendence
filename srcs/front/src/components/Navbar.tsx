@@ -1,55 +1,60 @@
-import React, { useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import React from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../providers/AuthProvider'
 
 const Navbar = () => {
+  const { user, signout } = useAuth()
+  const navigate = useNavigate()
+
+  const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault()
+    await signout()
+  }
+
   return (
-    <nav className="navbar" role="navigation" aria-label="main navigation">
-      <div className="navbar-brand">
+    <div className="navbar bg-base-100">
+      <div className="flex-1">
         <a
-          role="button"
-          className="navbar-burger"
-          aria-label="menu"
-          aria-expanded="false"
-          data-target="navbarBasicExample"
+          onClick={() => {
+            navigate('/')
+          }}
+          className="btn btn-ghost text-xl"
         >
-          <span aria-hidden="true"></span>
-          <span aria-hidden="true"></span>
-          <span aria-hidden="true"></span>
+          Pong
         </a>
       </div>
-
-      <div id="navbarBasicExample" className="navbar-menu">
-        <div className="navbar-start">
-          <a className="navbar-item">Home</a>
-
-          <a className="navbar-item">Documentation</a>
-
-          <div className="navbar-item has-dropdown is-hoverable">
-            <a className="navbar-link">More</a>
-
-            <div className="navbar-dropdown">
-              <a className="navbar-item">About</a>
-              <a className="navbar-item">Jobs</a>
-              <a className="navbar-item">Contact</a>
-              <hr className="navbar-divider"></hr>
-              <a className="navbar-item">Report an issue</a>
+      <div className="flex-none gap-2">
+        <span>{user?.username}</span>
+        <div className="dropdown dropdown-end">
+          <label
+            tabIndex={0}
+            className="btn btn-ghost btn-circle avatar btn-lg"
+          >
+            <div className="rounded-full">
+              <img alt="avatar" src={user?.image} />
             </div>
-          </div>
-        </div>
-
-        <div className="navbar-end">
-          <div className="navbar-item">
-            <div className="buttons">
-              <a className="button is-primary">
-                <strong>Sign up</strong>
+          </label>
+          <ul
+            tabIndex={0}
+            className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52"
+          >
+            <li>
+              <a className="justify-between">
+                Profile
+                <span className="badge">New</span>
               </a>
-              <a className="button is-light">Log in</a>
-            </div>
-          </div>
+            </li>
+            <li>
+              <a>Settings</a>
+            </li>
+            <li>
+              <a onClick={onButtonClick}>Logout</a>
+            </li>
+          </ul>
         </div>
       </div>
-    </nav>
+    </div>
   )
 }
 
-export default Navbar
+export { Navbar }

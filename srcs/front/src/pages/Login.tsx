@@ -20,15 +20,14 @@ const Login = () => {
   }
 
   return (
-    <div className="box">
-      <div className="hero min-h-screen bg-base-200">
+    <div className="">
+      <div className="hero min-h-screen">
         <div className="hero-content text-center">
           <div className="max-w-md">
-            <h1 className="text-5xl font-bold">Pong</h1>
-            <p className="py-6">ft_transcendence</p>
+            <h1 className="text-5xl font-bold">ft_transcendence</h1>
             <button
               onClick={onButtonClick}
-              className="btn btn-lg btn-primary"
+              className="btn btn-lg btn-primary mt-10"
               disabled={loading}
             >
               <span className={loading ? 'loading loading-spinner' : ''}></span>
