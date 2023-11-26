@@ -9,6 +9,7 @@ import { Chat } from './components/Chat'
 
 import { ThemeSelector } from './components/ThemeSelector'
 import { AuthProvider } from './providers/AuthProvider'
+import { TwoFa } from './pages/TwoFa'
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/profil" element={<Profil />} />
+          <Route path="/2fa" element={<TwoFa />} />
         </Routes>
         <Chat />
       </AuthProvider>

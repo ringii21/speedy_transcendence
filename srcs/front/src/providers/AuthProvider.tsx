@@ -13,6 +13,7 @@ import { login, logout } from '../utils/authService'
 
 interface AuthContextData {
   user: IUser | null
+  signin(): Promise<IUser | null>
   signout(): Promise<void>
 }
 
@@ -22,6 +23,7 @@ type Props = {
 
 export const AuthContext = createContext<AuthContextData>({
   user: null,
+  signin: () => Promise.resolve(null),
   signout: () => Promise.resolve(),
 })
 
@@ -35,14 +37,22 @@ export const AuthProvider = ({ children }: Props) => {
     navigate('/login', { replace: true })
   }
 
+  const signin = async () => {
+    try {
+      const { data } = await login()
+      if (data) setUser(data)
+      return data
+    } catch (e) {
+      return null
+    }
+  }
+
   useEffect(() => {
     ;(async () => {
       try {
         const { data } = await login()
         if (data) setUser(data)
-      } catch (e) {
-        navigate('/login', { replace: true })
-      }
+      } catch (e) {}
     })()
   }, [])
 
@@ -50,6 +60,7 @@ export const AuthProvider = ({ children }: Props) => {
     () => ({
       user,
       signout,
+      signin,
     }),
     [user],
   )

@@ -11,7 +11,7 @@ const Login = () => {
 
   useEffect(() => {
     if (user) navigate('/', { replace: true })
-  }, [user])
+  }, [])
 
   const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()
