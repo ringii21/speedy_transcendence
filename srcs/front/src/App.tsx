@@ -1,28 +1,24 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Router } from "react-router-dom";
-import { useEffect, useState } from 'react';
-import Pong from '../src/components/Pong'
+import React, { useEffect } from 'react'
+import { Routes, Route } from 'react-router-dom'
 
 // import Navbar from "./components/Navbar";
-import Home from "./pages/Home";
-import Login from "./pages/login";
+import Home from './pages/Home'
+import Login from './pages/Login'
+import { ThemeSelector } from './components/ThemeSelector'
+import { AuthProvider } from './providers/AuthProvider'
 
 function App() {
-  //Constante
-  const [loggedIn, setLoggedIn] = useState(true)
-  const [email, setEmail] = useState("")
-
   return (
-    <div className="container">
-      <BrowserRouter basename='/'>
+    <div className="container mx-auto">
+      <ThemeSelector />
+      <AuthProvider>
         <Routes>
-          <Route path="/" element={<Home email={email} loggedIn={loggedIn} setLoggedIn={setLoggedIn}/>} />
-          <Route path="/login" element={<Login setLoggedIn={setLoggedIn} setEmail={setEmail}/>} />
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
         </Routes>
-      </BrowserRouter>
-	  <Pong />
+      </AuthProvider>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App

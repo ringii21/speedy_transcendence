@@ -6,15 +6,11 @@
     "@testing-library/jest-dom": "^6.1.4",
     "@testing-library/react": "^14.1.2",
     "@testing-library/user-event": "^14.5.1",
-    "@types/jest": "^29.5.10",
-    "@types/node": "^20.9.4",
-    "@types/react": "^18.2.38",
-    "@types/react-dom": "^18.2.17",
-    "@typescript-eslint/typescript-estree": "^6.12.0",
-    "bulma": "^0.9.4",
+    "axios": "^1.6.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.48.2",
+    "react-icons": "^4.12.0",
     "react-router-dom": "^6.20.0",
     "react-scripts": "^5.0.1",
     "web-vitals": "^3.5.0"
@@ -22,6 +18,8 @@
   "scripts": {
     "start": "BROWSER='google-chrome-stable' PORT=3001 react-scripts --max_old_space_size=8128 start",
     "build": "BROWSER='google-chrome-stable' PORT=3001 react-scripts build",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "lint": "eslint \"{src,test}/**/*.{ts,tsx}\" --fix",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -43,5 +41,16 @@
       "last 1 safari version"
     ]
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/jest": "^29.5.10",
+    "@types/node": "^20.9.4",
+    "@types/react": "^18.2.38",
+    "@types/react-dom": "^18.2.17",
+    "@typescript-eslint/typescript-estree": "^6.12.0",
+    "daisyui": "^4.4.7",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "prettier": "^3.1.0",
+    "tailwindcss": "^3.3.5"
+  }
 }
