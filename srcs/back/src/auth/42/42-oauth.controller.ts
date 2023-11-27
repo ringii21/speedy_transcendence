@@ -46,7 +46,7 @@ export class FortyTwoOAuthController {
     })
     if (user.twoFaEnabled) {
       return res.redirect(
-        `${this.configService.getOrThrow<string>('FRONT_URL')}/2fa`,
+        `${this.configService.getOrThrow<string>('FRONT_URL')}/login/2fa`,
       )
     }
     res.redirect(this.configService.getOrThrow<string>('FRONT_URL'))

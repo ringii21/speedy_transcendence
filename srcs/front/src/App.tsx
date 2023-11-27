@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { Routes, Route } from 'react-router-dom'
 
 // import Navbar from "./components/Navbar";
@@ -10,6 +10,8 @@ import { Chat } from './components/Chat'
 import { ThemeSelector } from './components/ThemeSelector'
 import { AuthProvider } from './providers/AuthProvider'
 import { TwoFa } from './pages/TwoFa'
+import { Settings } from './pages/Settings'
+import { TwoFactor } from './pages/TwoFactor/TwoFactor'
 
 function App() {
   return (
@@ -18,9 +20,12 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/settings/2fa" element={<TwoFactor />} />
           <Route path="/login" element={<Login />} />
           <Route path="/profil" element={<Profil />} />
           <Route path="/2fa" element={<TwoFa />} />
+          <Route path="/login/2fa" element={<TwoFa />} />
         </Routes>
         <Chat />
       </AuthProvider>

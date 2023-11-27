@@ -42,11 +42,19 @@ export class TwoFaController {
   @UseGuards(JwtAuthGuard)
   async enable2fa(
     @Req() req: RequestWithUser,
+    @Res() res: Response,
     @Body() { code }: TwoFaAuthCodeDto,
   ) {
     const isValid = await this.twoFaAuthService.is2FaCodeValid(req.user, code)
     if (!isValid) throw new UnauthorizedException('Invalid 2FA code')
     await this.userService.enable2fa(req.user)
+    const jwt = await this.jwtAuthService.login(req.user, true)
+    res.cookie('jwt', jwt, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    })
+    res.json({ message: '2FA enabled' })
   }
 
   @Post('authenticate')

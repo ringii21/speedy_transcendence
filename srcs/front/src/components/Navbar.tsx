@@ -49,7 +49,13 @@ const Navbar = () => {
               </a>
             </li>
             <li>
-              <a>Settings</a>
+              <a
+                onClick={() => {
+                  navigate('/settings')
+                }}
+              >
+                Settings
+              </a>
             </li>
             <li>
               <a onClick={onButtonClick}>Logout</a>

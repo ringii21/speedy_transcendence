@@ -1,39 +1,34 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect } from 'react'
 import getHttpInstance from '../utils/httpClient'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../providers/AuthProvider'
+import { useForm } from 'react-hook-form'
+
+type FormValues = {
+  code: string
+}
 
 const TwoFa = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const inputsRef = useRef<HTMLInputElement[] | null[]>([])
-  const [error, setError] = React.useState<boolean>(false)
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm<FormValues>()
 
-  const handleInputChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    index: number,
-  ) => {
-    const value = event.target.value
-    if (value.length === 1 && index < 5) {
-      inputsRef.current[index + 1]?.focus()
-    } else if (value.length === 0 && index > 0) {
-      inputsRef.current[index - 1]?.focus()
-    } else if (index === 5) {
-      sendCode()
-    }
-  }
-
-  const sendCode = async () => {
-    const code = inputsRef.current.map((input) => input?.value).join('')
+  const onSubmit = async (code: FormValues) => {
     try {
-      const { data } = await getHttpInstance().post('/api/2fa/authenticate', {
+      const { data } = await getHttpInstance().post(
+        '/api/2fa/authenticate',
         code,
-      })
+      )
       if (data) {
         navigate('/', { replace: true })
       }
     } catch (e) {
-      setError(true)
+      setError('code', { message: 'Invalid code' })
     }
   }
 
@@ -41,42 +36,37 @@ const TwoFa = () => {
     if (user) navigate('/', { replace: true })
   }, [])
 
-  useEffect(() => {
-    let timer: NodeJS.Timeout
-    if (error) {
-      timer = setTimeout(() => {
-        setError(false)
-      }, 3000)
-    }
-    return () => clearTimeout(timer)
-  }, [error])
-
   return (
-    <div className="flex justify-center items-center h-screen">
-      <div className="flex flex-col items-center justify-center p-4">
-        <h1 className="text-2xl font-bold mb-4">Two-Factor Authentication</h1>
-        <div className="flex space-x-2">
-          {[...Array(6)].map((_, i) => (
+    <div className="flex flex-col justify-center items-center h-screen">
+      <div>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="form-control w-full max-w-xs">
+            <label className="label">
+              <span className="label-text-alt">2fa code</span>
+            </label>
             <input
-              key={i}
-              ref={(el) => (inputsRef.current[i] = el)}
-              className="input input-bordered input-primary w-12 text-center"
               type="text"
-              maxLength={1}
-              pattern="[0-9]*"
-              inputMode="numeric"
-              onChange={(e) => handleInputChange(e, i)}
+              placeholder="2fa code"
+              max={6}
+              min={6}
+              autoComplete="off"
+              maxLength={6}
+              {...register('code', {
+                required: true,
+                maxLength: 6,
+                minLength: 6,
+              })}
+              className="input input-bordered w-full max-w-xs"
             />
-          ))}
-        </div>
-      </div>
-      {error ? (
-        <div className="toast toast-center">
-          <div className="alert alert-error">
-            <span>Invalid two factor code</span>
           </div>
-        </div>
-      ) : null}
+          <button className="btn btn-secondary" type="submit">
+            Send code
+          </button>
+        </form>
+        {errors.code && (
+          <span className="text-xs text-red-500">This field is required</span>
+        )}
+      </div>
     </div>
   )
 }
