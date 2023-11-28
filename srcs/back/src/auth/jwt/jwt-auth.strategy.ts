@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config'
 import { UsersService } from 'src/users/users.service'
 import { extractJwtFromCookie } from './utils/jwt-extrator'
 
-export type JwtPayload = { sub: number; twoFaPassed: boolean }
+export type JwtPayload = { sub: number; otp: boolean }
 
 @Injectable()
 export class JwtAuthStrategy extends PassportStrategy(Strategy, 'jwt') {

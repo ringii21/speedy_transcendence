@@ -1,5 +1,6 @@
 import { User } from '@prisma/client'
 import {
+  IsBoolean,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -18,4 +19,8 @@ export class PatchUserDto implements Partial<User> {
   @IsNotEmpty()
   @IsOptional()
   image?: string | undefined
+
+  @IsOptional()
+  @IsBoolean()
+  twoFaEnabled?: boolean | undefined
 }

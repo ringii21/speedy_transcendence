@@ -23,8 +23,7 @@ export class JwtTwoFaStrategy extends PassportStrategy(Strategy, 'jwt-two-fa') {
     const user = await this.userService.find({ id: payload.sub })
     if (!user) return null
     if (!user.twoFaEnabled) return user
-    if (!payload.twoFaPassed)
-      throw new UnauthorizedException({ code: '2FA_REQUIRED' })
+    if (!payload.otp) throw new UnauthorizedException({ code: '2FA_REQUIRED' })
     return user
   }
 }

@@ -14,7 +14,7 @@ import { JwtTwoFaStrategy } from './jwt-2fa.strategy'
         return {
           secret: configService.get<string>('JWT_SECRET'),
           signOptions: {
-            expiresIn: '1h',
+            expiresIn: '1d',
           },
         }
       },

@@ -11,7 +11,7 @@ export class JwtAuthService {
   async login(user: User, is2FaOk: boolean = false) {
     const payload: JwtPayload = {
       sub: user.id,
-      twoFaPassed: is2FaOk,
+      otp: is2FaOk,
     }
     return this.jwtService.signAsync(payload)
   }

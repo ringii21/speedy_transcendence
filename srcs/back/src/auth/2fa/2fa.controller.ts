@@ -46,7 +46,7 @@ export class TwoFaController {
     @Body() { code }: TwoFaAuthCodeDto,
   ) {
     const isValid = await this.twoFaAuthService.is2FaCodeValid(req.user, code)
-    if (!isValid) throw new UnauthorizedException('Invalid 2FA code')
+    if (!isValid) throw new UnauthorizedException('2FA_CODE_INVALID')
     await this.userService.enable2fa(req.user)
     const jwt = await this.jwtAuthService.login(req.user, true)
     res.cookie('jwt', jwt, {
@@ -65,7 +65,7 @@ export class TwoFaController {
     @Body() { code }: TwoFaAuthCodeDto,
   ) {
     const isValid = await this.twoFaAuthService.is2FaCodeValid(req.user, code)
-    if (!isValid) throw new UnauthorizedException('Invalid 2FA code')
+    if (!isValid) throw new UnauthorizedException('2FA_CODE_INVALID')
 
     const jwt = await this.jwtAuthService.login(req.user, true)
     res.cookie('jwt', jwt, {
@@ -73,7 +73,7 @@ export class TwoFaController {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
     })
-    res.status(200).json({ message: '2FA passed' })
+    res.status(200).json({ message: '2FA_PASSED' })
   }
 
   // add route to disable 2fa
