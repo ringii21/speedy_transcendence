@@ -1,4 +1,5 @@
 import { User } from '@prisma/client'
+import { Transform } from 'class-transformer'
 import {
   IsBoolean,
   IsNotEmpty,
@@ -22,5 +23,6 @@ export class PatchUserDto implements Partial<User> {
 
   @IsOptional()
   @IsBoolean()
+  @Transform(({ value }) => value === 'true')
   twoFaEnabled?: boolean | undefined
 }

@@ -18,7 +18,7 @@ const Navbar = () => {
         </Link>
       </div>
       <div className="flex-none gap-2">
-        <span>{user?.username}</span>
+        {user?.username}
         <div className="dropdown dropdown-end">
           <label
             tabIndex={0}
