@@ -1,11 +1,11 @@
 import React from 'react'
-import { Link, redirect } from 'react-router-dom'
+import { Link, redirect, useNavigate } from 'react-router-dom'
 import { useAuth } from '../providers/AuthProvider'
 import Profil from '../pages/Profil'
-
 const Navbar = () => {
   const { user, signout } = useAuth()
 
+  const navigate = useNavigate()
   const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()
     await signout()
