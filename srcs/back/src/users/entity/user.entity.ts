@@ -8,12 +8,14 @@ export class UserEntity implements Partial<UserPrisma> {
   image?: string | undefined
   createdAt?: Date | undefined
   updatedAt?: Date | undefined
-  twofaenabled?: boolean | undefined
+  twoFaEnabled?: boolean | undefined
 
   @Exclude()
   accessToken: string | null
   @Exclude()
   refreshToken: string | null
+  @Exclude()
+  twoFaSecret: string | null
   constructor(partial: Partial<UserEntity>) {
     Object.assign(this, partial)
   }

@@ -1,9 +1,22 @@
-import { Controller, Get, Res, UseGuards } from '@nestjs/common'
-import { Response } from 'express'
-import { JwtAuthGuard } from './jwt/jwt-auth.guard'
+import {
+  ClassSerializerInterceptor,
+  Controller,
+  Get,
+  Req,
+  Res,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common'
+import { Request, Response } from 'express'
 import { ConfigService } from '@nestjs/config'
+import { User } from '@prisma/client'
+import { UserEntity } from 'src/users/entity/user.entity'
+import JwtTwoFaGuard from './jwt/jwt-2fa.guard'
+
+type RequestWithUser = Request & { user: User }
 
 @Controller('auth')
+@UseInterceptors(ClassSerializerInterceptor)
 export class AuthController {
   constructor(private readonly configService: ConfigService) {}
   @Get()
@@ -11,8 +24,15 @@ export class AuthController {
     return res.redirect('/auth/42')
   }
 
+  @Get('login')
+  @UseGuards(JwtTwoFaGuard)
+  async login(@Req() req: RequestWithUser) {
+    console.log(req.user)
+    return new UserEntity(req.user)
+  }
+
   @Get('logout')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFaGuard)
   async logout(@Res() res: Response) {
     res.clearCookie('jwt')
     res.json({ message: 'Logged out' })

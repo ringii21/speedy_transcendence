@@ -3,7 +3,7 @@ export interface IUser {
   email: string
   username: string
   image: string
-  twofaenabled: boolean
+  twoFaEnabled: boolean
   expiresAt?: Date
   createdAt: Date
   updatedAt: Date
