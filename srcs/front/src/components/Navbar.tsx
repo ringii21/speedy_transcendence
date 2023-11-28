@@ -1,28 +1,23 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, redirect } from 'react-router-dom'
 import { useAuth } from '../providers/AuthProvider'
 import Profil from '../pages/Profil'
 
 const Navbar = () => {
   const { user, signout } = useAuth()
-  const navigate = useNavigate()
 
   const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()
     await signout()
+    redirect('/login')
   }
 
   return (
     <div className="navbar bg-base-100">
       <div className="flex-1">
-        <a
-          onClick={() => {
-            navigate('/')
-          }}
-          className="btn btn-ghost text-xl"
-        >
+        <Link className="btn btn-ghost text-xl" to="/">
           Pong
-        </a>
+        </Link>
       </div>
       <div className="flex-none gap-2">
         <span>{user?.username}</span>
@@ -49,13 +44,7 @@ const Navbar = () => {
               </a>
             </li>
             <li>
-              <a
-                onClick={() => {
-                  navigate('/settings')
-                }}
-              >
-                Settings
-              </a>
+              <Link to="/settings">Settings</Link>
             </li>
             <li>
               <a onClick={onButtonClick}>Logout</a>

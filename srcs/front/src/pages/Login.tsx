@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import { Si42 } from 'react-icons/si'
-import { useNavigate } from 'react-router-dom'
+import { redirect } from 'react-router-dom'
 import { useAuth } from '../providers/AuthProvider'
 
 const Login = () => {
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
 
-  const navigate = useNavigate()
-
   useEffect(() => {
-    if (user) navigate('/', { replace: true })
-  }, [])
+    if (user) redirect('/')
+  }, [user])
 
   const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()

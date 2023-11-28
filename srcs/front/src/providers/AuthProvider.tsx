@@ -1,90 +1,80 @@
-import React, {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
-import { NavigateFunction, useNavigate } from 'react-router-dom'
+import React, { createContext, ReactNode, useContext, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { IUser } from '../types/User'
-import { login, logout } from '../utils/authService'
 import { AxiosError } from 'axios'
-
-const signInOr2fa = async (
-  navigate: NavigateFunction,
-  setUser: React.Dispatch<React.SetStateAction<IUser | null>>,
-) => {
-  try {
-    const { data } = await login()
-    setUser(data)
-    navigate('/', { replace: true })
-  } catch (e: unknown) {
-    if (e instanceof AxiosError) {
-      if (e.response?.status === 401 && 'code' in e.response.data) {
-        if (e.response.data.code === '2FA_REQUIRED') {
-          console.log('2FA_REQUIRED')
-          return navigate('/login/2fa', { replace: true })
-        }
-      }
-      navigate('/login', { replace: true })
-    }
-  }
-}
+import { fetchUser, logout } from '../utils/userHttpRequests'
 
 interface AuthContextData {
   user: IUser | null
-  signin(): Promise<IUser | null>
-  signout(): Promise<void>
+  signin: () => Promise<void>
+  signout: () => Promise<void>
 }
 
-type Props = {
-  children: ReactNode
-}
-
-export const AuthContext = createContext<AuthContextData>({
+const AuthContext = createContext<AuthContextData>({
   user: null,
-  signin: () => Promise.resolve(null),
-  signout: () => Promise.resolve(),
+  signin: async () => Promise.resolve(),
+  signout: async () => Promise.resolve(),
 })
 
-export const AuthProvider = ({ children }: Props) => {
-  const [user, setUser] = useState<IUser | null>(null)
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
-  const signout = async () => {
-    await logout()
-    setUser(null)
-    navigate('/login', { replace: true })
-  }
+  const { data, isError, error } = useQuery({
+    queryKey: ['user'],
+    queryFn: fetchUser,
+    retry: false,
+    refetchOnWindowFocus: false,
+  })
 
-  const signin = async () => {
-    try {
-      await signInOr2fa(navigate, setUser)
-      return user
-    } catch (e) {
-      return null
-    }
-  }
+  const user = data ?? null
+  const signinMutation = useMutation({
+    mutationFn: fetchUser,
+    onSuccess: (user) => {
+      queryClient.setQueryData(['user'], user)
+      navigate('/', { replace: true })
+    },
+    onError: (error: unknown) => {
+      if (
+        error instanceof AxiosError &&
+        error.response?.status === 401 &&
+        error.response.data.code === '2FA_REQUIRED'
+      ) {
+        navigate('/login/2fa', { replace: true })
+      } else {
+        navigate('/login', { replace: true })
+      }
+    },
+  })
+
+  const signoutMutation = useMutation({
+    mutationFn: logout,
+    onSuccess: () => {
+      queryClient.setQueryData(['user'], null)
+      navigate('/login', { replace: true })
+    },
+  })
+
+  const signin = async () => signinMutation.mutate()
+  const signout = async () => signoutMutation.mutate()
 
   useEffect(() => {
-    ;(async () => {
-      await signInOr2fa(navigate, setUser)
-    })()
-  }, [])
-
-  const memoedValue = useMemo<AuthContextData>(
-    () => ({
-      user,
-      signout,
-      signin,
-    }),
-    [user],
-  )
+    if (isError) {
+      if (error instanceof AxiosError && error.response?.status === 401) {
+        if (error.response.data.code === '2FA_REQUIRED') {
+          return navigate('/login/2fa', { replace: true })
+        }
+        return navigate('/login', { replace: true })
+      }
+    }
+  }, [user, navigate, isError])
 
   return (
-    <AuthContext.Provider value={memoedValue}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, signin, signout }}>
+      {children}
+    </AuthContext.Provider>
   )
 }
 
