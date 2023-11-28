@@ -1,7 +1,6 @@
 import React from 'react'
 import { Link, redirect } from 'react-router-dom'
 import { useAuth } from '../providers/AuthProvider'
-import Profil from '../pages/Profil'
 
 const Navbar = () => {
   const { user, signout } = useAuth()
@@ -35,13 +34,10 @@ const Navbar = () => {
             className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52"
           >
             <li>
-              <a
-                className="justify-between"
-                onClick={() => navigate('/profil')}
-              >
-                Profile
+              <Link className="justify-between" to="/profil">
+                Profil
                 <span className="badge">New</span>
-              </a>
+              </Link>
             </li>
             <li>
               <Link to="/settings">Settings</Link>
