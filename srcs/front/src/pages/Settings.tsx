@@ -56,10 +56,11 @@ const Settings = () => {
   })
 
   const onSubmit = (data: FormValues) => {
-    mutate({
-      twoFaEnabled: data.twoFaEnabled,
-      username: data.username,
-    })
+    const formData = new FormData()
+    formData.append('username', data.username)
+    if (data.image) formData.append('image', data.image[0])
+    formData.append('twoFaEnabled', data.twoFaEnabled.toString())
+    mutate(formData)
   }
 
   useEffect(() => {
