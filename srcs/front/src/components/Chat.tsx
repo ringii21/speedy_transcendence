@@ -3,40 +3,35 @@ import { Fragment, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { FaWindowClose } from 'react-icons/fa'
 import { RxHamburgerMenu } from 'react-icons/rx'
+import { RiMessage3Fill } from 'react-icons/ri'
 
 const Chat = () => {
-  const [open, setOpen] = useState(true)
-  const [close, setClose] = useState(true)
+  const [open, setOpen] = useState(false)
+  const handleOpen = () => setOpen(true)
 
   function closeModal() {
     setOpen(false)
   }
 
-  function openModal() {
-    setOpen(true)
-  }
-
   return (
-    <div className="fixed inset-y-0 right-0 ">
+    <div className="fixed bottom-1 right-0 h-16 w-16">
       <div className="absolute left-0 top-0 -ml-8 flex pr-2 pt-4 sm:-ml-10 sm:pr-4">
         <button
           type="button"
-          className="relative rounded-md text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
-          onClick={openModal}
+          className="relative rounded-md text-gray-300 hover:text-white hover:scale-125 focus:outline-none focus:ring-1 focus:ring-white"
+          onClick={handleOpen}
         >
+          <span className="animate-ping absolute inline-flex h-5 w-5 right-5 rounded-full bg-sky-400 opacity-75"></span>
           <span className="absolute -inset-2.5" />
           <span className="sr-only">Close panel</span>
-          <RxHamburgerMenu
-            data-theme="cupcake"
-            className="h-6 w-6 transition-opacity duration-300"
-          />
+          <RiMessage3Fill className="h-10 w-10 transition-opacity duration-300 drop-shadow-md" />
         </button>
       </div>
       <Transition show={open} as={Fragment}>
         <Dialog as="div" className="relative z-10" onClose={closeModal}>
-          <div className="fixed">
+          <div className="fixed ">
             <div className="absolute">
-              <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+              <div className="pointer-events-none fixed bottom-0 right-0 flex max-w-full pl-10">
                 <Transition.Child
                   as={Fragment}
                   enter="transform transition ease-in-out duration-500 sm:duration-700"
@@ -55,13 +50,13 @@ const Chat = () => {
                       leaveFrom="opacity-100"
                       leaveTo="opacity-0"
                     >
-                      <div className="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
+                      <div className="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl rounded-tl-lg">
                         <div className="px-4 sm:px-6">
                           <Dialog.Title className="text-base font-semibold leading-6 text-gray-900">
                             Contacts
                           </Dialog.Title>
                         </div>
-                        <div className="relative mt-6 flex-1 px-4 sm:px-6">
+                        <div className="relative mt-6 flex-1 px-4 sm:px-6 ">
                           <input
                             type="text"
                             placeholder="Search teams or members"

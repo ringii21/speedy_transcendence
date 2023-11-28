@@ -1,6 +1,7 @@
 import React from 'react'
 import { useAuth } from '../providers/AuthProvider'
 import { WithNavbar } from '../hoc/WithNavbar'
+import { ThemeSelector } from '../components/ThemeSelector'
 
 const Profil = () => {
   const { user, signout } = useAuth()
@@ -14,13 +15,18 @@ const Profil = () => {
     if (!user?.username) {
       return (
         <div>
-          <button className="btn btn-primary">Follow</button>
+          <button className="btn btn-primary drop-shadow-xl rounded-lg">
+            Follow
+          </button>
         </div>
       )
     } else {
       return (
         <div>
-          <button className="btn btn-primary" onClick={onButtonClick}>
+          <button
+            className="btn btn-primary drop-shadow-xl rounded-lg"
+            onClick={onButtonClick}
+          >
             Logout
           </button>
         </div>
@@ -35,8 +41,8 @@ const Profil = () => {
         padding: '10px',
       }}
     >
-      <div className="hero-overlay rounded-t-lg bg-opacity-60"></div>
-      <div className="hero-content text-center text-neutral-content ">
+      <div className="hero-overlay bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 drop-shadow-md rounded-t-lg bg-opacity-60"></div>
+      <div className="hero-content text-center text-neutral-content">
         <div className="max-w-md">
           <h1 className="mb-5 text-5xl font-bold text-purple-100">
             {user?.username}
@@ -46,11 +52,26 @@ const Profil = () => {
               <img src={user?.image} alt="avatar" />
             </div>
           </div>
-          <p className="mb-5">
-            Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda
-            excepturi exercitationem quasi. In deleniti eaque aut repudiandae et
-            a id nisi.
-          </p>
+          <div className="columns-3 flex-auto space-y-20">
+            <div className="grid-cols-2 space-x-0 shadow-xl">
+              <p className="font-bold rounded-t-lg drop-shadow-md">Win</p>
+              <p className="px-10 text-black rounded-b-lg backdrop-opacity-10 backdrop-invert bg-white/50">
+                5
+              </p>
+            </div>
+            <div className="grid-cols-2 space-x-0 shadow-xl">
+              <p className="font-bold rounded-t-lg drop-shadow-md">Lose</p>
+              <p className="px-10 text-black rounded-b-lg backdrop-opacity-10 backdrop-invert bg-white/50">
+                5
+              </p>
+            </div>
+            <div className="grid-cols-2 space-x-0 rounded-lg  shadow-xl">
+              <p className="font-bold drop-shadow-md">Friends</p>
+              <p className="px-10 text-black rounded-b-lg backdrop-opacity-10 backdrop-invert bg-white/50">
+                5
+              </p>
+            </div>
+          </div>
           <div>{isUserId()}</div>
         </div>
       </div>
