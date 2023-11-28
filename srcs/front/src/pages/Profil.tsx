@@ -1,6 +1,6 @@
 import React from 'react'
 import { useAuth } from '../providers/AuthProvider'
-import { useNavigate } from 'react-router-dom'
+import { WithNavbar } from '../hoc/WithNavbar'
 
 const Profil = () => {
   const { user, signout } = useAuth()
@@ -57,5 +57,5 @@ const Profil = () => {
     </div>
   )
 }
-
-export default Profil
+const ProfilWithNavbar = WithNavbar(Profil)
+export { Profil, ProfilWithNavbar }
