@@ -6,18 +6,14 @@ import { RxHamburgerMenu } from 'react-icons/rx'
 
 const Chat = () => {
   const [open, setOpen] = useState(true)
+  const [close, setClose] = useState(true)
 
-  const isOpen = () => {
-    if (open) return 1
-    else return 0
+  function closeModal() {
+    setOpen(false)
   }
 
-  function burgerIcon() {
-    return <RxHamburgerMenu />
-  }
-
-  function closeIcon() {
-    return <FaWindowClose />
+  function openModal() {
+    setOpen(true)
   }
 
   return (
@@ -26,25 +22,18 @@ const Chat = () => {
         <button
           type="button"
           className="relative rounded-md text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
-          onClick={() => setOpen((open) => !open)}
+          onClick={openModal}
         >
           <span className="absolute -inset-2.5" />
           <span className="sr-only">Close panel</span>
-          {!isOpen ? (
-            <FaWindowClose
-              data-theme="cupcake"
-              className="h-6 w-6 transition-opacity duration-300"
-            />
-          ) : (
-            <RxHamburgerMenu
-              data-theme="cupcake"
-              className="h-6 w-6 transition-opacity duration-300"
-            />
-          )}
+          <RxHamburgerMenu
+            data-theme="cupcake"
+            className="h-6 w-6 transition-opacity duration-300"
+          />
         </button>
       </div>
       <Transition show={open} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={setOpen}>
+        <Dialog as="div" className="relative z-10" onClose={closeModal}>
           <div className="fixed">
             <div className="absolute">
               <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
