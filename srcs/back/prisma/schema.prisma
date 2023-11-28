@@ -15,7 +15,8 @@ model User {
   email        String    @unique
   username     String    @unique
   image        String
-  twofaenabled Boolean   @default(false)
+  twoFaEnabled Boolean   @default(false) @map("two_fa_enabled")
+  twoFaSecret  String?   @map("two_fa_secret")
   refreshToken String?   @map("refresh_token")
   accessToken  String?   @map("access_token")
   expiresAt    DateTime? @map("expires_at")

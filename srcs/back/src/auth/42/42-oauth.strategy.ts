@@ -37,12 +37,12 @@ export class FortyTwoOAuthStrategy extends PassportStrategy(Strategy, '42') {
   async validate(
     accessToken: string,
     refreshToken: string,
-    profile: IMe,
+    user: IMe,
     done: (err: any, user: any, info?: any) => void,
   ) {
-    if (!profile) return done(new UnauthorizedException(), null)
+    if (!user) return done(new UnauthorizedException(), null)
 
-    done(null, { user: profile, accessToken, refreshToken })
+    done(null, { ...user, accessToken, refreshToken })
   }
 
   async userProfile(

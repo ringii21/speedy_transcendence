@@ -1,15 +1,12 @@
 import React from 'react'
 import '../styles/home.css'
 import Pong from '../components/Pong'
-import { Navbar } from '../components/Navbar'
+import { WithNavbar } from '../hoc/WithNavbar'
 
 const Home = () => {
-  return (
-    <div className="">
-      <Navbar />
-      <Pong />
-    </div>
-  )
+  return <div className="">{/* <Pong /> */}</div>
 }
 
-export default Home
+const HomeWithNavbar = WithNavbar(Home)
+
+export { HomeWithNavbar }
