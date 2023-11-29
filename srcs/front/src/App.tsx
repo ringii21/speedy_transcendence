@@ -13,6 +13,7 @@ import { SettingsWithNavbar } from './pages/Settings'
 import { TwoFactorSettingsWithNavbar } from './pages/TwoFactor/TwoFactorSettings'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { ChatWithNavbar } from './pages/ChatConv'
 
 const App = () => {
   const queryClient = new QueryClient()
@@ -30,6 +31,7 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/profil" element={<ProfilWithNavbar />} />
             <Route path="/login/2fa" element={<TwoFactorSignin />} />
+            <Route path="/chat" element={<ChatWithNavbar />} />
           </Routes>
           <Chat />
         </AuthProvider>

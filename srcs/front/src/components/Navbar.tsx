@@ -42,6 +42,9 @@ const Navbar = () => {
               <Link to="/settings">Settings</Link>
             </li>
             <li>
+              <Link to="/chat">Chat</Link>
+            </li>
+            <li>
               <a onClick={onButtonClick}>Logout</a>
             </li>
           </ul>

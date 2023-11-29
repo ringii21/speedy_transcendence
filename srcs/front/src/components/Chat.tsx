@@ -1,8 +1,6 @@
-import React, { useEffect, useSyncExternalStore } from 'react'
+import React from 'react'
 import { Fragment, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
-import { FaWindowClose } from 'react-icons/fa'
-import { RxHamburgerMenu } from 'react-icons/rx'
 import { RiMessage3Fill } from 'react-icons/ri'
 
 const Chat = () => {
