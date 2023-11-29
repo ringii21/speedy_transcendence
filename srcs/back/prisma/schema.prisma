@@ -11,18 +11,122 @@ datasource db {
 }
 
 model User {
-  id           Int       @id @default(autoincrement())
-  email        String    @unique
-  username     String    @unique
+  id           Int     @id @default(autoincrement())
+  email        String  @unique
+  username     String  @unique
   image        String
-  twoFaEnabled Boolean   @default(false) @map("two_fa_enabled")
-  twoFaSecret  String?   @map("two_fa_secret")
-  refreshToken String?   @map("refresh_token")
-  accessToken  String?   @map("access_token")
-  expiresAt    DateTime? @map("expires_at")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-  deletedAt    DateTime? @map("deleted_at")
+  twoFaEnabled Boolean @default(false) @map("two_fa_enabled")
+  twoFaSecret  String? @map("two_fa_secret")
+  refreshToken String? @map("refresh_token")
+  accessToken  String? @map("access_token")
+
+  expiresAt DateTime? @map("expires_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  Channel         Channel[]
+  BanList         BanList[]
+  MuteList        MuteList[]
+  AdminList       AdminList[]
+  ChannelMessages ChannelMessage[]
+
+  friends  User[] @relation("friends")
+  friendOf User[] @relation("friends")
+
+  sentMessages     PrivateMessage[] @relation("sentMessages")
+  receivedMessages PrivateMessage[] @relation("receivedMessages")
 
   @@map("users")
+}
+
+model Channel {
+  id              Int              @id @default(autoincrement())
+  name            String
+  password        String?
+  visibility      Visibility       @default(public)
+  owner           User             @relation(fields: [ownerId], references: [id])
+  ownerId         Int              @map("owner_id")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  deletedAt       DateTime?        @map("deleted_at")
+  BanList         BanList[]
+  MuteList        MuteList[]
+  AdminList       AdminList[]
+  ChannelMessages ChannelMessage[]
+
+  @@map("channels")
+}
+
+model PrivateMessage {
+  id         Int      @id @default(autoincrement())
+  content    String
+  sender     User     @relation(name: "sentMessages", fields: [senderId], references: [id])
+  senderId   Int
+  receiver   User     @relation(name: "receivedMessages", fields: [receiverId], references: [id])
+  receiverId Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("private_messages")
+}
+
+model ChannelMessage {
+  id        Int       @id @default(autoincrement())
+  content   String
+  author    User      @relation(fields: [authorId], references: [id])
+  authorId  Int       @map("author_id")
+  channel   Channel   @relation(fields: [channelId], references: [id])
+  channelId Int       @map("channel_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("channel_messages")
+}
+
+model BanList {
+  id        Int       @id @default(autoincrement())
+  user      User      @relation(fields: [userId], references: [id])
+  userId    Int       @map("user_id")
+  channel   Channel   @relation(fields: [channelId], references: [id])
+  channelId Int       @map("channel_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("ban_list")
+}
+
+model MuteList {
+  id        Int       @id @default(autoincrement())
+  muteUntil DateTime  @map("mute_until")
+  user      User      @relation(fields: [userId], references: [id])
+  userId    Int       @map("user_id")
+  channel   Channel   @relation(fields: [channelId], references: [id])
+  channelId Int       @map("channel_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("mute_list")
+}
+
+model AdminList {
+  id        Int       @id @default(autoincrement())
+  user      User      @relation(fields: [userId], references: [id])
+  userId    Int       @map("user_id")
+  channel   Channel   @relation(fields: [channelId], references: [id])
+  channelId Int       @map("channel_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("admin_list")
+}
+
+enum Visibility {
+  public
+  private
+  protected
 }
