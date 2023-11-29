@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { UseFormSetError, useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -9,11 +9,39 @@ import { useAuth } from '../providers/AuthProvider'
 import { ThemeSelector } from '../components/ThemeSelector'
 
 export const loader = async () => await fetchUser()
-
 type FormValues = {
   username: string
   image: FileList | null
   twoFaEnabled: boolean
+}
+const fileValidator = (
+  value: FileList | null,
+  setError: UseFormSetError<FormValues>,
+) => {
+  if (!value) return true
+  if (value.length == 0) return true
+  if (value.length > 1) {
+    setError('image', {
+      type: 'manual',
+      message: 'Only one file can be uploaded',
+    })
+    return false
+  }
+  if (value[0].size > 1024 * 1024 * 2) {
+    setError('image', {
+      type: 'manual',
+      message: 'File size must be less than 2MB',
+    })
+    return false
+  }
+  if (!value[0].type.startsWith('image')) {
+    setError('image', {
+      type: 'manual',
+      message: 'File must be an image',
+    })
+    return false
+  }
+  return true
 }
 
 const Settings = () => {
@@ -58,7 +86,8 @@ const Settings = () => {
   const onSubmit = (data: FormValues) => {
     const formData = new FormData()
     formData.append('username', data.username)
-    if (data.image) formData.append('image', data.image[0])
+    if (data.image && data.image.length > 0)
+      formData.append('image', data.image[0])
     formData.append('twoFaEnabled', data.twoFaEnabled.toString())
     mutate(formData)
   }
@@ -131,7 +160,9 @@ const Settings = () => {
             type="file"
             id="image"
             className="file-input file-input-bordered file-input-primary w-full"
-            {...register('image')}
+            {...register('image', {
+              validate: (value) => fileValidator(value, setError),
+            })}
           />
         </div>
 
@@ -164,6 +195,13 @@ const Settings = () => {
           </button>
         </div>
       </form>
+      {errors && (
+        <div className="form-control">
+          <span className="label-text-alt text-red-500">
+            {errors.image?.message}
+          </span>
+        </div>
+      )}
     </div>
   )
 }
