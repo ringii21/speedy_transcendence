@@ -1,24 +1,27 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { ChatProfil } from '../components/chatProfil'
 import { useAuth } from '../providers/AuthProvider'
 import { ChatBubble } from '../components/chatBubble'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { IMessage } from '../types/Message'
 import { useState } from 'react'
+import { ChatContact } from '../components/ChatContact'
+import { IUser } from '../types/User'
 
 const ChatConv = () => {
   const { user } = useAuth()
   const [inputMessage, setInputMessage] = useState<string>('')
   const [messages, setMessage] = useState<IMessage[]>([])
+  const [selectedUser, setSelectedUser] = useState<string>('')
+  const newMessage: IMessage = {
+    author: {
+      username: user?.username,
+    },
+    createdAt: new Date(),
+    content: inputMessage,
+  }
   const handleSendMessage = () => {
     if (inputMessage.trim() !== '') {
-      const newMessage: IMessage = {
-        author: {
-          username: user?.username,
-        },
-        createdAt: new Date(),
-        content: inputMessage,
-      }
       setMessage([...messages, newMessage])
       setInputMessage('')
     }
@@ -33,9 +36,33 @@ const ChatConv = () => {
       handleSendMessage()
     }
   }
+  const data: Partial<IUser & { messages: Partial<IMessage[]> }>[] = [
+    {
+      id: '2',
+      image: 'https://i.pravatar.cc/150?img=2',
+      email: '',
+      username: 'yoyo',
+      messages,
+    },
+    {
+      id: '3',
+      image: 'https://i.pravatar.cc/150?img=3',
+      email: '',
+      username: 'yoyo2',
+      messages,
+    },
+  ]
+  useEffect(() => {
+    console.log(selectedUser)
+  }, [selectedUser])
   return (
     <div className="flex bg-white px-2 h-full">
-      <div className="flex-1 p:2 sm:p-6 justify-between flex flex-col ">
+      <div className="flex flex-col w-2/5 border-r-2 overflow-y-auto">
+        {data.map((dt, i) => (
+          <ChatContact data={dt} key={i} setSelectedUser={setSelectedUser} />
+        ))}
+      </div>
+      <div className="flex-1 p:2 sm:p-6 justify-between flex flex-col">
         <div className="flex sm:items-center py-3 border-b-2 border-gray-200">
           <div className="relative flex items-center space-x-4">
             <ChatProfil name={userInfo.name} img={userInfo.img} />

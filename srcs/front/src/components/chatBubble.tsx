@@ -15,7 +15,7 @@ function ChatBubble({ user, message }: { user: IUser; message: IMessage }) {
             </div>
           </div>
           <img
-            src={message.author.image}
+            src={user.image}
             alt="My profile"
             className="w-6 h-6 rounded-full order-2"
           />
@@ -32,7 +32,7 @@ function ChatBubble({ user, message }: { user: IUser; message: IMessage }) {
             </div>
           </div>
           <img
-            src={message.author.image}
+            src={user.image}
             alt="My profile"
             className="w-6 h-6 rounded-full order-1"
           />
