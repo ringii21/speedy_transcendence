@@ -130,7 +130,6 @@ model AdminList {
 
 model Game {
   id            String    @id @default(uuid())
-  name          String
   scoreP1       Int       @map("score_p1")
   scoreP2       Int       @map("score_p2")
   player1       User      @relation("player1", fields: [player1Id], references: [id])
