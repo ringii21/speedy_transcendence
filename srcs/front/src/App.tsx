@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Routes, Route } from 'react-router-dom'
 
 // import Navbar from "./components/Navbar";
@@ -14,6 +14,7 @@ import { TwoFactorSettingsWithNavbar } from './pages/TwoFactor/TwoFactorSettings
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { ChatWithNavbar } from './pages/ChatConv'
+import { RequireAuth } from './components/RequireAuth'
 
 const App = () => {
   const queryClient = new QueryClient()
@@ -22,16 +23,58 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<HomeWithNavbar />} />
-            <Route path="/settings" element={<SettingsWithNavbar />} />
+            {/* authenticated */}
+            <Route
+              path="/"
+              element={
+                <RequireAuth>
+                  <HomeWithNavbar />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <RequireAuth>
+                  <SettingsWithNavbar />
+                </RequireAuth>
+              }
+            />
             <Route
               path="/settings/2fa"
-              element={<TwoFactorSettingsWithNavbar />}
+              element={
+                <RequireAuth>
+                  <TwoFactorSettingsWithNavbar />
+                </RequireAuth>
+              }
             />
+            <Route
+              path="/profil"
+              element={
+                <RequireAuth>
+                  <ProfilWithNavbar />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/chat"
+              element={
+                <RequireAuth>
+                  <ChatWithNavbar />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/profil/:id"
+              element={
+                <RequireAuth>
+                  <ProfilWithNavbar />
+                </RequireAuth>
+              }
+            />
+            {/* non authenticated */}
             <Route path="/login" element={<Login />} />
             <Route path="/login/2fa" element={<TwoFactorSignin />} />
-            <Route path="/profil/:id" element={<ProfilWithNavbar />} />
-            <Route path="/chat" element={<ChatWithNavbar />} />
           </Routes>
           <Chat />
         </AuthProvider>

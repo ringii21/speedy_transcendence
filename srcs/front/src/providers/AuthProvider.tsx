@@ -22,14 +22,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  const { data, isError, error } = useQuery({
+  const {
+    data: user = null,
+    isError,
+    error,
+  } = useQuery<IUser>({
     queryKey: ['user'],
     queryFn: fetchUser,
     retry: false,
     refetchOnWindowFocus: false,
   })
 
-  const user = data ?? null
   const signinMutation = useMutation({
     mutationFn: fetchUser,
     onSuccess: (user) => {

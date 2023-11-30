@@ -183,7 +183,6 @@ const Settings = () => {
             Enable 2fa
           </Link>
         )}
-        <ThemeSelector />
         <div className="form-control">
           <button
             type="submit"

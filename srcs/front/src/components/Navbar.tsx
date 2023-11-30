@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, redirect } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../providers/AuthProvider'
 const Navbar = () => {
   const { user, signout } = useAuth()
@@ -7,7 +7,6 @@ const Navbar = () => {
   const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()
     await signout()
-    redirect('/login')
   }
 
   return (
