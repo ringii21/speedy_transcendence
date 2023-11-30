@@ -2,7 +2,7 @@ import { Strategy } from 'passport-jwt'
 import { PassportStrategy } from '@nestjs/passport'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { UsersService } from 'src/users/users.service'
+import { UsersService } from '../../users/users.service'
 import { extractJwtFromCookie } from './utils/jwt-extrator'
 
 export type JwtPayload = { sub: number; otp: boolean }

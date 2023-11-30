@@ -10,17 +10,14 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
-import { Request } from 'express'
 import { UsersService } from './users.service'
 import { UserEntity } from './entity/user.entity'
 import { PatchUserDto } from './dto/patch-user.dto'
 import { QueryUsersDto } from './dto/query-users.dto'
-import JwtTwoFaGuard from 'src/auth/jwt/jwt-2fa.guard'
-import { User } from '@prisma/client'
+import JwtTwoFaGuard from '../auth/jwt/jwt-2fa.guard'
 import { UploadUserImage } from './decorator/file-upload.decorator'
 import { ConfigService } from '@nestjs/config'
-
-type RequestWithUser = Request & { user: User }
+import { RequestWithDbUser } from '../types/Request'
 
 @Controller('users')
 @UseGuards(JwtTwoFaGuard)
@@ -40,14 +37,14 @@ export class UsersController {
   }
 
   @Get('me')
-  async me(@Req() req: RequestWithUser) {
+  async me(@Req() req: RequestWithDbUser) {
     return new UserEntity(req.user)
   }
 
   @Patch('me')
   @UploadUserImage()
   async updateMe(
-    @Req() req: RequestWithUser,
+    @Req() req: RequestWithDbUser,
     @Body() patchUserDto: PatchUserDto,
     @UploadedFile() image: Express.Multer.File,
   ) {

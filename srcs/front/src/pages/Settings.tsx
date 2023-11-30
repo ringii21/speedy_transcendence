@@ -1,12 +1,12 @@
-import React, { useEffect } from 'react'
-import { UseFormSetError, useForm } from 'react-hook-form'
-import { Link } from 'react-router-dom'
-import { WithNavbar } from '../hoc/WithNavbar'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetchUser, updateUser } from '../utils/userHttpRequests'
 import { AxiosError } from 'axios'
+import React, { useEffect } from 'react'
+import { useForm, UseFormSetError } from 'react-hook-form'
+import { Link } from 'react-router-dom'
+
+import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
-import { ThemeSelector } from '../components/ThemeSelector'
+import { fetchUser, updateUser } from '../utils/userHttpRequests'
 
 export const loader = async () => await fetchUser()
 type FormValues = {
@@ -14,10 +14,7 @@ type FormValues = {
   image: FileList | null
   twoFaEnabled: boolean
 }
-const fileValidator = (
-  value: FileList | null,
-  setError: UseFormSetError<FormValues>,
-) => {
+const fileValidator = (value: FileList | null, setError: UseFormSetError<FormValues>) => {
   if (!value) return true
   if (value.length == 0) return true
   if (value.length > 1) {
@@ -86,8 +83,7 @@ const Settings = () => {
   const onSubmit = (data: FormValues) => {
     const formData = new FormData()
     formData.append('username', data.username)
-    if (data.image && data.image.length > 0)
-      formData.append('image', data.image[0])
+    if (data.image && data.image.length > 0) formData.append('image', data.image[0])
     formData.append('twoFaEnabled', data.twoFaEnabled.toString())
     mutate(formData)
   }
@@ -98,21 +94,21 @@ const Settings = () => {
   }, [user, setValue])
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-semibold text-center mb-6">Settings</h1>
+    <div className='mx-auto p-4'>
+      <h1 className='text-2xl font-semibold text-center mb-6'>Settings</h1>
       <form
-        lang="en"
+        lang='en'
         onSubmit={handleSubmit(onSubmit)}
-        className="grid grid-cols-1 gap-4 max-w-md mx-auto"
+        className='grid grid-cols-1 gap-4 max-w-md mx-auto'
       >
-        <div className="form-control">
-          <label className="label" htmlFor="username">
-            <span className="label-text">Username</span>
+        <div className='form-control'>
+          <label className='label' htmlFor='username'>
+            <span className='label-text'>Username</span>
           </label>
           <input
-            type="text"
-            id="username"
-            placeholder="Enter your username"
+            type='text'
+            id='username'
+            placeholder='Enter your username'
             defaultValue={user?.username}
             aria-invalid={errors.username ? 'true' : 'false'}
             {...register('username', {
@@ -130,36 +126,34 @@ const Settings = () => {
                 message: 'Username must only contain alphanumeric characters',
               },
             })}
-            className="input input-bordered w-full"
+            className='input input-bordered w-full'
           />
           {errors.username && (
-            <span className="label-text-alt text-red-500">
-              {errors.username.message}
-            </span>
+            <span className='label-text-alt text-red-500'>{errors.username.message}</span>
           )}
         </div>
 
-        <div className="form-control">
-          <label className="label" htmlFor="email">
-            <span className="label-text">Email</span>
+        <div className='form-control'>
+          <label className='label' htmlFor='email'>
+            <span className='label-text'>Email</span>
           </label>
           <input
-            id="email"
-            type="text"
+            id='email'
+            type='text'
             defaultValue={user?.email}
             disabled
-            className="input input-bordered w-full"
+            className='input input-bordered w-full'
           />
         </div>
 
-        <div className="form-control">
-          <label className="label" htmlFor="image">
-            <span className="label-text">Profile image</span>
+        <div className='form-control'>
+          <label className='label' htmlFor='image'>
+            <span className='label-text'>Profile image</span>
           </label>
           <input
-            type="file"
-            id="image"
-            className="file-input file-input-bordered file-input-primary w-full"
+            type='file'
+            id='image'
+            className='file-input file-input-bordered file-input-primary w-full'
             {...register('image', {
               validate: (value) => fileValidator(value, setError),
             })}
@@ -167,42 +161,36 @@ const Settings = () => {
         </div>
 
         {user?.twoFaEnabled ? (
-          <div className="form-control">
-            <label className="cursor-pointer label" htmlFor="twoFaEnabled">
-              <span className="label-text">Enable / Disable 2fa</span>
+          <div className='form-control'>
+            <label className='cursor-pointer label' htmlFor='twoFaEnabled'>
+              <span className='label-text'>Enable / Disable 2fa</span>
               <input
-                id="twoFaEnabled"
-                type="checkbox"
-                className="toggle toggle-primary"
+                id='twoFaEnabled'
+                type='checkbox'
+                className='toggle toggle-primary'
                 {...register('twoFaEnabled')}
               />
             </label>
           </div>
         ) : (
-          <Link className="btn btn-outline btn-accent" to="/settings/2fa">
+          <Link className='btn btn-outline btn-accent' to='/settings/2fa'>
             Enable 2fa
           </Link>
         )}
-        <div className="form-control">
-          <button
-            type="submit"
-            disabled={isPending}
-            className={`btn btn-primary w-full`}
-          >
+        <div className='form-control'>
+          <button type='submit' disabled={isPending} className={`btn btn-primary w-full`}>
             <span className={isPending ? 'loading loading-spinner' : ''}></span>
             Save Settings
           </button>
         </div>
       </form>
       {errors && (
-        <div className="form-control">
-          <span className="label-text-alt text-red-500">
-            {errors.image?.message}
-          </span>
+        <div className='form-control'>
+          <span className='label-text-alt text-red-500'>{errors.image?.message}</span>
         </div>
       )}
     </div>
   )
 }
 const SettingsWithNavbar = WithNavbar(Settings)
-export { SettingsWithNavbar, Settings }
+export { Settings, SettingsWithNavbar }

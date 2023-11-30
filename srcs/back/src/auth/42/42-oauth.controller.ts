@@ -7,15 +7,13 @@ import {
   UseFilters,
   UseGuards,
 } from '@nestjs/common'
-import { Request, Response } from 'express'
+import { Response } from 'express'
 import { FortyTwoOAuthGuard } from './42-oauth.guard'
 import { JwtAuthService } from 'src/auth/jwt/jwt-auth.service'
 import { UnauthorizedExceptionFilter } from './42-oauth.exceptionfilter'
 import { ConfigService } from '@nestjs/config'
-import { IMe } from './42-oauth.types'
 import { AuthService } from '../auth.service'
-
-type RequestWithUser = Request & { user: IMe }
+import { RequestWithUser } from 'src/types/Request'
 
 @Controller('auth/42')
 export class FortyTwoOAuthController {

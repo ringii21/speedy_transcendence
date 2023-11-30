@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  ReactNode,
-  useContext,
-  useMemo,
-  useState,
-} from 'react'
+import React, { createContext, ReactNode, useContext, useMemo, useState } from 'react'
 
 interface ThemeContextData {
   theme: string
@@ -22,9 +16,7 @@ export const ThemeContext = createContext<ThemeContextData>({
 })
 
 export const ThemeProvider = ({ children }: Props) => {
-  const [theme, setTheme] = useState<string>(
-    localStorage.getItem('theme') || 'dark',
-  )
+  const [theme, setTheme] = useState<string>(localStorage.getItem('theme') || 'dark')
 
   const changeTheme = (theme: string) => {
     setTheme(theme)
@@ -39,11 +31,7 @@ export const ThemeProvider = ({ children }: Props) => {
     [theme],
   )
 
-  return (
-    <ThemeContext.Provider value={memoedValue}>
-      {children}
-    </ThemeContext.Provider>
-  )
+  return <ThemeContext.Provider value={memoedValue}>{children}</ThemeContext.Provider>
 }
 
 export const useTheme = () => useContext(ThemeContext)

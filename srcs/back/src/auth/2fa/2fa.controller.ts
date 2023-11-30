@@ -7,16 +7,14 @@ import {
   Body,
   UnauthorizedException,
 } from '@nestjs/common'
-import { Request, Response } from 'express'
+import { Response } from 'express'
 import { TwoFaAuthService } from './2fa.service'
 import { JwtAuthGuard } from '../jwt/jwt-auth.guard'
 import { TwoFaAuthCodeDto } from './dto/2fa.dto'
 import { UsersService } from 'src/users/users.service'
 import { JwtAuthService } from '../jwt/jwt-auth.service'
-import { User } from '@prisma/client'
 import { ConfigService } from '@nestjs/config'
-
-type RequestWithUser = Request & { user: User }
+import { RequestWithDbUser } from 'src/types/Request'
 
 @Controller('2fa')
 export class TwoFaController {
@@ -29,7 +27,7 @@ export class TwoFaController {
 
   @Post('generate')
   @UseGuards(JwtAuthGuard)
-  async register(@Res() response: Response, @Req() request: RequestWithUser) {
+  async register(@Res() response: Response, @Req() request: RequestWithDbUser) {
     const { otpauthUrl } = await this.twoFaAuthService.generate2faSecret({
       id: request.user.id,
       email: request.user.email,
@@ -41,7 +39,7 @@ export class TwoFaController {
   @Post('enable')
   @UseGuards(JwtAuthGuard)
   async enable2fa(
-    @Req() req: RequestWithUser,
+    @Req() req: RequestWithDbUser,
     @Res() res: Response,
     @Body() { code }: TwoFaAuthCodeDto,
   ) {
@@ -60,7 +58,7 @@ export class TwoFaController {
   @Post('authenticate')
   @UseGuards(JwtAuthGuard)
   async authenticate(
-    @Req() req: RequestWithUser,
+    @Req() req: RequestWithDbUser,
     @Res() res: Response,
     @Body() { code }: TwoFaAuthCodeDto,
   ) {

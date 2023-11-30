@@ -12,11 +12,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule)
   const { httpAdapter } = app.get(HttpAdapterHost)
 
-  app.use(
-    helmet({
-      crossOriginResourcePolicy: { policy: 'cross-origin' },
-    }),
-  )
+  app.use(helmet())
   app.setGlobalPrefix('api')
   app.use(compression())
   app.enableCors({
