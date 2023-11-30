@@ -1,15 +1,19 @@
 import { Exclude } from 'class-transformer'
 import { User as UserPrisma } from '@prisma/client'
 
-export class UserEntity implements Partial<UserPrisma> {
+export class UserEntity implements UserPrisma {
   id: number
-  email?: string | undefined
+  email: string
   username: string
-  image?: string | undefined
-  createdAt?: Date | undefined
-  updatedAt?: Date | undefined
-  twoFaEnabled?: boolean | undefined
+  image: string
+  createdAt: Date
+  updatedAt: Date
+  twoFaEnabled: boolean
 
+  @Exclude()
+  deletedAt: Date | null
+  @Exclude()
+  expiresAt: Date | null
   @Exclude()
   accessToken: string | null
   @Exclude()
