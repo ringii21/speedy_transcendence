@@ -40,10 +40,7 @@ function ChatBubble({ user, message }: { user: IUser; message: IMessage }) {
       )
   }
   return (
-    <div
-      id="messages"
-      className="flex flex-col space-y-4 p-3 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch  overflow-y-auto"
-    >
+    <div id="messages" className="flex flex-col space-y-4 p-3">
       <div>
         <div>{position()}</div>
       </div>

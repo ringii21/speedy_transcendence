@@ -18,7 +18,7 @@ import { ChatWithNavbar } from './pages/ChatConv'
 const App = () => {
   const queryClient = new QueryClient()
   return (
-    <div className="container mx-auto">
+    <div className="h-screen">
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <Routes>
