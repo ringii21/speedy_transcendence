@@ -117,8 +117,7 @@ const Pong: React.FC = () => {
 		context.fill(); */
 
       const ballX = (gameState.ball % COL_SIZE) * (canvas.width / COL_SIZE)
-      const ballY =
-        Math.floor(gameState.ball / COL_SIZE) * (canvas.height / ROW_SIZE)
+      const ballY = Math.floor(gameState.ball / COL_SIZE) * (canvas.height / ROW_SIZE)
       const ballSize = 50
       context.drawImage(ballImage.current, ballX, ballY, ballSize, ballSize)
 
@@ -133,8 +132,8 @@ const Pong: React.FC = () => {
   }, [gameState])
 
   return (
-    <div className="pong-container">
-      <canvas ref={canvasRef} className="pong-canvas"></canvas>
+    <div className='pong-container'>
+      <canvas ref={canvasRef} className='pong-canvas'></canvas>
     </div>
   )
 }

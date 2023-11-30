@@ -1,14 +1,15 @@
 import React, { ComponentType } from 'react'
+
 import { Navbar } from '../components/Navbar'
 
 const WithNavbar = <P extends object>(Component: ComponentType<P>) => {
   const displayName = Component.displayName || Component.name || 'Component'
   const ComponentWithNavbar: React.FC<P> = (props: P) => {
     return (
-      <>
+      <div className='h-screen'>
         <Navbar />
         <Component {...props} />
-      </>
+      </div>
     )
   }
   ComponentWithNavbar.displayName = `WithNavbar(${displayName})`

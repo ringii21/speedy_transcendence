@@ -1,8 +1,9 @@
 import React from 'react'
-import { Navigate, redirect } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { twoFactorAuth } from '../../utils/authHttpRequests'
+import { Navigate, redirect } from 'react-router-dom'
+
 import { useAuth } from '../../providers/AuthProvider'
+import { twoFactorAuth } from '../../utils/authHttpRequests'
 
 type FormValues = {
   code: string
@@ -11,7 +12,7 @@ type FormValues = {
 const TwoFactorSignin = () => {
   const { user, signin } = useAuth()
 
-  if (user) return <Navigate to="/" />
+  if (user) return <Navigate to='/' />
 
   const {
     register,
@@ -31,20 +32,18 @@ const TwoFactorSignin = () => {
   }
 
   return (
-    <div className="flex flex-col justify-center items-center h-screen">
-      <div className="p-6 rounded-lg shadow-lg bg-white max-w-sm">
-        <h2 className="text-center text-2xl font-semibold mb-6">
-          Two-Factor Authentication
-        </h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text">Enter your 2FA code</span>
+    <div className='flex flex-col justify-center items-center h-screen'>
+      <div className='p-6 rounded-lg shadow-lg bg-white max-w-sm'>
+        <h2 className='text-center text-2xl font-semibold mb-6'>Two-Factor Authentication</h2>
+        <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
+          <div className='form-control'>
+            <label className='label'>
+              <span className='label-text'>Enter your 2FA code</span>
             </label>
             <input
-              type="text"
-              placeholder="2FA code"
-              autoComplete="off"
+              type='text'
+              placeholder='2FA code'
+              autoComplete='off'
               maxLength={6}
               {...register('code', {
                 required: {
@@ -56,15 +55,11 @@ const TwoFactorSignin = () => {
                   message: 'Code must be 6 digits',
                 },
               })}
-              className="input input-bordered w-full"
+              className='input input-bordered w-full'
             />
-            {errors.code && (
-              <span className="text-xs text-red-500">
-                {errors.code.message}
-              </span>
-            )}
+            {errors.code && <span className='text-xs text-red-500'>{errors.code.message}</span>}
           </div>
-          <button className="btn btn-secondary w-full" type="submit">
+          <button className='btn btn-secondary w-full' type='submit'>
             Verify Code
           </button>
         </form>

@@ -1,7 +1,9 @@
-import { IUser } from './User'
-
-export type IMessage = {
-  author: Partial<IUser>
+export type IChannelMessage = {
   content: string
-  createdAt: Date
+  senderId: number
+  channelId: number
 }
+
+export type IDbChannelMessage = {
+  id: number
+} & IChannelMessage

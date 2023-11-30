@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker'
-import { Game, PrismaClient, PrivateMessage, User } from '@prisma/client'
+import { ChannelMessage, Game, PrismaClient, User } from '@prisma/client'
+import { Channel } from 'diagnostics_channel'
 
 const prisma = new PrismaClient()
 
@@ -14,11 +15,18 @@ const createRandomUser = (): Partial<User> => {
   }
 }
 
-const createPrivateMessages = (): Partial<PrivateMessage> => {
+const createChannelMessages = (): Partial<ChannelMessage> => {
   return {
     content: faker.lorem.sentence(),
+    channelId: faker.number.int({ min: 1, max: 10 }),
     senderId: faker.number.int({ min: 1, max: 10 }),
-    receiverId: faker.number.int({ min: 1, max: 10 }),
+  }
+}
+
+const createChannels = (): Partial<Channel> => {
+  return {
+    name: faker.lorem.word(),
+    
   }
 }
 
@@ -42,8 +50,8 @@ async function main() {
 
   for (const game of makeNOf<Game>(createRandomGame, 300))
     await prisma.game.create({ data: game })
-  for (const message of makeNOf<PrivateMessage>(createPrivateMessages, 300))
-    await prisma.privateMessage.create({ data: message })
+  for (const message of makeNOf<ChannelMessage>(createChannelMessages, 300))
+    await prisma.channelMessage.create({ data: message })
 }
 
 main()
