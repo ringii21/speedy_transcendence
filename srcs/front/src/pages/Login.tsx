@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Si42 } from 'react-icons/si'
-import { redirect } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import { useAuth } from '../providers/AuthProvider'
 import httpInstance from '../utils/httpClient'
 
@@ -8,9 +8,7 @@ const Login = () => {
   const { user, signin } = useAuth()
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    if (user) redirect('/')
-  }, [user])
+  if (user) return <Navigate to="/" />
 
   const login42Click = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()
