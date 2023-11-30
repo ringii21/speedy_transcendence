@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react'
-import { redirect } from 'react-router-dom'
+import React from 'react'
+import { Navigate, redirect } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { twoFactorAuth } from '../../utils/authHttpRequests'
 import { useAuth } from '../../providers/AuthProvider'
@@ -10,6 +10,9 @@ type FormValues = {
 
 const TwoFactorSignin = () => {
   const { user, signin } = useAuth()
+
+  if (user) return <Navigate to="/" />
+
   const {
     register,
     handleSubmit,
@@ -26,10 +29,6 @@ const TwoFactorSignin = () => {
       setError('code', { message: 'Invalid code' })
     }
   }
-
-  useEffect(() => {
-    if (user) redirect('/')
-  }, [user])
 
   return (
     <div className="flex flex-col justify-center items-center h-screen">
