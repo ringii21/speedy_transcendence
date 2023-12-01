@@ -1,29 +1,21 @@
 import React, { useState } from 'react'
 import { IUser } from '../types/User'
 import { IMessage } from '../types/Message'
+import { FindFriends } from './FindFriends'
 
 const ChatContact = ({
   data,
-  key,
   setSelectedUser,
 }: {
   data: Partial<IUser & { messages: Partial<IMessage[]> }>
-  key: number
-  setSelectedUser: React.Dispatch<React.SetStateAction<string>>
+  setSelectedUser: React.Dispatch<React.SetStateAction<Partial<IUser | null>>>
 }) => {
   if (!data.messages) return <></>
   const selectUser = () => {
-    setSelectedUser(data.id ?? '')
+    setSelectedUser(data)
   }
   return (
     <div onClick={selectUser}>
-      {/* <div className="border-b-2 py-4 px-2"> */}
-      {/* <input
-          type="text"
-          placeholder="search chatting"
-          className="py-2 px-2 border-2 border-gray-200 rounded-2xl w-full"
-        /> */}
-      {/* </div> */}
       <div className="flex flex-row py-4 px-2 justify-center items-center border-b-2">
         <div className="w-1/4">
           <img

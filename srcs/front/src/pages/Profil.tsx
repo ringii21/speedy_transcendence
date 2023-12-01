@@ -1,39 +1,13 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useAuth } from '../providers/AuthProvider'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { ThemeSelector } from '../components/ThemeSelector'
-
+import { IUser } from '../types/User'
+import { AddDelUser } from '../components/AddDelUser'
+import { UsersService } from '../../../back/src/users/users.service'
+import {useParams}
 const Profil = () => {
-  const { user, signout } = useAuth()
-
-  const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
-    e.preventDefault()
-    await signout()
-  }
-
-  function isUserId(): React.ReactNode {
-    if (!user?.username) {
-      return (
-        <div>
-          <button className="btn btn-primary drop-shadow-xl rounded-lg">
-            Follow
-          </button>
-        </div>
-      )
-    } else {
-      return (
-        <div>
-          <button
-            className="btn btn-primary drop-shadow-xl rounded-lg"
-            onClick={onButtonClick}
-          >
-            Logout
-          </button>
-        </div>
-      )
-    }
-  }
-
+  const {username} = useParams()
   return (
     <div
       className="hero pt-6"
@@ -45,11 +19,11 @@ const Profil = () => {
       <div className="hero-content text-center text-neutral-content">
         <div className="max-w-md">
           <h1 className="mb-5 text-5xl font-bold text-purple-100">
-            {user?.username}
+            {myusers.username}
           </h1>
           <div className="avatar">
             <div className="w-36 rounded-full drop-shadow-lg hover:drop-shadow-xl justify-self-start">
-              <img src={user?.image} alt="avatar" />
+              <img src={myusers.image} alt="avatar" />
             </div>
           </div>
           <div className="columns-3 flex-auto space-y-20">
@@ -72,7 +46,7 @@ const Profil = () => {
               </p>
             </div>
           </div>
-          <div>{isUserId()}</div>
+          {/* <AddDelUser users /> */}
         </div>
       </div>
     </div>

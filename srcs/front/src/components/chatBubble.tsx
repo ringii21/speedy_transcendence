@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { IMessage } from '../types/Message'
 import { IUser } from '../types/User'
+import { AddDelUser } from './AddDelUser'
 
 function ChatBubble({ user, message }: { user: IUser; message: IMessage }) {
   const position = () => {
@@ -41,9 +42,7 @@ function ChatBubble({ user, message }: { user: IUser; message: IMessage }) {
   }
   return (
     <div id="messages" className="flex flex-col space-y-4 p-3">
-      <div>
-        <div>{position()}</div>
-      </div>
+      <div>{position()}</div>
     </div>
   )
 }

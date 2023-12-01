@@ -8,4 +8,6 @@ export interface IUser {
   createdAt: Date
   updatedAt: Date
   deletedAt?: Date
+  friends: string
+  friendOf: string
 }
