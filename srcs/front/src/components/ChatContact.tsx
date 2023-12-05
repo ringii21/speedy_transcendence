@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { IUser } from '../types/User'
 import { IMessage } from '../types/Message'
 import { FindFriends } from './FindFriends'
+import { Profil } from '../pages/Profil'
+import { Link } from 'react-router-dom'
 
 const ChatContact = ({
   data,

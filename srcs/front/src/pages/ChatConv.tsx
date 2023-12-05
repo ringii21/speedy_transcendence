@@ -8,9 +8,9 @@ import { useState } from 'react'
 import { ChatContact } from '../components/ChatContact'
 import { IUser } from '../types/User'
 import { FindFriends } from '../components/FindFriends'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
-const ChatConv = () => {
+const ChatConv: React.FC = () => {
   const { user } = useAuth()
   const [inputMessage, setInputMessage] = useState<string>('')
   const [messages, setMessage] = useState<IMessage[]>([])
@@ -38,6 +38,7 @@ const ChatConv = () => {
       handleSendMessage()
     }
   }
+
   const data: Partial<IUser & { messages: Partial<IMessage[]> }>[] = [
     {
       id: '2',
@@ -55,22 +56,29 @@ const ChatConv = () => {
     },
   ]
 
+  // const { id, username } = useParams<{ id: string; username: string }>()
   const [selectedUser, setSelectedUser] = useState<Partial<IUser> | null>(null)
-
-  useEffect(() => {
-    if (selectedUser) setRedirected(true)
-  })
+  // useEffect(() => {
+  //   if (selectedUser) setRedirected(true)
+  // })
   const navigate = useNavigate()
   useEffect(() => {
-    if (redirected && selectedUser) navigate('profil/' + selectedUser.username)
+    if (!redirected && selectedUser) {
+      navigate(`/profil/${selectedUser.id}/${selectedUser.username}`)
+      setRedirected(true)
+    }
   }, [selectedUser, navigate, redirected])
   return (
     <div className="flex bg-white px-2 h-full">
       <div className="flex flex-col w-2/5 border-r-2 overflow-y-auto">
         <FindFriends />
-        {data.map((dt, i) => (
-          <div key={i}>
-            <ChatContact data={dt} key={i} setSelectedUser={setSelectedUser} />
+        {data.map((dt) => (
+          <div key={dt.id}>
+            <ChatContact
+              data={dt}
+              key={dt.id}
+              setSelectedUser={setSelectedUser}
+            />
           </div>
         ))}
       </div>

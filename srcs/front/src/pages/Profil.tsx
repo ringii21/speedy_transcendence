@@ -1,13 +1,15 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useAuth } from '../providers/AuthProvider'
 import { WithNavbar } from '../hoc/WithNavbar'
-import { ThemeSelector } from '../components/ThemeSelector'
-import { IUser } from '../types/User'
-import { AddDelUser } from '../components/AddDelUser'
-import { UsersService } from '../../../back/src/users/users.service'
-import {useParams}
+
 const Profil = () => {
-  const {username} = useParams()
+  const { user, signout } = useAuth()
+  const userInfo = {
+    id: user?.id,
+    name: user?.username,
+    img: user?.image,
+  }
+
   return (
     <div
       className="hero pt-6"
@@ -18,12 +20,14 @@ const Profil = () => {
       <div className="hero-overlay bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 drop-shadow-md rounded-t-lg bg-opacity-60"></div>
       <div className="hero-content text-center text-neutral-content">
         <div className="max-w-md">
-          <h1 className="mb-5 text-5xl font-bold text-purple-100">
-            {myusers.username}
-          </h1>
+          <div>
+            <h2 className="text-center text-4xl uppercase text-white p-5">
+              {userInfo.name}
+            </h2>
+          </div>
           <div className="avatar">
             <div className="w-36 rounded-full drop-shadow-lg hover:drop-shadow-xl justify-self-start">
-              <img src={myusers.image} alt="avatar" />
+              <img src={userInfo.img} alt="myimage" />
             </div>
           </div>
           <div className="columns-3 flex-auto space-y-20">
@@ -46,7 +50,14 @@ const Profil = () => {
               </p>
             </div>
           </div>
-          {/* <AddDelUser users /> */}
+          <div className="space-x-0">
+            <button
+              onClick={signout}
+              className="btn btn-lg btn-primary rounded-lg shadow-xl"
+            >
+              Disconnect
+            </button>
+          </div>
         </div>
       </div>
     </div>

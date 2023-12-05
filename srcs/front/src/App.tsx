@@ -5,8 +5,9 @@ import { Routes, Route } from 'react-router-dom'
 import { HomeWithNavbar } from './pages/Home'
 import Login from './pages/Login'
 import { ProfilWithNavbar } from './pages/Profil'
+import { ProfilUserWithNavbar } from './pages/ProfilUsers'
+
 import { Chat } from './components/Chat'
-import { UserList } from './components/UserList'
 import { AuthProvider } from './providers/AuthProvider'
 import { TwoFactorSignin } from './pages/TwoFactor/TwoFactorSignin'
 import { SettingsWithNavbar } from './pages/Settings'
@@ -14,7 +15,7 @@ import { TwoFactorSettingsWithNavbar } from './pages/TwoFactor/TwoFactorSettings
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { ChatWithNavbar } from './pages/ChatConv'
-import { IUser } from './types/User'
+import { FakeUsers } from './types/FakeUser'
 
 const App = () => {
   const queryClient = new QueryClient()
@@ -32,6 +33,10 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/login/2fa" element={<TwoFactorSignin />} />
             <Route path="/profil/" element={<ProfilWithNavbar />} />
+            <Route
+              path="/profil/:id/:username"
+              element={<ProfilUserWithNavbar FakeUsers={FakeUsers} />}
+            />
             <Route path="/chat" element={<ChatWithNavbar />} />
           </Routes>
           <Chat />
