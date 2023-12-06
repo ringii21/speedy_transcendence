@@ -1,15 +1,91 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useAuth } from '../providers/AuthProvider'
 import { WithNavbar } from '../hoc/WithNavbar'
+import { FakeUsers } from '../types/FakeUser'
+import { IUser } from '../types/User'
+import { useParams } from 'react-router-dom'
 
 const Profil = () => {
+  const { id } = useParams<{ id: string }>()
   const { user, signout } = useAuth()
-  const userInfo = {
-    id: user?.id,
-    name: user?.username,
-    img: user?.image,
+  const [userData, setUserData] = useState<IUser>()
+  const [isMe, setIsMe] = useState(false)
+  const [buttonFollow, setButtonFollow] = useState<string>('Follow')
+  const checkFakeUser = [...FakeUsers, user]
+
+  const handleFollow = () => {
+    if (userData) {
+      const userToFollow = FakeUsers.find((u) => u.id == id)
+      if (userToFollow && !userData.friends.includes(userToFollow.id)) {
+        setUserData((current) => {
+          if (current) {
+            current.friends.push(userToFollow.id)
+            return current
+          }
+          return current
+        })
+        setButtonFollow('Unfollow')
+        console.log(`Vous suivez maintenant ${userToFollow.username}`)
+      }
+    }
   }
 
+  const handleUnfollow = () => {
+    setUserData((current) => {
+      if (current) {
+        const newFriends = current.friends.filter(
+          (users) => users !== current.id,
+        )
+        setButtonFollow('Follow')
+        return {
+          ...current,
+          friends: newFriends,
+        }
+      }
+      return current
+    })
+  }
+
+  const addUser = () => {
+    if (userData) {
+      const userToFollow = FakeUsers.find((u) => u.id === id)
+      if (userToFollow) {
+        return (
+          <button
+            onClick={
+              userData?.friends.includes(userToFollow?.id)
+                ? handleUnfollow
+                : handleFollow
+            }
+            className="btn btn-lg btn-primary rounded-lg shadow-xl"
+          >
+            {buttonFollow}
+          </button>
+        )
+      }
+    }
+  }
+
+  useEffect(() => {
+    const users = checkFakeUser.find((u) => {
+      if (id === 'me' && u?.id === user?.id) return true
+      if (u?.id === id) return true
+      return false
+    })
+    users && setUserData(users)
+  }, [id, FakeUsers])
+
+  useEffect(() => {
+    const users = checkFakeUser.find((u) => {
+      if (id === 'me' && u?.id === user?.id) return true
+      if (u?.id === id) return true
+      return false
+    })
+    if (users) {
+      if (id === 'me' && users.id === user?.id) setIsMe(true)
+      else setIsMe(false)
+    }
+  })
   return (
     <div
       className="hero pt-6"
@@ -22,12 +98,12 @@ const Profil = () => {
         <div className="max-w-md">
           <div>
             <h2 className="text-center text-4xl uppercase text-white p-5">
-              {userInfo.name}
+              {userData?.username}
             </h2>
           </div>
           <div className="avatar">
             <div className="w-36 rounded-full drop-shadow-lg hover:drop-shadow-xl justify-self-start">
-              <img src={userInfo.img} alt="myimage" />
+              <img src={userData?.image} alt="myimage" />
             </div>
           </div>
           <div className="columns-3 flex-auto space-y-20">
@@ -51,12 +127,15 @@ const Profil = () => {
             </div>
           </div>
           <div className="space-x-0">
-            <button
-              onClick={signout}
-              className="btn btn-lg btn-primary rounded-lg shadow-xl"
-            >
-              Disconnect
-            </button>
+            {isMe && (
+              <button
+                onClick={signout}
+                className="btn btn-lg btn-primary rounded-lg shadow-xl"
+              >
+                Disconnect
+              </button>
+            )}
+            {!isMe && addUser()}
           </div>
         </div>
       </div>
