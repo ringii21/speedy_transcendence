@@ -6,7 +6,7 @@ import { HomeWithNavbar } from './pages/Home'
 import Login from './pages/Login'
 import { ProfilWithNavbar } from './pages/Profil'
 
-import { Chat } from './components/Chat'
+import { Chat } from './components/Chat/Chat'
 import { AuthProvider } from './providers/AuthProvider'
 import { TwoFactorSignin } from './pages/TwoFactor/TwoFactorSignin'
 import { SettingsWithNavbar } from './pages/Settings'

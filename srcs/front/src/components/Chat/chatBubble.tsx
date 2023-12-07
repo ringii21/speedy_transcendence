@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { IMessage } from '../types/Message'
-import { IUser } from '../types/User'
-import { AddDelUser } from './AddDelUser'
+import { IMessage } from '../../../types/Message'
+import { IUser } from '../../types/User'
+import { AddDelUser } from '../AddDelUser'
 
 function ChatBubble({ user, message }: { user: IUser; message: IMessage }) {
   const position = () => {
