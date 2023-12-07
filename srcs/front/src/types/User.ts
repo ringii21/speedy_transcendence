@@ -1,5 +1,5 @@
 export interface IUser {
-  id: string
+  id: number
   email: string
   username: string
   image: string
@@ -8,6 +8,4 @@ export interface IUser {
   createdAt: Date
   updatedAt: Date
   deletedAt?: Date
-  friends: string[]
-  friendOf: string[]
 }

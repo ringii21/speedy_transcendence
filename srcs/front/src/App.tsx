@@ -4,7 +4,7 @@ import { Routes, Route } from 'react-router-dom'
 // import Navbar from "./components/Navbar";
 import { HomeWithNavbar } from './pages/Home'
 import Login from './pages/Login'
-import { ProfilWithNavbar } from './pages/Profil'
+import { ProfilWithNavbar } from './pages/.Profil'
 
 import { Chat } from './components/Chat/Chat'
 import { AuthProvider } from './providers/AuthProvider'
@@ -13,7 +13,7 @@ import { SettingsWithNavbar } from './pages/Settings'
 import { TwoFactorSettingsWithNavbar } from './pages/TwoFactor/TwoFactorSettings'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { ChatWithNavbar } from './pages/ChatConv'
+import { ChatWithNavbar } from './pages/Chat'
 
 const App = () => {
   const queryClient = new QueryClient()

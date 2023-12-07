@@ -19,7 +19,6 @@ const ChatSelection = ({
 }: ChatSelectionProps) => {
   const [isCreateModalOpen, setCreateModalOpen] = useState(false)
   const [isJoinModalOpen, setJoinModalOpen] = useState(false)
-
   const channelsData = useQuery<IChannel[]>({
     queryKey: ['channels', 'joined'],
     queryFn: getMyChannels,
@@ -103,7 +102,6 @@ const ChatSelection = ({
             {channelsData.isLoading && (
               <span className="loading loading-lg"></span>
             )}
-            pms
           </div>
         </div>
       </div>
