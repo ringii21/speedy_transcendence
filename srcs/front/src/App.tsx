@@ -10,7 +10,6 @@ import { ChatWithNavbar } from './pages/Chat'
 // import Navbar from "./components/Navbar";
 import { HomeWithNavbar } from './pages/Home'
 import Login from './pages/Login'
-import { ProfilWithNavbar } from './pages/Profil'
 import { ProfileWithNavbar } from './pages/Profile'
 import { SettingsWithNavbar } from './pages/Settings'
 import { TwoFactorSettingsWithNavbar } from './pages/TwoFactor/TwoFactorSettings'
@@ -81,7 +80,7 @@ const App = () => {
                   path='/profile/:id'
                   element={
                     <RequireAuth>
-                      <ProfilWithNavbar />
+                      <ProfileWithNavbar />
                     </RequireAuth>
                   }
                 />
