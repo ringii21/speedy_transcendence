@@ -4,22 +4,27 @@ import { WithNavbar } from '../hoc/WithNavbar'
 import { FakeUsers } from '../types/FakeUser'
 import { IUser } from '../types/User'
 import { useParams } from 'react-router-dom'
+import { IChannel, IChannelMember } from '../types/Chat'
+import { IFriends } from '../types/User'
 
 const Profil = () => {
   const { id } = useParams<{ id: string }>()
   const { user, signout } = useAuth()
   const [userData, setUserData] = useState<IUser>()
+  const [userChannel, setUserChannel] = useState<IChannelMember>()
   const [isMe, setIsMe] = useState(false)
   const [buttonFollow, setButtonFollow] = useState<string>('Follow')
-  const checkFakeUser = [...FakeUsers, user]
+  // const checkUsers = [...Users, users]
 
   const handleFollow = () => {
     if (userData) {
-      const userToFollow = FakeUsers.find((u) => u.id == id)
-      if (userToFollow && !userData.friends.includes(userToFollow.id)) {
+      const userToFollow = userData.friends.find(
+        (u) => u.id !== userChannel?.userId,
+      )
+      if (userToFollow) {
         setUserData((current) => {
           if (current) {
-            current.friends.push(userToFollow.id)
+            current.friends.push(userToFollow)
             return current
           }
           return current
@@ -34,7 +39,7 @@ const Profil = () => {
     setUserData((current) => {
       if (current) {
         const newFriends = current.friends.filter(
-          (users) => users !== current.id,
+          (users) => users.id !== current.id,
         )
         setButtonFollow('Follow')
         return {
@@ -48,12 +53,14 @@ const Profil = () => {
 
   const addUser = () => {
     if (userData) {
-      const userToFollow = FakeUsers.find((u) => u.id === id)
+      const userToFollow = userData.friends.find(
+        (u) => u.id !== userChannel?.id,
+      )
       if (userToFollow) {
         return (
           <button
             onClick={
-              userData?.friends.includes(userToFollow?.id)
+              userData?.friends.includes(userToFollow)
                 ? handleUnfollow
                 : handleFollow
             }
@@ -67,24 +74,22 @@ const Profil = () => {
   }
 
   useEffect(() => {
-    const users = checkFakeUser.find((u) => {
-      if (id === 'me' && u?.id === user?.id) return true
-      if (u?.id === id) return true
+    const users = userData?.friends.find((u) => {
+      if (u.id === users?.id) return true
+      if (users === id) return true
       return false
     })
-    users && setUserData(users)
-  }, [id, FakeUsers])
+  }, [id, userData])
 
   useEffect(() => {
-    const users = checkFakeUser.find((u) => {
-      if (id === 'me' && u?.id === user?.id) return true
-      if (u?.id === id) return true
-      return false
+    const users = userData?.friends.find((u) => {
+      if (id === 'me' && userData?.id === user?.id) return true
+      if (userData.id === users?.id) return true
+      if (users) {
+        if (id === 'me') setIsMe(true)
+        else setIsMe(false)
+      } else return false
     })
-    if (users) {
-      if (id === 'me' && users.id === user?.id) setIsMe(true)
-      else setIsMe(false)
-    }
   })
   return (
     <div

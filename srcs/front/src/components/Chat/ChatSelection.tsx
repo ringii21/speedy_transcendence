@@ -27,14 +27,14 @@ const ChatSelection = ({
     <div>
       {CreateChannelModal({ isCreateModalOpen, setCreateModalOpen })}
       {JoinChannelModal({ isJoinModalOpen, setJoinModalOpen })}
-      <div className="flex flex-col">
-        <div className="flex w-full">
+      <div className="flex flex-col justify-center">
+        <div className="flex w-full gap-2 mt-4 justify-center">
           <button
             onClick={(e) => {
               e.preventDefault()
               setCreateModalOpen(!isCreateModalOpen)
             }}
-            className="btn btn-primary text-base w-1/2"
+            className="btn btn-primary text-base shadow-lg"
           >
             <HiMiniPlusCircle size={20} />
             Add Channel
@@ -44,7 +44,7 @@ const ChatSelection = ({
               e.preventDefault()
               setJoinModalOpen(!isJoinModalOpen)
             }}
-            className="btn btn-secondary text-base w-1/2"
+            className="btn btn-secondary text-base shadow-lg"
           >
             <HiMiniPlusCircle size={20} />
             Join Channel

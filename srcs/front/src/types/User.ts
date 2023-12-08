@@ -8,4 +8,11 @@ export interface IUser {
   createdAt: Date
   updatedAt: Date
   deletedAt?: Date
+  friends: IFriends[]
+}
+
+export type IFriends = {
+  id: number
+  username: string
+  user: IUser
 }

@@ -4,9 +4,9 @@ import { Routes, Route } from 'react-router-dom'
 // import Navbar from "./components/Navbar";
 import { HomeWithNavbar } from './pages/Home'
 import Login from './pages/Login'
-import { ProfilWithNavbar } from './pages/.Profil'
+import { ProfilWithNavbar } from './pages/Profil'
 
-import { Chat } from './components/Chat/Chat'
+import { ChatOverlay } from './components/Chat/ChatOverlay'
 import { AuthProvider } from './providers/AuthProvider'
 import { TwoFactorSignin } from './pages/TwoFactor/TwoFactorSignin'
 import { SettingsWithNavbar } from './pages/Settings'
@@ -33,7 +33,7 @@ const App = () => {
             <Route path="/profil/:id" element={<ProfilWithNavbar />} />
             <Route path="/chat" element={<ChatWithNavbar />} />
           </Routes>
-          <Chat />
+          <ChatOverlay />
         </AuthProvider>
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>

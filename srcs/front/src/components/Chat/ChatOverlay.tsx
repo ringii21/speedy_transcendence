@@ -3,7 +3,7 @@ import { Fragment, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { RiMessage3Fill } from 'react-icons/ri'
 
-const Chat = () => {
+const ChatOverlay = () => {
   const [open, setOpen] = useState(false)
   const handleOpen = () => setOpen(true)
 
@@ -91,4 +91,4 @@ const Chat = () => {
   )
 }
 
-export { Chat }
+export { ChatOverlay }

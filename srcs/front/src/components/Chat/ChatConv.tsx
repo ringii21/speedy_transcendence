@@ -7,6 +7,7 @@ import { IUser } from '../../types/User'
 import { getChannel } from '../../utils/chatHttpRequests'
 import { ChatInput } from './ChatInput'
 import { ChatBubble } from './ChatBubble'
+import { ChatProfil } from './chatProfil'
 
 type ChatChannelProps = {
   me: IUser
@@ -31,6 +32,7 @@ const ChatConv = ({ me, selectedChat }: ChatChannelProps) => {
 
   return (
     <div className="flex flex-col">
+      <ChatProfil name={me.username} img={me.image} />
       <div className="flex items-center">
         {selectedChannel.data.channelType === 'public' && (
           <HiHashtag size={12} />
