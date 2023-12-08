@@ -29,7 +29,7 @@ const Login = () => {
   }
 
   return (
-    <div className=''>
+    <div>
       <div className='hero min-h-screen'>
         <div className='hero-content text-center'>
           <div className='max-w-md'>

@@ -48,7 +48,7 @@ const ContactOverlay = () => {
                       leaveFrom='opacity-100'
                       leaveTo='opacity-0'
                     >
-                      <div className='flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl rounded-tl-lg'>
+                      <div className='flex flex-col overflow-y-scroll bg-white py-6 shadow-xl rounded-tl-lg'>
                         <div className='px-4 sm:px-6'>
                           <Dialog.Title className='text-base font-semibold leading-6 text-gray-900'>
                             Contacts
