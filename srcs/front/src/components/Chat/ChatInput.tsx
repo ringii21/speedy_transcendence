@@ -48,27 +48,25 @@ const ChatInput = ({ channel }: { channel: IChannel }) => {
 
   if (!isConnected) return <></>
   return (
-    <div>
-      <div className='relative'>
-        <input
-          type='text'
-          value={inputMessage}
-          onKeyDown={handleKeyDown}
-          onChange={(e) => setInputMessage(e.target.value)}
-          placeholder='Message'
-          className='w-full focus:outline-none focus:placeholder-gray-400 text-gray-600 placeholder-gray-600 pl-4 bg-gray-200 rounded-md py-3'
-        />
-        <div className='absolute right-1 items-center inset-y-0'>
-          <button
-            type='button'
-            onClick={handleSendMessage}
-            className='btn btn-primary focus:outline-none'
-            disabled={!inputMessage.trim()}
-          >
-            <span className='font-bold'>Send</span>
-            <MdSend className='ml-2 text-lg' />
-          </button>
-        </div>
+    <div className='relative mx-4 mb-4 border-t inline-flex'>
+      <input
+        type='text'
+        value={inputMessage}
+        onKeyDown={handleKeyDown}
+        onChange={(e) => setInputMessage(e.target.value)}
+        placeholder='Message'
+        className='block ps-4 text-gray-600 pl-4 bg-gray-200 rounded-lg py-3 mt-4 w-full'
+      />
+      <div className=''>
+        <button
+          type='button'
+          onClick={handleSendMessage}
+          className='btn absolute btn-primary end-0 bottom-0'
+          disabled={!inputMessage.trim()}
+        >
+          <span className='font-bold text-white '>Send</span>
+          <MdSend className='text-lg' />
+        </button>
       </div>
     </div>
   )

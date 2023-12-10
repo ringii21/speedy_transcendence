@@ -1,3 +1,5 @@
+import './../styles/navbar.css'
+
 import React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -11,7 +13,7 @@ const Navbar = () => {
   }
 
   return (
-    <div className='navbar bg-base-100 drop-shadow z-50'>
+    <div className='navbar bg-gray-900 nav'>
       <div className='navbar-start'>
         <div className='dropdown'>
           <div tabIndex={0} role='button' className='btn btn-ghost lg:hidden'>
@@ -30,7 +32,7 @@ const Navbar = () => {
               />
             </svg>
           </div>
-          <ul className='menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52'>
+          <ul className='menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 w-52'>
             <li>
               <Link to='/chat'>Chat</Link>
             </li>
@@ -39,23 +41,27 @@ const Navbar = () => {
             </li>
           </ul>
         </div>
-        <Link to={'/'} className='btn btn-ghost text-xl'>
+        <Link to={'/'} className='btn btn-ghost text-xl pongBtn'>
           Pong
         </Link>
       </div>
       <div className='navbar-center hidden lg:flex'>
-        <ul className='menu menu-horizontal px-1'>
-          <li>
-            <Link to='/chat'>Chat</Link>
+        <ul className='menu menu-horizontal px-1 flex gap-40'>
+          <li className='box-1'>
+            <button type='button' className='btn-menu letterMove'>
+              <Link to='/chat'>Chat</Link>
+            </button>
           </li>
           <li>
-            <Link to='/game'>Game</Link>
+            <button type='button' className='btn-menu letterMove'>
+              <Link to='/game'>Game</Link>
+            </button>
           </li>
         </ul>
       </div>
       <div className='navbar-end'>
         <div className='dropdown dropdown-end'>
-          <div tabIndex={0} role='button' className='btn btn-ghost btn-circle avatar'>
+          <div tabIndex={0} role='button' className='btn btn-ghost btn-circle avatar btn-avatar'>
             <div className='w-10 rounded-full'>
               <img alt='avatar' src={user?.image} />
             </div>

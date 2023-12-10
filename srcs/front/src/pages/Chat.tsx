@@ -16,31 +16,33 @@ const Chat = () => {
   const { channel } = useChat()
 
   return (
-    <div>
+    <div className='flex flex-col'>
       <h1 className='text-2xl text-center'>Chat</h1>
       <hr />
       <div className='flex'>
-        <div className='lg:w-4/12 w-12/12'>
+        <div className='lg:w-4/12 w-12/12 border mr-4'>
           <ChatSelection />
         </div>
-        <div className='lg:w-8/12'>
-          {channel?.data ? (
-            <div className='flex'>
-              <div className='lg:w-3/4'>
+        {channel?.data ? (
+          <div className='flex'>
+            <div className='lg:w-8/12 mr-4'>
+              <div className='lg:w-1/4'>
                 <ChatConv me={user} />
               </div>
+            </div>
+            <div className='lg:w-8/12 border ml-6'>
               <div className='lg:w-1/4'>
                 <ChatUsers members={channel.data.members ?? []} />
               </div>
             </div>
-          ) : (
-            <div className='lg:w-8/12 w-12/12'>
-              <div className='flex justify-center items-center h-full'>
-                <span className='text-xl'>Select a channel</span>
-              </div>
+          </div>
+        ) : (
+          <div className='lg:w-8/12 w-12/12'>
+            <div className='flex justify-center items-center'>
+              <span className='text-xl'>Select a channel</span>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   )

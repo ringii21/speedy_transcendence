@@ -17,13 +17,13 @@ const ChatBubble = ({ user, message, members }: ChatBubbleProps) => {
   if (!sender) return <span>Error</span>
 
   const messagePosition = clsx({
-    ['flex flex-col space-y-2 text-xs max-w-xs mx-2']: true,
+    ['flex space-y-2 text-xs max-w-xs mx-2']: true,
     ['order-1 items-end']: message.senderId === user.id,
     ['order-2 items-start']: message.senderId !== user.id,
   })
 
   const messageJustify = clsx({
-    ['flex items-end']: true,
+    ['flex items-end mb-4']: true,
     ['justify-end']: message.senderId === user.id,
     ['justify-start']: message.senderId !== user.id,
   })

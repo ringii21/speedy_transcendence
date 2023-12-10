@@ -1,3 +1,5 @@
+@import 'https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300';
+
 .mainContainer
 {
     position: fixed;
@@ -40,4 +42,14 @@
 .inputContainer > .errorLabel {
     color: red;
     font-size: 12px;
+}
+
+.welcome {
+    color: black;
+    font-weight: bolder; 
+    text-shadow: rgba(128, 128, 128, 1) 0px 4px 16px;
+    font-family: 'Open Sans Condensed', sans-serif;
+    text-decoration-color: black;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
 }
