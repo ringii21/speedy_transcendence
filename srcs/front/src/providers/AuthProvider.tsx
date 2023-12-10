@@ -1,19 +1,21 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
 import React, { createContext, ReactNode, useContext, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { IUser } from '../types/User'
-import { AxiosError } from 'axios'
 import { fetchUser, logout } from '../utils/userHttpRequests'
 
 interface AuthContextData {
   user: IUser | null
+  isLoading: boolean
   signin: () => Promise<void>
   signout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextData>({
   user: null,
+  isLoading: false,
   signin: async () => Promise.resolve(),
   signout: async () => Promise.resolve(),
 })
@@ -22,14 +24,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  const { data, isError, error } = useQuery({
+  const {
+    data: user = null,
+    isLoading,
+    isError,
+    error,
+  } = useQuery<IUser>({
     queryKey: ['user'],
     queryFn: fetchUser,
     retry: false,
     refetchOnWindowFocus: false,
   })
 
-  const user = data ?? null
   const signinMutation = useMutation({
     mutationFn: fetchUser,
     onSuccess: (user) => {
@@ -72,7 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [user, navigate, isError])
 
   return (
-    <AuthContext.Provider value={{ user, signin, signout }}>
+    <AuthContext.Provider value={{ user, signin, signout, isLoading }}>
       {children}
     </AuthContext.Provider>
   )

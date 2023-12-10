@@ -1,46 +1,42 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Navigate } from 'react-router-dom'
 
-import { ChatConv } from '../components/Chat/ChatConv'
-import { ChatSelection } from '../components/Chat/ChatSelection'
-import { ChatUsers } from '../components/Chat/ChatUsers'
+import { ChatConv, ChatSelection, ChatUsers } from '../components/Chat'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
-import { IChannel } from '../types/Chat'
-
-type SelectedChat = IChannel | null
+import { useChat } from '../providers/ChatProvider'
+import { useSocket } from '../providers/SocketProvider'
 
 const Chat = () => {
   const { user } = useAuth()
 
-  if (!user) return <Navigate to="/login" replace />
-  const [selectedChat, setSelectedChat] = useState<SelectedChat>(null)
+  if (!user) return <Navigate to='/login' replace />
+  const { socket, isConnected } = useSocket()
+  if (!isConnected) socket?.connect()
+  const { channel } = useChat()
 
   return (
     <div>
-      <h1 className="text-2xl text-center">Chat</h1>
+      <h1 className='text-2xl text-center'>Chat</h1>
       <hr />
-      <div className="flex">
-        <div className="lg:w-4/12 w-12/12">
-          <ChatSelection
-            selectedChat={selectedChat}
-            setSelectedChat={setSelectedChat}
-          />
+      <div className='flex'>
+        <div className='lg:w-4/12 w-12/12'>
+          <ChatSelection />
         </div>
-        <div className="lg:w-8/12">
-          {selectedChat ? (
-            <div className="flex">
-              <div className="lg:w-3/4">
-                <ChatConv me={user} selectedChat={selectedChat || null} />
+        <div className='lg:w-8/12'>
+          {channel?.data ? (
+            <div className='flex'>
+              <div className='lg:w-3/4'>
+                <ChatConv me={user} />
               </div>
-              <div className="lg:w-1/4">
-                <ChatUsers members={selectedChat?.members ?? []} />
+              <div className='lg:w-1/4'>
+                <ChatUsers members={channel.data.members ?? []} />
               </div>
             </div>
           ) : (
-            <div className="lg:w-8/12 w-12/12">
-              <div className="flex justify-center items-center h-full">
-                <span className="text-xl">Select a channel</span>
+            <div className='lg:w-8/12 w-12/12'>
+              <div className='flex justify-center items-center h-full'>
+                <span className='text-xl'>Select a channel</span>
               </div>
             </div>
           )}

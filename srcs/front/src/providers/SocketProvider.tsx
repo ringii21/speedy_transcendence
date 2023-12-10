@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from 'react'
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
 import { Socket } from 'socket.io-client'
 
 import { chatSocket as socket } from '../utils/socketService'
@@ -26,7 +20,6 @@ export const SocketContext = createContext<SocketContextData>({
 export const SocketProvider = ({ children }: Props) => {
   const [isConnected, setIsConnected] = useState<boolean>(false)
   useEffect(() => {
-    socket.connect()
     socket.on('connect', () => setIsConnected(true))
     socket.on('disconnect', () => setIsConnected(false))
     socket.on('connect_error', console.error)
@@ -38,9 +31,7 @@ export const SocketProvider = ({ children }: Props) => {
   }, [])
 
   const values = { socket, isConnected }
-  return (
-    <SocketContext.Provider value={values}>{children}</SocketContext.Provider>
-  )
+  return <SocketContext.Provider value={values}>{children}</SocketContext.Provider>
 }
 
 export const useSocket = () => useContext(SocketContext)

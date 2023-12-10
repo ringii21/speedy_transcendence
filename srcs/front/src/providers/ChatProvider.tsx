@@ -38,13 +38,13 @@ export const ChatContext = createContext<ChatContextData>({
 
 export const ChatProvider = ({ children }: Props) => {
   const [selectedChannel, setSelectedChannel] = useState<number | null>(null)
-  
   const [messages, setMessages] = useState<Record<number, IChannelMessage[]>>({})
 
   const channel = useQuery<IChannel>({
-    queryKey: ["channels", selectedChannel],
+    queryKey: ['channels', selectedChannel],
     queryFn: getChannel,
   })
+
   useEffect(() => {
     if (channel.isSuccess && channel.data) {
       setMessages((prevMessages) => ({

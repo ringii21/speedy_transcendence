@@ -45,8 +45,8 @@ const ChatBubble = ({ user, message, members }: ChatBubbleProps) => {
           <span className={messageStyle}>{message.content}</span>
         </div>
       </div>
-      <Link to="/profile">
-        <img src={sender.user.image} alt="My profile" className={imageStyle} />
+      <Link to='/profile'>
+        <img src={sender.user.image} alt='My profile' className={imageStyle} />
       </Link>
     </div>
   )

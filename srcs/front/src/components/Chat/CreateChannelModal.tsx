@@ -19,10 +19,7 @@ type FormValues = {
   password?: string
 }
 
-const CreateChannelModal = ({
-  isCreateModalOpen,
-  setCreateModalOpen,
-}: CreateChannelModalProps) => {
+const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateChannelModalProps) => {
   const queryClient = useQueryClient()
   const {
     watch,
@@ -78,83 +75,74 @@ const CreateChannelModal = ({
   })
   return (
     <Transition appear show={isCreateModalOpen} as={Fragment}>
-      <Dialog
-        as="div"
-        className="relative z-10"
-        onClose={() => setCreateModalOpen(false)}
-      >
+      <Dialog as='div' className='relative z-10' onClose={() => setCreateModalOpen(false)}>
         <Transition.Child
           as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
+          enter='ease-out duration-300'
+          enterFrom='opacity-0'
+          enterTo='opacity-100'
+          leave='ease-in duration-200'
+          leaveFrom='opacity-100'
+          leaveTo='opacity-0'
         >
-          <div className="fixed inset-0 bg-black/25" />
+          <div className='fixed inset-0 bg-black/25' />
         </Transition.Child>
 
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
+        <div className='fixed inset-0 overflow-y-auto'>
+          <div className='flex min-h-full items-center justify-center p-4 text-center'>
             <Transition.Child
               as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
+              enter='ease-out duration-300'
+              enterFrom='opacity-0 scale-95'
+              enterTo='opacity-100 scale-100'
+              leave='ease-in duration-200'
+              leaveFrom='opacity-100 scale-100'
+              leaveTo='opacity-0 scale-95'
             >
-              <Dialog.Panel className="modal-box">
-                <Dialog.Title as="h3" className="font-bold text-lg">
+              <Dialog.Panel className='modal-box'>
+                <Dialog.Title as='h3' className='font-bold text-lg'>
                   Create channel
                 </Dialog.Title>
-                <div className="modal-action">
-                  <div className="grid grid-cols-1 gap-4 max-w-md mx-auto">
-                    <form method="dialog" onSubmit={handleSubmit(onSubmit)}>
-                      <div className="form-control">
-                        <label className="label" htmlFor="channel_name">
-                          <span className="label-text">Channel name</span>
+                <div className='modal-action'>
+                  <div className='grid grid-cols-1 gap-4 max-w-md mx-auto'>
+                    <form method='dialog' onSubmit={handleSubmit(onSubmit)}>
+                      <div className='form-control'>
+                        <label className='label' htmlFor='channel_name'>
+                          <span className='label-text'>Channel name</span>
                         </label>
                         <input
-                          type="text"
-                          id="channel_name"
-                          placeholder="Enter the channel name"
+                          type='text'
+                          id='channel_name'
+                          placeholder='Enter the channel name'
                           aria-invalid={errors.name ? 'true' : 'false'}
                           {...register('name', {
                             required: true,
                             maxLength: {
                               value: 10,
-                              message:
-                                'Channel name must be less than 10 characters',
+                              message: 'Channel name must be less than 10 characters',
                             },
                             minLength: {
                               value: 3,
-                              message:
-                                'Channel name must be more than 3 characters',
+                              message: 'Channel name must be more than 3 characters',
                             },
                             pattern: {
                               value: /^[a-zA-Z0-9]{3,10}$/,
-                              message:
-                                'Channel name must only contain alphanumeric characters',
+                              message: 'Channel name must only contain alphanumeric characters',
                             },
                           })}
-                          className="input input-bordered w-full"
+                          className='input input-bordered w-full'
                         />
                         {errors.name && (
-                          <span className="label-text-alt text-red-500">
-                            {errors.name.message}
-                          </span>
+                          <span className='label-text-alt text-red-500'>{errors.name.message}</span>
                         )}
                       </div>
-                      <div className="form-control">
-                        <label className="label" htmlFor="username">
-                          <span className="label-text">Channel type</span>
+                      <div className='form-control'>
+                        <label className='label' htmlFor='username'>
+                          <span className='label-text'>Channel type</span>
                         </label>
                         <select
                           {...register('channelType')}
-                          className="select select-bordered w-full max-w-xs"
+                          className='select select-bordered w-full max-w-xs'
                         >
                           <option value={'public'}>Public</option>
                           <option value={'private'}>Private</option>
@@ -162,45 +150,39 @@ const CreateChannelModal = ({
                         </select>
                       </div>
                       {channelType === 'protected' && (
-                        <div className="form-control">
-                          <label className="label" htmlFor="password">
-                            <span className="label-text">Password</span>
+                        <div className='form-control'>
+                          <label className='label' htmlFor='password'>
+                            <span className='label-text'>Password</span>
                           </label>
                           <input
-                            type="text"
-                            id="password"
-                            placeholder="Enter the password"
+                            type='text'
+                            id='password'
+                            placeholder='Enter the password'
                             {...register('password', {
                               minLength: {
                                 value: 3,
-                                message:
-                                  'Password must be at least 3 characters',
+                                message: 'Password must be at least 3 characters',
                               },
                               maxLength: {
                                 value: 10,
-                                message:
-                                  'Password must be less than 10 characters',
+                                message: 'Password must be less than 10 characters',
                               },
                               pattern: {
                                 value: /^[a-zA-Z0-9]{3,10}$/,
-                                message:
-                                  'Password must only contain alphanumeric characters',
+                                message: 'Password must only contain alphanumeric characters',
                               },
                             })}
-                            className="input input-bordered w-full"
+                            className='input input-bordered w-full'
                           ></input>
                           {errors.password && (
-                            <span className="label-text-alt text-red-500">
+                            <span className='label-text-alt text-red-500'>
                               {errors.password?.message}
                             </span>
                           )}
                         </div>
                       )}
-                      <div className="flex justify-evenly mt-4">
-                        <button
-                          type="submit"
-                          className={`${buttonStyle} btn-success`}
-                        >
+                      <div className='flex justify-evenly mt-4'>
+                        <button type='submit' className={`${buttonStyle} btn-success`}>
                           Create
                         </button>
                         <button
