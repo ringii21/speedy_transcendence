@@ -9,7 +9,7 @@ type ChatUsersProps = {
 
 const ChatUsers = ({ members }: ChatUsersProps) => {
   return (
-    <div>
+    <div className='flex flex-col'>
       <h1 className='text-lg'>Users</h1>
       {members.map((member, i) => (
         <div key={i} className='flex items-center'>

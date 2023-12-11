@@ -19,32 +19,36 @@ const ChatSelection = () => {
     queryFn: getMyChannels,
   })
   return (
-    <div className='flex flex-col space-y-4'>
+    <div className='flex flex-col space-y-4 h-screen bg-gray-900 pl-4 pr-4'>
       {CreateChannelModal({ isCreateModalOpen, setCreateModalOpen })}
       {JoinChannelModal({ isJoinModalOpen, setJoinModalOpen })}
-      <div className='flex justify-evenly mt-2 border-b rounded-full'>
-        <button
-          onClick={(e) => {
-            e.preventDefault()
-            setCreateModalOpen(!isCreateModalOpen)
-          }}
-          className='btn btn-primary text-base mb-2 lg:w-3/2'
-        >
-          <HiMiniPlusCircle size={20} />
-          Add Channel
-        </button>
-        <button
-          onClick={(e) => {
-            e.preventDefault()
-            setJoinModalOpen(!isJoinModalOpen)
-          }}
-          className='btn btn-secondary text-base mb-2 lg:w-3/2'
-        >
-          <HiMiniPlusCircle size={20} />
-          Join Channel
-        </button>
+      <div className='flex justify-evenly mt-2 gap-2'>
+        <div>
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              setCreateModalOpen(!isCreateModalOpen)
+            }}
+            className='btn btn-primary'
+          >
+            <HiMiniPlusCircle size={18} />
+            Add Channel
+          </button>
+        </div>
+        <div className=''>
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              setJoinModalOpen(!isJoinModalOpen)
+            }}
+            className='btn btn-secondary'
+          >
+            <HiMiniPlusCircle size={18} />
+            Join Channel
+          </button>
+        </div>
       </div>
-      <div tabIndex={0} className='collapse collapse-arrow border'>
+      <div tabIndex={0} className='collapse collapse-arrow bg-white'>
         <input type='checkbox' />
         <div className='collapse-title text-xl font-medium'>Channels</div>
         <div className='collapse-content'>
@@ -86,7 +90,7 @@ const ChatSelection = () => {
           </table>
         </div>
       </div>
-      <div tabIndex={0} className='collapse collapse-arrow border'>
+      <div tabIndex={0} className='collapse collapse-arrow bg-white'>
         <input type='checkbox' />
         <div className='collapse-title text-xl font-medium'>Private Messages</div>
         <div className='collapse-content'>

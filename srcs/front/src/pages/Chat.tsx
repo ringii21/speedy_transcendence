@@ -17,24 +17,13 @@ const Chat = () => {
 
   return (
     <div className='flex flex-col'>
-      <h1 className='text-2xl text-center'>Chat</h1>
-      <hr />
       <div className='flex'>
-        <div className='lg:w-4/12 w-12/12 border mr-4'>
+        <div className='lg:w-4/12 w-12/12 mr-4'>
           <ChatSelection />
         </div>
         {channel?.data ? (
-          <div className='flex'>
-            <div className='lg:w-8/12 mr-4'>
-              <div className='lg:w-1/4'>
-                <ChatConv me={user} />
-              </div>
-            </div>
-            <div className='lg:w-8/12 border ml-6'>
-              <div className='lg:w-1/4'>
-                <ChatUsers members={channel.data.members ?? []} />
-              </div>
-            </div>
+          <div className='lg:w-8/12 mr-4 flex justify-end'>
+            <ChatConv me={user} />
           </div>
         ) : (
           <div className='lg:w-8/12 w-12/12'>
@@ -42,6 +31,15 @@ const Chat = () => {
               <span className='text-xl'>Select a channel</span>
             </div>
           </div>
+        )}
+        {channel?.data ? (
+          <div className='lg:w-8/12 border ml-6 flex justify-end'>
+            <div className='lg:w-1/4'>
+              <ChatUsers members={channel.data.members ?? []} />
+            </div>
+          </div>
+        ) : (
+          <div></div>
         )}
       </div>
     </div>

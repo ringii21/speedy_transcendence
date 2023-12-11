@@ -19,12 +19,14 @@ const ChatConv = ({ me }: ChatChannelProps) => {
   if (!channel.data) return <span>No data</span>
 
   return (
-    <div className='flex flex-col gap-6 box-content border-4 w-96 fixed'>
-      <div className='flex align-middle space-x-2 ml-2'>
-        {channel.data.channelType === 'public' && <HiHashtag size={12} className='mt-1.5' />}
-        <span>{channel.data.name}</span>
+    <div className='flex flex-col gap-6 box-content rounded-b-lg shadow-2xl fixed w-1/3 h-2/3 justify-between bg-gray-900'>
+      <div className='flex align-middle space-x-2 ml-2 '>
+        {channel.data.channelType === 'public' && (
+          <HiHashtag size={18} className='mt-1.5 text-white' />
+        )}
+        <span className='text-white'>{channel.data.name}</span>
       </div>
-      <div className='flex flex-col mx-4'>
+      <div className='flex flex-col mx-4 rounded-lg justify-center box-border overflow-y-auto bg-white'>
         {messages[channel.data.id] &&
           messages[channel.data.id].map((message, i) => (
             <ChatBubble key={i} message={message} user={me} members={channel.data.members} />
