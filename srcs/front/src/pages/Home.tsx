@@ -1,33 +1,34 @@
-import '../styles/home.css'
+import './../styles/home.css'
 
 import React from 'react'
+import { Link } from 'react-router-dom'
 
-// import Pong from '../components/Pong'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useSocket } from '../providers/SocketProvider'
 import pongTheme from './../assets/boardcard_pong.png'
-// import Footer from './Footer'
 
 const Home = () => {
   const { socket } = useSocket()
   socket?.connect()
   return (
     <div>
-      <h1 className='text-center text-7xl uppercase welcome'>Welcome</h1>
-      <div className='shadow-lg shadow-black/10 rounded-lg px-px bg-black'>
-        <div className='columns-2'>
-          <div className='relative rounded-lg ml-2'>
-            <img className='rounded-l-lg bg-cover bg-no-repeat' src={pongTheme} alt='' />
-          </div>
+      <h1 className='text-center text-4xl uppercase welcome md:text-7xl'>Welcome</h1>
+      <Link
+        to='#'
+        className='flex flex-col items-center btnImg justify-center w-screen bg-black shadow md:flex-row dark:hover:bg-gray-700'
+      >
+        <div className='flex flex-col'>
+          <img className='object-cover md:rounded-none' src={pongTheme} alt='' />
         </div>
-        <div className='relative'>
-          <button
-            type='submit'
-            className={`absolute rounded-lg btn btn-primary w-25 right-3 bottom-3`}
-          >
-            Launch game
-          </button>
-        </div>
+      </Link>
+      <div className='flex flex-col justify-between p-4 leading-normal pt-10'>
+        <h5 className='mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white'>
+          Noteworthy technology acquisitions 2021
+        </h5>
+        <p className='mb-3 font-normal text-gray-700 dark:text-gray-400'>
+          Here are the biggest enterprise technology acquisitions of 2021 so far, in reverse
+          chronological order.
+        </p>
       </div>
     </div>
   )

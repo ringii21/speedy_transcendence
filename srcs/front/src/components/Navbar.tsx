@@ -14,15 +14,16 @@ const Navbar = () => {
 
   return (
     <div className='navbar bg-gray-900 nav'>
+      <div className='bg-gray-900 parallelogram'></div>
       <div className='navbar-start'>
         <div className='dropdown'>
           <div tabIndex={0} role='button' className='btn btn-ghost lg:hidden'>
             <svg
               xmlns='http://www.w3.org/2000/svg'
-              className='h-5 w-5'
+              className='h-10 w-10'
               fill='none'
               viewBox='0 0 24 24'
-              stroke='currentColor'
+              stroke='white'
             >
               <path
                 strokeLinecap='round'
@@ -32,7 +33,7 @@ const Navbar = () => {
               />
             </svg>
           </div>
-          <ul className='menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 w-52'>
+          <ul className='menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-white w-52'>
             <li>
               <Link to='/chat'>Chat</Link>
             </li>
@@ -41,19 +42,19 @@ const Navbar = () => {
             </li>
           </ul>
         </div>
-        <Link to={'/'} className='btn btn-ghost text-xl pongBtn'>
+        <Link to={'/'} className='btn btn-ghost text-xl pongBtn invisible lg:visible'>
           Pong
         </Link>
       </div>
       <div className='navbar-center hidden lg:flex'>
         <ul className='menu menu-horizontal px-1 flex gap-40'>
-          <li className='box-1'>
-            <button type='button' className='btn-menu letterMove'>
+          <li>
+            <button type='button' className='btn-menu btn-one letterMove'>
               <Link to='/chat'>Chat</Link>
             </button>
           </li>
           <li>
-            <button type='button' className='btn-menu letterMove'>
+            <button type='button' className='btn-menu btn-one letterMove'>
               <Link to='/game'>Game</Link>
             </button>
           </li>
