@@ -9,12 +9,12 @@ type ChatUsersProps = {
 
 const ChatUsers = ({ members }: ChatUsersProps) => {
   return (
-    <div className='flex flex-col'>
-      <h1 className='text-lg'>Users</h1>
+    <div className='flex flex-col ml-4 pt-4 w-full'>
+      <h1 className='text-lg text-gray-500'>Users</h1>
       {members.map((member, i) => (
-        <div key={i} className='flex items-center'>
-          {member.role == 'owner' && <FaCrown size={20} className='text-error' />}
-          <span className='ml-0.5'>{member.user.username}</span>
+        <div key={i} className='flex flex-col pt-4'>
+          {member.role == 'owner' && <FaCrown className='text-error flex justify-end' />}
+          <span className='text-gray-500'>{member.user.username}</span>
         </div>
       ))}
     </div>

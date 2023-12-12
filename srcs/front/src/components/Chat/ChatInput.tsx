@@ -57,7 +57,7 @@ const ChatInput = ({ channel }: { channel: IChannel }) => {
         placeholder='Message'
         className='block ps-4 text-gray-600 pl-4 bg-gray-200 rounded-lg py-3 mt-4 w-full'
       />
-      <div className=''>
+      <div>
         <button
           type='button'
           onClick={handleSendMessage}

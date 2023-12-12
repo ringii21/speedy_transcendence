@@ -13,8 +13,7 @@ const Navbar = () => {
   }
 
   return (
-    <div className='navbar bg-gray-900 nav'>
-      <div className='bg-gray-900 parallelogram'></div>
+    <div className='navbar nav relative'>
       <div className='navbar-start'>
         <div className='dropdown'>
           <div tabIndex={0} role='button' className='btn btn-ghost lg:hidden'>
@@ -33,7 +32,7 @@ const Navbar = () => {
               />
             </svg>
           </div>
-          <ul className='menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-white w-52'>
+          <ul className='menu menu-sm dropdown-content mt-3 z-[1] p-2 bg-white w-52'>
             <li>
               <Link to='/chat'>Chat</Link>
             </li>

@@ -6,7 +6,7 @@ const WithNavbar = <P extends object>(Component: ComponentType<P>) => {
   const displayName = Component.displayName || Component.name || 'Component'
   const ComponentWithNavbar: React.FC<P> = (props: P) => {
     return (
-      <div className=''>
+      <div className='w-screen'>
         <Navbar />
         <Component {...props} />
       </div>

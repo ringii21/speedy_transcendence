@@ -11,11 +11,11 @@ const Home = () => {
   const { socket } = useSocket()
   socket?.connect()
   return (
-    <div>
-      <h1 className='text-center text-4xl uppercase welcome md:text-7xl'>Welcome</h1>
+    <div className='w-screen'>
+      <h1 className='text-center text-4xl uppercase welcome md:text-7xl bg-gray-900'>Welcome</h1>
       <Link
         to='#'
-        className='flex flex-col items-center btnImg justify-center w-screen bg-black shadow md:flex-row dark:hover:bg-gray-700'
+        className='flex flex-col items-center btnImg justify-center w-screen bg-black shadow md:flex-row'
       >
         <div className='flex flex-col'>
           <img className='object-cover md:rounded-none' src={pongTheme} alt='' />
