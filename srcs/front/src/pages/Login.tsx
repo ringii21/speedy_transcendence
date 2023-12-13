@@ -29,29 +29,27 @@ const Login = () => {
   }
 
   return (
-    <div className=''>
-      <div className='hero min-h-screen'>
-        <div className='hero-content text-center'>
-          <div className='max-w-md'>
-            <h1 className='text-5xl font-bold'>ft_transcendence</h1>
-            <div className='grid'>
-              <button
-                onClick={login42Click}
-                className='btn btn-lg btn-primary mt-10'
-                disabled={loading}
-              >
-                <span className={loading ? 'loading loading-spinner' : ''}></span>
-                Login with <Si42 style={{ fontSize: '2em' }} />
-              </button>
-              <button
-                onClick={loginDevClick}
-                className='btn btn-lg btn-secondary mt-10'
-                disabled={loading}
-              >
-                <span className={loading ? 'loading loading-spinner' : ''}></span>
-                Login dev
-              </button>
-            </div>
+    <div className='hero h-screen'>
+      <div className='hero-content text-center'>
+        <div className='max-w-md'>
+          <h1 className='text-5xl font-bold'>ft_transcendence</h1>
+          <div className='grid'>
+            <button
+              onClick={login42Click}
+              className='btn btn-lg btn-primary mt-10'
+              disabled={loading}
+            >
+              <span className={loading ? 'loading loading-spinner' : ''}></span>
+              Login with <Si42 style={{ fontSize: '2em' }} />
+            </button>
+            <button
+              onClick={loginDevClick}
+              className='btn btn-lg btn-secondary mt-10'
+              disabled={loading}
+            >
+              <span className={loading ? 'loading loading-spinner' : ''}></span>
+              Login dev
+            </button>
           </div>
         </div>
       </div>

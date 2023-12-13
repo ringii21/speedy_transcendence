@@ -7,6 +7,7 @@ import { ContactOverlay } from './components/ContactOverlay'
 import { RequireAuth } from './components/RequireAuth'
 import { NotFound } from './pages/404'
 import { ChatWithNavbar } from './pages/Chat'
+import { Footer } from './pages/Footer'
 // import Navbar from "./components/Navbar";
 import { HomeWithNavbar } from './pages/Home'
 import Login from './pages/Login'
@@ -21,81 +22,80 @@ import { SocketProvider } from './providers/SocketProvider'
 const App = () => {
   const queryClient = new QueryClient()
   return (
-    <div>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <SocketProvider>
-            <ChatProvider>
-              <Routes>
-                {/* authenticated */}
-                <Route
-                  path='/'
-                  element={
-                    <RequireAuth>
-                      <HomeWithNavbar />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path='/game'
-                  element={
-                    <RequireAuth>
-                      <HomeWithNavbar />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path='/settings'
-                  element={
-                    <RequireAuth>
-                      <SettingsWithNavbar />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path='/settings/2fa'
-                  element={
-                    <RequireAuth>
-                      <TwoFactorSettingsWithNavbar />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path='/profile'
-                  element={
-                    <RequireAuth>
-                      <ProfileWithNavbar />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path='/chat'
-                  element={
-                    <RequireAuth>
-                      <ChatWithNavbar />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path='/profile/:id'
-                  element={
-                    <RequireAuth>
-                      <ProfileWithNavbar />
-                    </RequireAuth>
-                  }
-                />
-                {/* non authenticated */}
-                <Route path='/login' element={<Login />} />
-                <Route path='/login/2fa' element={<TwoFactorSignin />} />
-                <Route path='*' element={<NotFound />} />
-              </Routes>
-            </ChatProvider>
-          </SocketProvider>
-          <ContactOverlay />
-        </AuthProvider>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <SocketProvider>
+          <ChatProvider>
+            <Routes>
+              {/* authenticated */}
+              <Route
+                path='/'
+                element={
+                  <RequireAuth>
+                    <HomeWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path='/game'
+                element={
+                  <RequireAuth>
+                    <HomeWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path='/settings'
+                element={
+                  <RequireAuth>
+                    <SettingsWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path='/settings/2fa'
+                element={
+                  <RequireAuth>
+                    <TwoFactorSettingsWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path='/profile'
+                element={
+                  <RequireAuth>
+                    <ProfileWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path='/chat'
+                element={
+                  <RequireAuth>
+                    <ChatWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path='/profile/:id'
+                element={
+                  <RequireAuth>
+                    <ProfileWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              {/* non authenticated */}
+              <Route path='/login' element={<Login />} />
+              <Route path='/login/2fa' element={<TwoFactorSignin />} />
+              <Route path='*' element={<NotFound />} />
+            </Routes>
+          </ChatProvider>
+        </SocketProvider>
+        <ContactOverlay />
+        <Footer />
+      </AuthProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   )
 }
 
