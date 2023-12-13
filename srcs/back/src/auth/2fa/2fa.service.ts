@@ -18,7 +18,7 @@ export class TwoFaAuthService {
 
     const otpauthUrl = authenticator.keyuri(
       user.email,
-      this.configService.getOrThrow('2FA_APP_NAME'),
+      "HEY",
       secret,
     )
 

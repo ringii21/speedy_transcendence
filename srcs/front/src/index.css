@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 body {
-    width: 100vw;
-    /* height: 25vh; */
-    overflow: hidden;
-    /* padding-left: 1rem;
+  width: 100vw;
+  /* height: 25vh; */
+  overflow: hidden;
+  /* padding-left: 1rem;
     padding-right: 1rem; */
 }

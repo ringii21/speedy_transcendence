@@ -42,10 +42,10 @@ module.exports = {
         },
       }),
       boxShadow: {
-        'boxNavTop': '0 35px 60px -15px rgba(0, 0, 0, 0.3)',
+        boxNavTop: '0 35px 60px -15px rgba(0, 0, 0, 0.3)',
       },
       borderRadius: {
-        'borderBottom-lg' : '25px 25px 25px 25px',
+        'borderBottom-lg': '25px 25px 25px 25px',
       },
     },
   },
