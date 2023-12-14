@@ -1,9 +1,7 @@
-import '../styles/pong.css'
-
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-
-import ballImageSrc from '../assets/balle-pong.png'
+import '../../styles/pong.css'
+import ballImageSrc from '../../assets/balle-pong.png'
 
 /*Pour l'instant je suis un tuto pong qui se trouve ici: https://javascript.plainenglish.io/create-ping-pong-game-using-react-2d78c8e1cd9b
 Je fais des tests pour me familiariser avec React et typescript
@@ -57,7 +55,7 @@ interface GameState {
   opponentScore: number
 }
 
-const PongComponent: React.FC = () => {
+const Pong: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(InitialState())
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const ballImage = useRef<HTMLImageElement>(new Image())
@@ -82,17 +80,16 @@ const PongComponent: React.FC = () => {
       context.clearRect(0, 0, canvas.width, canvas.height)
 
       // Ajustements basés sur la taille du canvas
-      const paddleWidth = canvas.width / 25 // Exemple de largeur de raquette
-      const paddleHeight = canvas.height / 4 // Exemple de hauteur de raquette
+      const paddleWidth = canvas.width / 40 // Exemple de largeur de raquette
+      const paddleHeight = canvas.height / 10 // Exemple de hauteur de raquette
       const ballRadius = canvas.width / 40 // Exemple de taille de la balle
-      //const paddlePadding = canvas.padding
 
       // Dessiner la raquette du joueur
-      context.fillStyle = 'white'
+      context.fillStyle = 'black'
       gameState.player.forEach((pos) => {
         context.fillRect(
           (pos % COL_SIZE) * (canvas.width / COL_SIZE),
-          Math.floor(4) * (canvas.height / ROW_SIZE),
+          Math.floor(pos / COL_SIZE) * (canvas.height / ROW_SIZE),
           paddleWidth,
           paddleHeight,
         )
@@ -102,7 +99,7 @@ const PongComponent: React.FC = () => {
       gameState.opponent.forEach((pos) => {
         context.fillRect(
           (pos % COL_SIZE) * (canvas.width / COL_SIZE),
-          Math.floor(4) * (canvas.height / ROW_SIZE),
+          Math.floor(pos / COL_SIZE) * (canvas.height / ROW_SIZE),
           paddleWidth,
           paddleHeight,
         )
@@ -141,4 +138,4 @@ const PongComponent: React.FC = () => {
   )
 }
 
-export default PongComponent
+export { Pong }

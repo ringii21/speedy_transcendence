@@ -94,7 +94,6 @@ const App = () => {
           </ChatProvider>
         </SocketProvider>
         <ContactOverlay />
-        <Footer />
       </AuthProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
