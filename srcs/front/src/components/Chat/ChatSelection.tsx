@@ -21,7 +21,7 @@ const ChannelRow: React.FC<{
   <tr
     onClick={onClick ? (e) => onClick(e) : undefined}
     className={clsx({
-      'bg-base-200 border-b border-gray-300': selected,
+      'bg-base-200 border-b border-t border-gray-200': selected,
     })}
   >
     <td className='flex'>
@@ -42,42 +42,35 @@ const ChatSelection: React.FC<PropsEvent> = ({ onClick }) => {
     queryFn: getMyChannels,
   })
 
-  let idConv = 0
-  const handleClickEvent = (
-    e: React.MouseEvent<HTMLTableRowElement, MouseEvent> | null,
-    id: number,
-  ) => {
-    if (id > 0) idConv = id
-    if (onClick && e && idConv) {
-      console.log('Child event')
-      console.log('id: ' + id)
-      onClick(e)
-    }
+  const handleClickEvent = (e: React.MouseEvent<HTMLTableRowElement, MouseEvent> | null) => {
+    if (onClick && e) onClick(e)
   }
 
   return (
-    <div className='flex flex-col space-y-4 items-center pl-4 pr-4 lg:pr-4 mt-6 gap-12 w-screen lg:w-full md:w-full relative'>
+    <div className='md:flex flex-col space-y-4 items-center pl-4 pr-4 lg:pr-4 mt-6 gap-12 w-screen lg:w-full md:w-full relative'>
       {CreateChannelModal({ isCreateModalOpen, setCreateModalOpen })}
       {JoinChannelModal({ isJoinModalOpen, setJoinModalOpen })}
-      <div className='flex lg:flex-row md:flex-row sm:flex-col justify-evenly flex-col gap-4 border-b pb-8'>
-        <button
-          onClick={(e) => {
-            e.preventDefault()
-            setCreateModalOpen(!isCreateModalOpen)
-          }}
-          className='btn btn-primary '
-        >
-          Add Channel
-        </button>
-        <button
-          onClick={(e) => {
-            e.preventDefault()
-            setJoinModalOpen(!isJoinModalOpen)
-          }}
-          className='btn btn-secondary text-center'
-        >
-          Join Channel
-        </button>
+      <div className='flex justify-around'>
+        <div className='flex flex-col sm:flex-row gap-4 border-b pb-8'>
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              setCreateModalOpen(!isCreateModalOpen)
+            }}
+            className='btn btn-primary'
+          >
+            Add Channel
+          </button>
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              setJoinModalOpen(!isJoinModalOpen)
+            }}
+            className='btn btn-secondary text-center'
+          >
+            Join Channel
+          </button>
+        </div>
       </div>
       <div className='collapse collapse-arrow'>
         <div tabIndex={0} className='collapse collapse-arrow'>
@@ -107,9 +100,8 @@ const ChatSelection: React.FC<PropsEvent> = ({ onClick }) => {
                       key={i}
                       channel={channel}
                       onClick={(e) => {
-                        idConv = channel.id
                         setSelectedChannel(channel.id)
-                        if (e) handleClickEvent(e, channel.id)
+                        if (e) handleClickEvent(e)
                       }}
                       selected={channel.id === (selectedChannel ?? null)}
                     />
