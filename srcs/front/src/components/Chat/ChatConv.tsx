@@ -64,11 +64,21 @@ const ChatConv: React.FC<ChatChannelProps> = ({
     } else {
       return (
         <div className='flex justify-between gap-6 mt-4 border-b pb-4 ml-6 mr-6'>
+          <div className='flex space-x-2 pl-4 md:hidden'>
+            <button type='button' onClick={handleChannelList}>
+              <IoIosArrowBack size={18} className='text-gray-500 mt-1' />
+            </button>
+          </div>
           <div className='flex align-items gap-2'>
             {channel.data.channelType === 'public' && (
               <HiHashtag size={18} className='text-gray-500 mt-1' />
             )}
             <span className='text-gray-500'>{channel.data.name}</span>
+          </div>
+          <div className='flex justify-end space-x-2 pr-4 md:hidden'>
+            <button type='button' onClick={handleUserList}>
+              <IoIosArrowForward size={18} className='text-gray-500 mt-1' />
+            </button>
           </div>
         </div>
       )
@@ -76,7 +86,7 @@ const ChatConv: React.FC<ChatChannelProps> = ({
   }
 
   return (
-    <div className='flex flex-col gap-6 box-content rounded-b-lg shadow-2xl h-3/4 justify-between bg-gray-100'>
+    <div className='flex flex-col gap-6 box-content rounded-b-lg shadow-2xl h-3/4 justify-between bg-gray-100 relative'>
       {arrowIsMobile()}
       <div className='flex flex-col rounded-lg overflow-y-auto'>
         {messages[channel.data.id] &&

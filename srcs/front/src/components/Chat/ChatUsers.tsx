@@ -48,7 +48,7 @@ const ChatUsers: React.FC<ChatUsersProps> = ({ members, onClickConv }) => {
             {members.map((member, i) => (
               <div key={i} className='flex pt-4 justify-between'>
                 <span className='text-gray-500 ml-8'>{member.user.username}</span>
-                {member.role == 'owner' && <FaCrown className='text-error' />}
+                {member.role == 'owner' && <FaCrown className='text-error mt-1 ml-2' />}
               </div>
             ))}
           </div>

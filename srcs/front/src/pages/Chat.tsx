@@ -50,7 +50,7 @@ const Chat = () => {
     let content: React.ReactNode = null
     if (channel?.data) {
       content = (
-        <div className='bg-gray-100 w-2/6'>
+        <div className='bg-gray-100'>
           <ChatUsers members={channel.data.members ?? []} onClickConv={null} />
         </div>
       )
@@ -62,7 +62,7 @@ const Chat = () => {
     let content: React.ReactNode = null
     if (channel?.data) {
       content = (
-        <div className='h-screen w-screen'>
+        <div className='h-screen relative md:w-2/4 w-screen'>
           <ChatConv me={user} onClickChannelList={null} onClickUserChannelList={null} />
         </div>
       )
@@ -81,7 +81,7 @@ const Chat = () => {
     if (channel?.data?.id) {
       if (conv && !channelList && !userChannelList) {
         content = (
-          <div className='h-screen w-screen'>
+          <div className='h-screen w-screen relative'>
             <ChatConv
               me={user}
               onClickChannelList={handleChatSelectionClose}
@@ -91,20 +91,20 @@ const Chat = () => {
         )
       } else if (!conv && !channelList && userChannelList) {
         content = (
-          <div className='h-screen w-screen relative'>
+          <div className='h-screen w-screen'>
             <ChatUsers members={channel.data.members ?? []} onClickConv={handleChatSelectionOpen} />
           </div>
         )
       } else {
         content = (
-          <div className='bg-gray-100 relative sm:flex'>
+          <div className='bg-gray-100 relative sm:flex hidden'>
             <ChatSelection onClick={() => handleChatSelectionOpen()} />
           </div>
         )
       }
     } else {
       content = (
-        <div className='bg-gray-100 relative sm:flex'>
+        <div className='bg-gray-100 relative sm:flex hidden'>
           <ChatSelection onClick={() => handleChatSelectionOpen()} />
         </div>
       )
@@ -122,7 +122,7 @@ const Chat = () => {
     } else if (isDesktop || isTablet) {
       return (
         <div className='flex h-screen w-screen justify-between'>
-          <div className='bg-gray-100 relative'>
+          <div className='bg-gray-100 md:flex hidden'>
             <ChatSelection onClick={null} />
           </div>
           {showUsersList()}
