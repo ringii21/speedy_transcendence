@@ -1,24 +1,33 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useId, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
+import { IFriends, IUser } from '../types/User'
 
 const Profile: React.FC = () => {
   const { user: loggedInUser, signout } = useAuth()
   const { userId } = useParams<{ userId: string }>()
-  const [profilUser, setProfilUser] = useState(null)
-
+  const [profilUser, setProfilUser] = useState<IUser | null>(null)
+  const [isFriend, setIsFriend] = useState(false)
+  const [addFriends, setAddFriends] = useState<IFriends>()
   const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()
     await signout()
   }
 
-  function isUserId(): React.ReactNode {
-    if (!loggedInUser?.username) {
+  const isUserId = () => {
+    isFriend
+    if (loggedInUser && loggedInUser.id !== profilUser?.id) {
       return (
-        <div>
-          <button className='btn btn-primary drop-shadow-xl rounded-lg'>Follow</button>
+        <div className='flex justify-evenly'>
+          {addFriends?.id !== profilUser?.id ? (
+            <button className='btn btn-primary drop-shadow-xl rounded-lg'>Follow</button>
+          ) : (
+            <button className='btn btn-primary drop-shadow-xl rounded-lg'>Unfollow</button>
+          )}
+
+          <button className='btn btn-secondary drop-shadow-xl rounded-lg'>Message</button>
         </div>
       )
     } else {
@@ -34,12 +43,11 @@ const Profile: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      console.log('id: ' + loggedInUser?.id)
       try {
         let response
-        if (loggedInUser && userId != loggedInUser.id.toString())
-          response = await fetch(`localhost:3001/profile/${loggedInUser.id}`)
-        else if (loggedInUser && loggedInUser) response = await fetch(`localhost:3001/profile/me`)
+        if (loggedInUser && profilUser?.id !== loggedInUser.id)
+          response = await fetch(`localhost:3001/profile/${profilUser?.id}`)
+        else if (loggedInUser) response = await fetch(`localhost:3001/profile/me`)
         if (response && response.ok) {
           const userData = await response.json()
           setProfilUser(userData)
@@ -47,8 +55,8 @@ const Profile: React.FC = () => {
       } catch (error) {
         console.error('Error fetching user data: ', error)
       }
-      fetchData()
     }
+    fetchData()
   }, [loggedInUser, userId])
   return (
     <div
@@ -61,11 +69,11 @@ const Profile: React.FC = () => {
       <div className='hero-content text-center text-neutral-content'>
         <div className='max-w-md'>
           <h1 className='mb-5 text-5xl font-bold text-purple-100'>
-            {loggedInUser ? loggedInUser.username : userId}
+            {profilUser ? profilUser.username : loggedInUser?.username}
           </h1>
           <div className='avatar'>
             <div className='w-36 rounded-full drop-shadow-lg hover:drop-shadow-xl justify-self-start'>
-              <img src={loggedInUser?.image} alt='avatar' />
+              <img src={profilUser ? profilUser.image : loggedInUser?.image} alt='avatar' />
             </div>
           </div>
           <div className='columns-3 flex-auto space-y-20'>

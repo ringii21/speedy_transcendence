@@ -50,7 +50,7 @@ const Chat = () => {
     let content: React.ReactNode = null
     if (channel?.data) {
       content = (
-        <div className='bg-gray-100'>
+        <div className='bg-gray-100 md:flex hidden'>
           <ChatUsers members={channel.data.members ?? []} onClickConv={null} />
         </div>
       )
@@ -97,14 +97,14 @@ const Chat = () => {
         )
       } else {
         content = (
-          <div className='bg-gray-100 relative sm:flex hidden'>
+          <div className='bg-gray-100 relative sm:flex'>
             <ChatSelection onClick={() => handleChatSelectionOpen()} />
           </div>
         )
       }
     } else {
       content = (
-        <div className='bg-gray-100 relative sm:flex hidden'>
+        <div className='bg-gray-100 relative sm:flex'>
           <ChatSelection onClick={() => handleChatSelectionOpen()} />
         </div>
       )

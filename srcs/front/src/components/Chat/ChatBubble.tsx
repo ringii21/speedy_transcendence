@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
+import { useAuth } from '../../providers/AuthProvider'
 import { IChannelMember } from '../../types/Chat'
 import { IChannelMessage } from '../../types/Message'
 import { IUser } from '../../types/User'
@@ -24,8 +25,8 @@ const ChatBubble = ({ user, message, members }: ChatBubbleProps) => {
 
   const messageJustify = clsx({
     ['flex items-end mb-4']: true,
-    ['justify-end']: message.senderId === user.id,
-    ['justify-start']: message.senderId !== user.id,
+    ['justify-end mr-6']: message.senderId === user.id,
+    ['justify-start ml-6']: message.senderId !== user.id,
   })
   const messageStyle = clsx({
     ['px-4 py-2 rounded-lg inline-block']: true,
@@ -45,7 +46,10 @@ const ChatBubble = ({ user, message, members }: ChatBubbleProps) => {
           <span className={messageStyle}>{message.content}</span>
         </div>
       </div>
-      <Link to='/profile/:id'>
+      <Link
+        to={message.senderId === user?.id ? '/profile/me' : '/profile/${member.userId}'}
+        placeholder={'${members.userId}'}
+      >
         <img src={sender.user.image} alt='My profile' className={imageStyle} />
       </Link>
     </div>
