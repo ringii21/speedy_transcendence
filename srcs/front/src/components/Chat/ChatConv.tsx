@@ -123,7 +123,7 @@ const ChatConv: React.FC<ChatChannelProps> = ({
             <ChatBubble key={i} message={message} user={me} members={channel.data.members} />
           ))}
       </div>
-      <div className='flex flex-col rounded-lg' ref={currentRef}>
+      <div className='flex flex-col rounded-lg'>
         <ChatInput channel={channel.data} />
       </div>
     </div>
