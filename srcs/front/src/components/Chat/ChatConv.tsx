@@ -8,17 +8,13 @@ import { IUser } from '../../types/User'
 import { ChatBubble } from './ChatBubble'
 import { ChatInput } from './ChatInput'
 
-type ChatChannelProps = {
+type ChatConvProps = {
   me: IUser
   onClickChannelList: ((e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void) | null
   onClickUserChannelList: ((e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void) | null
 }
 
-const ChatConv: React.FC<ChatChannelProps> = ({
-  me,
-  onClickChannelList,
-  onClickUserChannelList,
-}) => {
+const ChatConv: React.FC<ChatConvProps> = ({ me, onClickChannelList, onClickUserChannelList }) => {
   const { channel, messages } = useChat()
   const [userChannelList, setUserChannelList] = useState(false)
 
@@ -39,18 +35,6 @@ const ChatConv: React.FC<ChatChannelProps> = ({
 
   const [scrollPos, setScrollPos] = useState(0)
   const currentRef = useRef<HTMLDivElement>(null)
-  // const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-  //   e.currentTarget.scrollTo({
-  //     top:
-  //       e.currentTarget.scrollHeight - (e.currentTarget.scrollHeight - e.currentTarget.scrollTop),
-  //     behavior: 'smooth',
-  //   })
-  //   if (scrollPos < e.currentTarget.scrollHeight) {
-  //     setScrollPos(
-  //       e.currentTarget.scrollHeight - (e.currentTarget.scrollHeight - e.currentTarget.scrollTop),
-  //     )
-  //   }
-  // }
 
   useEffect(() => {
     if (!userChannelList) setUserChannelList(true)
@@ -62,7 +46,7 @@ const ChatConv: React.FC<ChatChannelProps> = ({
         top: currentRef.current.scrollHeight,
         behavior: 'smooth',
       })
-      setScrollPos(currentRef.current.scrollHeight)
+      if (scrollPos) setScrollPos(currentRef.current.scrollHeight)
     }
   }, [messages])
   const arrowIsMobile = () => {

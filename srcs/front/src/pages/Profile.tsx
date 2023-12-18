@@ -9,12 +9,13 @@ const Profile: React.FC = () => {
   const { user: loggedInUser, signout } = useAuth()
   const { userId } = useParams<{ userId: string }>()
   const [profilUser, setProfilUser] = useState<IUser>()
-  const [isFriend, setIsFriend] = useState(false)
-  const [addFriends, setAddFriends] = useState<IFriends>()
   const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()
     await signout()
   }
+
+  const [isFriend, setIsFriend] = useState(false)
+  const [addFriends, setAddFriends] = useState<IFriends>()
 
   const isUserId = () => {
     if (loggedInUser && profilUser?.id !== loggedInUser.id) {

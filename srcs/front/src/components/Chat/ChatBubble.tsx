@@ -1,11 +1,12 @@
 import clsx from 'clsx'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useAuth } from '../../providers/AuthProvider'
 import { IChannelMember } from '../../types/Chat'
 import { IChannelMessage } from '../../types/Message'
 import { IUser } from '../../types/User'
+import { BubbleChannelModal } from './BubbleChannelModal'
 
 type ChatBubbleProps = {
   user: IUser
@@ -14,6 +15,7 @@ type ChatBubbleProps = {
 }
 
 const ChatBubble = ({ user, message, members }: ChatBubbleProps) => {
+  const [openModal, setOpenModal] = useState(false)
   const sender = members.find((member) => member.userId === message.senderId)
   if (!sender) return <span>Error</span>
 
@@ -46,12 +48,22 @@ const ChatBubble = ({ user, message, members }: ChatBubbleProps) => {
           <span className={messageStyle}>{message.content}</span>
         </div>
       </div>
-      <Link
+      {BubbleChannelModal({ openModal, setOpenModal })}
+      <button
+        type='button'
+        onClick={(e) => {
+          e.preventDefault()
+          console.log('OpenModal: ' + openModal)
+          setOpenModal(!openModal)
+        }}
+      >
+        <img src={sender.user.image} alt='My profile' className={imageStyle} />
+      </button>
+      {/* <Link
         to={message.senderId === user?.id ? '/profile/me' : '/profile/${member.userId}'}
         placeholder={'${members.userId}'}
       >
-        <img src={sender.user.image} alt='My profile' className={imageStyle} />
-      </Link>
+      </Link> */}
     </div>
   )
 }
