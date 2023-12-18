@@ -91,7 +91,7 @@ const Chat = () => {
         )
       } else if (!conv && !channelList && userChannelList) {
         content = (
-          <div className='h-screen w-screen'>
+          <div className='h-screen w-screen bg-gray-200'>
             <ChatUsers members={channel.data.members ?? []} onClickConv={handleChatSelectionOpen} />
           </div>
         )

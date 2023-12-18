@@ -8,7 +8,7 @@ import { IFriends, IUser } from '../types/User'
 const Profile: React.FC = () => {
   const { user: loggedInUser, signout } = useAuth()
   const { userId } = useParams<{ userId: string }>()
-  const [profilUser, setProfilUser] = useState<IUser | null>(null)
+  const [profilUser, setProfilUser] = useState<IUser>()
   const [isFriend, setIsFriend] = useState(false)
   const [addFriends, setAddFriends] = useState<IFriends>()
   const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
@@ -17,8 +17,15 @@ const Profile: React.FC = () => {
   }
 
   const isUserId = () => {
-    isFriend
-    if (loggedInUser && loggedInUser.id !== profilUser?.id) {
+    if (loggedInUser && profilUser?.id !== loggedInUser.id) {
+      return (
+        <div>
+          <button className='btn btn-primary drop-shadow-xl rounded-lg' onClick={onButtonClick}>
+            Logout
+          </button>
+        </div>
+      )
+    } else {
       return (
         <div className='flex justify-evenly'>
           {addFriends?.id !== profilUser?.id ? (
@@ -28,14 +35,6 @@ const Profile: React.FC = () => {
           )}
 
           <button className='btn btn-secondary drop-shadow-xl rounded-lg'>Message</button>
-        </div>
-      )
-    } else {
-      return (
-        <div>
-          <button className='btn btn-primary drop-shadow-xl rounded-lg' onClick={onButtonClick}>
-            Logout
-          </button>
         </div>
       )
     }

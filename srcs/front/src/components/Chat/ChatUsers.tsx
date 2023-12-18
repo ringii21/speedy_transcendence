@@ -29,7 +29,7 @@ const ChatUsers: React.FC<ChatUsersProps> = ({ members, onClickConv }) => {
               <IoIosArrowBack size={18} className='text-black mt-1' />
             </button>
           </div>
-          <h1 className='text-lg text-gray-500 border-b border-gray-200 mr-8 ml-8 pt-4'>Users</h1>
+          <h1 className='text-lg text-gray-500 border-b border-gray-300 mr-8 ml-8 pt-4'>Users</h1>
           <div className='mr-8 pt-2'>
             {members.map((member, i) => (
               <div key={i} className='flex pt-4 justify-between'>
@@ -43,7 +43,7 @@ const ChatUsers: React.FC<ChatUsersProps> = ({ members, onClickConv }) => {
     } else {
       return (
         <div>
-          <h1 className='text-lg text-gray-500 border-b border-gray-200 mr-8 ml-8 pb-3'>Users</h1>
+          <h1 className='text-lg text-gray-500 border-b border-gray-300 mr-8 ml-8 pb-3'>Users</h1>
           <div className='mr-8 pt-2'>
             {members.map((member, i) => (
               <div key={i} className='flex pt-4 justify-between'>

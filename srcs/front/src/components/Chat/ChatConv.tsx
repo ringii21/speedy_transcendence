@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { MutableRefObject, useEffect, useRef, useState } from 'react'
 import { isMobile } from 'react-device-detect'
 import { HiHashtag } from 'react-icons/hi2'
 import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io'
@@ -21,6 +21,7 @@ const ChatConv: React.FC<ChatChannelProps> = ({
 }) => {
   const { channel, messages } = useChat()
   const [userChannelList, setUserChannelList] = useState(false)
+
   if (!channel) return <span>Select a channel</span>
 
   if (channel.isLoading) return <span className='loading loading-lg'></span>
@@ -36,9 +37,34 @@ const ChatConv: React.FC<ChatChannelProps> = ({
     if (onClickUserChannelList && e !== null) onClickUserChannelList(e)
   }
 
+  const [scrollPos, setScrollPos] = useState(0)
+  const currentRef = useRef<HTMLDivElement>(null)
+  // const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  //   e.currentTarget.scrollTo({
+  //     top:
+  //       e.currentTarget.scrollHeight - (e.currentTarget.scrollHeight - e.currentTarget.scrollTop),
+  //     behavior: 'smooth',
+  //   })
+  //   if (scrollPos < e.currentTarget.scrollHeight) {
+  //     setScrollPos(
+  //       e.currentTarget.scrollHeight - (e.currentTarget.scrollHeight - e.currentTarget.scrollTop),
+  //     )
+  //   }
+  // }
+
   useEffect(() => {
     if (!userChannelList) setUserChannelList(true)
   }, [userChannelList])
+
+  useEffect(() => {
+    if (currentRef.current) {
+      currentRef.current.scrollTo({
+        top: currentRef.current.scrollHeight,
+        behavior: 'smooth',
+      })
+      setScrollPos(currentRef.current.scrollHeight)
+    }
+  }, [messages])
   const arrowIsMobile = () => {
     if (isMobile) {
       return (
@@ -88,13 +114,18 @@ const ChatConv: React.FC<ChatChannelProps> = ({
   return (
     <div className='flex flex-col gap-6 box-content rounded-b-lg shadow-2xl h-3/4 justify-between bg-gray-100 relative'>
       {arrowIsMobile()}
-      <div className='flex flex-col rounded-lg overflow-y-auto'>
+      <div
+        ref={currentRef}
+        className='flex flex-col scroll rounded-lg overflow-y-auto scrollbar scrollbar-track-gray-200 scrollbar-thumb-gray-900 scrollbar-thin scrollbar-thumb-rounded-md'
+      >
         {messages[channel.data.id] &&
           messages[channel.data.id].map((message, i) => (
             <ChatBubble key={i} message={message} user={me} members={channel.data.members} />
           ))}
       </div>
-      <ChatInput channel={channel.data} />
+      <div className='flex flex-col rounded-lg' ref={currentRef}>
+        <ChatInput channel={channel.data} />
+      </div>
     </div>
   )
 }
