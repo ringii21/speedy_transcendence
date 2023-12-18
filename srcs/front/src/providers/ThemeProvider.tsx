@@ -10,13 +10,13 @@ type Props = {
 }
 
 export const ThemeContext = createContext<ThemeContextData>({
-  theme: 'dark',
+  theme: 'light',
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   changeTheme: () => {},
 })
 
 export const ThemeProvider = ({ children }: Props) => {
-  const [theme, setTheme] = useState<string>(localStorage.getItem('theme') || 'dark')
+  const [theme, setTheme] = useState<string>(localStorage.getItem('theme') || 'light')
 
   const changeTheme = (theme: string) => {
     setTheme(theme)

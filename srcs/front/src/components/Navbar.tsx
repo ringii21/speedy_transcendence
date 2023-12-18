@@ -13,7 +13,7 @@ const Navbar = () => {
   }
 
   return (
-    <div className='navbar nav relative'>
+    <div className='navbar nav relative bg-gray-900'>
       <div className='navbar-start'>
         <div className='dropdown'>
           <div tabIndex={0} role='button' className='btn btn-ghost lg:hidden'>
@@ -71,7 +71,7 @@ const Navbar = () => {
             className='menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52'
           >
             <li>
-              <Link className='justify-between' to='/profil/me'>
+              <Link className='justify-between' to='/profile/me'>
                 Profile
               </Link>
             </li>

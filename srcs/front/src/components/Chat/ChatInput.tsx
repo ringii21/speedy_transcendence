@@ -7,7 +7,11 @@ import { useSocket } from '../../providers/SocketProvider'
 import { IChannel } from '../../types/Chat'
 import { IChannelMessage } from '../../types/Message'
 
-const ChatInput = ({ channel }: { channel: IChannel }) => {
+type GetChannel = {
+  channel: IChannel
+}
+
+const ChatInput: React.FC<GetChannel> = ({ channel }) => {
   const { socket, isConnected } = useSocket()
   const { setMessages } = useChat()
   const { user } = useAuth()
@@ -48,7 +52,7 @@ const ChatInput = ({ channel }: { channel: IChannel }) => {
 
   if (!isConnected) return <></>
   return (
-    <div className='relative mx-4 mb-4 border-t inline-flex'>
+    <div className='relative mx-4 mb-20 border-t inline-flex'>
       <input
         type='text'
         value={inputMessage}

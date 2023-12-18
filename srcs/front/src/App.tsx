@@ -61,18 +61,18 @@ const App = () => {
                 }
               />
               <Route
-                path='/profile'
-                element={
-                  <RequireAuth>
-                    <ProfileWithNavbar />
-                  </RequireAuth>
-                }
-              />
-              <Route
                 path='/chat'
                 element={
                   <RequireAuth>
                     <ChatWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path='/profile/me'
+                element={
+                  <RequireAuth>
+                    <ProfileWithNavbar />
                   </RequireAuth>
                 }
               />
