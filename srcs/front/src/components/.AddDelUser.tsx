@@ -14,27 +14,20 @@ const AddDelUser = ({ users }: { users: IUser[] }) => {
       if (!myuser?.friends) {
         return (
           <div>
-            <button className="btn btn-primary drop-shadow-xl rounded-lg">
-              Follow
-            </button>
+            <button className='btn btn-primary drop-shadow-xl rounded-lg'>Follow</button>
           </div>
         )
       } else {
         return (
           <div>
-            <button className="btn btn-primary drop-shadow-xl rounded-lg">
-              Unfollow
-            </button>
+            <button className='btn btn-primary drop-shadow-xl rounded-lg'>Unfollow</button>
           </div>
         )
       }
     } else {
       return (
         <div>
-          <button
-            className="btn btn-primary drop-shadow-xl rounded-lg"
-            onClick={onButtonClick}
-          >
+          <button className='btn btn-primary drop-shadow-xl rounded-lg' onClick={onButtonClick}>
             Logout
           </button>
         </div>

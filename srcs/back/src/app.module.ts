@@ -33,7 +33,6 @@ export class AppModule implements NestModule {
       'TOKEN_URL',
       'BASE_URL',
       'JWT_SECRET',
-      '2FA_APP_NAME',
       'BACKEND_URL',
     ]
     envs.forEach((env) => configService.getOrThrow(env))

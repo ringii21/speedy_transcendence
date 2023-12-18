@@ -11,6 +11,7 @@ import { Footer } from './pages/Footer'
 // import Navbar from "./components/Navbar";
 import { HomeWithNavbar } from './pages/Home'
 import Login from './pages/Login'
+import { PongWithNavbar } from './pages/Pong'
 import { ProfileWithNavbar } from './pages/Profile'
 import { SettingsWithNavbar } from './pages/Settings'
 import { TwoFactorSettingsWithNavbar } from './pages/TwoFactor/TwoFactorSettings'
@@ -18,6 +19,7 @@ import { TwoFactorSignin } from './pages/TwoFactor/TwoFactorSignin'
 import { AuthProvider } from './providers/AuthProvider'
 import { ChatProvider } from './providers/ChatProvider'
 import { SocketProvider } from './providers/SocketProvider'
+//import Pong from './components/Pong'
 
 const App = () => {
   const queryClient = new QueryClient()
@@ -40,7 +42,7 @@ const App = () => {
                 path='/game'
                 element={
                   <RequireAuth>
-                    <HomeWithNavbar />
+                    <PongWithNavbar />
                   </RequireAuth>
                 }
               />
@@ -92,7 +94,6 @@ const App = () => {
           </SocketProvider>
         </ChatProvider>
         <ContactOverlay />
-        <Footer />
       </AuthProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

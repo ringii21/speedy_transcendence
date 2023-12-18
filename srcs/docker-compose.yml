@@ -27,7 +27,7 @@ services:
     ports:
       - 3000:3000
     environment:
-      - DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}?schema=public"
+      DATABASE_URL: postgresql://ringii:root@postgres:5432/transcendence?schema=public
     volumes:
       - ./back:/app/run
     links:
