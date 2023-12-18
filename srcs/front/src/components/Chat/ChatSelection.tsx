@@ -27,16 +27,22 @@ const ChatSelection = () => {
       <div className='drawer'>
         <input id='my-drawer' type='checkbox' className='drawer-toggle' />
         <div className='drawer-content'>
-          <label for='my-drawer' className='btn btn-primary drawer-button'>Open drawer</label>
+          <label htmlFor='my-drawer' className='btn btn-primary drawer-button'>
+            Open drawer
+          </label>
         </div>
         <div className='drawer-side'>
-          <label for='my-drawer' aria-label='close sidebar' className='drawer-overlay'></label>
+          <label htmlFor='my-drawer' aria-label='close sidebar' className='drawer-overlay'></label>
           <ul className='menu p-4 w-80 min-h-full bg-base-200 text-base-content'>
-            <li><a>Sidebar Item 1</a></li>
-            <li><a>Sidebar Item 2</a></li>
+            <li>
+              <a>Sidebar Item 1</a>
+            </li>
+            <li>
+              <a>Sidebar Item 2</a>
+            </li>
           </ul>
+        </div>
       </div>
-    </div>
       {CreateChannelModal({ isCreateModalOpen, setCreateModalOpen })}
       {JoinChannelModal({ isJoinModalOpen, setJoinModalOpen })}
       <div className='flex flex-col right-0 py-72 absolute md:py-56 visible lg:invisible'>

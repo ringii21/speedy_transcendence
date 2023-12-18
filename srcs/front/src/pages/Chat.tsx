@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { BrowserView, isDesktop, isMobile, MobileView, TabletView } from 'react-device-detect'
 import { Navigate } from 'react-router-dom'
 
@@ -12,11 +12,14 @@ const Chat = () => {
   const { user } = useAuth()
   const [openUserList, setOpenUserList] = useState(false)
   if (!user) return <Navigate to='/login' replace />
+
   const { socket, isConnected } = useSocket()
   if (!isConnected) socket?.connect()
   const { channel } = useChat()
 
-  const handleShow = setOpenUserList(true)
+  useEffect(() => {
+    setOpenUserList(true)
+  }, [])
 
   const showUsers = () => {
     if (channel?.data) {
@@ -33,6 +36,7 @@ const Chat = () => {
       )
     }
   }
+
   return (
     <div>
       <BrowserView>

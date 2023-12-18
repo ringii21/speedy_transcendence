@@ -53,6 +53,7 @@ export const ChatProvider = ({ children }: Props) => {
       }))
     }
   }, [channel.isSuccess, channel.data])
+
   const memoedValue = useMemo<ChatContextData>(
     () => ({
       channel,
