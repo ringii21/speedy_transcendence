@@ -24,8 +24,8 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <SocketProvider>
-          <ChatProvider>
+        <ChatProvider>
+          <SocketProvider>
             <Routes>
               {/* authenticated */}
               <Route
@@ -89,8 +89,8 @@ const App = () => {
               <Route path='/login/2fa' element={<TwoFactorSignin />} />
               <Route path='*' element={<NotFound />} />
             </Routes>
-          </ChatProvider>
-        </SocketProvider>
+          </SocketProvider>
+        </ChatProvider>
         <ContactOverlay />
         <Footer />
       </AuthProvider>

@@ -24,6 +24,7 @@ const Chat = () => {
   const [conv, setConv] = useState(false)
   const [userChannelList, setUserChannelList] = useState(false)
   if (!user) return <Navigate to='/login' replace />
+
   const { socket, isConnected } = useSocket()
   if (!isConnected) socket?.connect()
   const { channel } = useChat()
