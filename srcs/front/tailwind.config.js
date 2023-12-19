@@ -49,7 +49,11 @@ module.exports = {
       },
     },
   },
-  plugins: [require('@tailwindcss/typography'), require('daisyui'), require('tailwind-scrollbar')({ nocompatible: true })],
+  plugins: [
+    require('@tailwindcss/typography'),
+    require('daisyui'),
+    require('tailwind-scrollbar')({ nocompatible: true }),
+  ],
   daisyui: {
     themes: [
       'light',
