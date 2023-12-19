@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useAuth } from '../../providers/AuthProvider'
@@ -14,8 +14,9 @@ type ChatBubbleProps = {
   members: IChannelMember[]
 }
 
-const ChatBubble = ({ user, message, members }: ChatBubbleProps) => {
+const ChatBubble: React.FC<ChatBubbleProps> = ({ user, message, members }) => {
   const [openModal, setOpenModal] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
   const sender = members.find((member) => member.userId === message.senderId)
   if (!sender) return <span>Error</span>
 
@@ -38,23 +39,37 @@ const ChatBubble = ({ user, message, members }: ChatBubbleProps) => {
   const imageStyle = clsx({
     ['w-6 h-6 rounded-full']: true,
     ['order-2']: message.senderId === user.id,
-    ['order-1']: message.senderId !== user.id,
+    ['order-1 hover:w-8 hover:h-8 hover:border-blue hover:border-4 rounded-full']:
+      message.senderId !== user.id,
   })
 
+  useEffect(() => {
+    const checkIsOpen = (e: MouseEvent) => {
+      const el = e.target as HTMLDivElement
+      if (ref.current && !ref.current.contains(el)) {
+        setOpenModal(false)
+      }
+    }
+    document.addEventListener('click', checkIsOpen)
+    return () => {
+      document.removeEventListener('click', checkIsOpen)
+    }
+  }, [])
   return (
     <div className={messageJustify}>
       <div className={messagePosition}>
-        <div>
+        <div ref={ref}>
           <span className={messageStyle}>{message.content}</span>
         </div>
       </div>
-      {BubbleChannelModal({ openModal, setOpenModal })}
+      {BubbleChannelModal({ openModal, setOpenModal, message, user })}
       <button
         type='button'
+        className='block'
         onClick={(e) => {
           e.preventDefault()
-          console.log('OpenModal: ' + openModal)
-          setOpenModal(!openModal)
+          e.stopPropagation()
+          if (message.senderId !== user.id) setOpenModal(!openModal)
         }}
       >
         <img src={sender.user.image} alt='My profile' className={imageStyle} />
