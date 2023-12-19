@@ -122,6 +122,10 @@ const PongComponent: React.FC = () => {
       const ballX = (gameState.ball % COL_SIZE) * (canvas.width / COL_SIZE)
       const ballY = Math.floor(gameState.ball / COL_SIZE) * (canvas.height / ROW_SIZE)
       const ballSize = 50
+
+      context.beginPath()
+      context.arc(ballX + ballSize / 2, ballY + ballSize / 2, ballSize / 2, 0, Math.PI * 2)
+      context.clip()
       context.drawImage(ballImage.current, ballX, ballY, ballSize, ballSize)
 
       requestAnimationFrame(draw)

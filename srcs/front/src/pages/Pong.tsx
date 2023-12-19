@@ -4,7 +4,6 @@ import { Navigate } from 'react-router-dom'
 
 import PongComponent from '../components/Pong'
 import { StartComponent } from '../components/Pong/StartComponent'
-//import { ChatConv, ChatSelection, ChatUsers } from '../components/Pong'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
 import { useSocket } from '../providers/SocketProvider'
@@ -18,7 +17,7 @@ const Pong = () => {
 
   return (
     <div>
-      <StartComponent />
+      <PongComponent />
     </div>
   )
 }
