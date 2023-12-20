@@ -10,8 +10,10 @@ import { Paddle } from './Paddle'
 
 const Pong = () => {
   const gridHeightVh = 80 // Exemple : 80vh
+  const gridWidthVw = 80
   const paddleHeightVh = 15 // Exemple : 15vh
   const initialPlayerY = (gridHeightVh - paddleHeightVh) / 2
+
   const [playerPosition, setPlayerPosition] = useState({ x: 8, y: initialPlayerY }) // 5vw du bord gauche
   const [opponentPosition, setOpponentPosition] = useState({ x: 90, y: initialPlayerY }) // 95vw du bord droit
   const [ballPosition, setBallPosition] = useState({ x: 50, y: gridHeightVh / 2 })
@@ -33,7 +35,6 @@ const Pong = () => {
         }))
       }
     }
-
     window.addEventListener('keydown', handleKeyDown)
 
     return () => {
@@ -41,6 +42,29 @@ const Pong = () => {
     }
   }, [maxY, paddleHeightVh])
 
+  const ballSpeed = 1 // Vitesse de la balle
+  const [ballDirection, setBallDirection] = useState(1) // 1 pour le bas, -1 pour le haut
+
+  useEffect(() => {
+    const moveBall = () => {
+      setBallPosition((prevPosition) => {
+        const newX = prevPosition.x + ballSpeed * ballDirection
+
+        // Inverser la direction si la balle atteint les côtés gauche ou droit du Grid
+        if (newX <= 10 || newX >= gridWidthVw + 10) {
+          setBallDirection(-ballDirection)
+        }
+
+        return { ...prevPosition, x: newX }
+      })
+    }
+
+    const intervalId = setInterval(moveBall, 10) // Ajustez selon la fluidité souhaitée
+
+    return () => {
+      clearInterval(intervalId)
+    }
+  }, [ballDirection, gridWidthVw])
   return (
     <div className='m-10 justify-center items-center'>
       <Grid />
