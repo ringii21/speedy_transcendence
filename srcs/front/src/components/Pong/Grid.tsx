@@ -3,17 +3,32 @@ import { NavLink, useNavigate } from 'react-router-dom'
 
 import { InitialState } from './InitialState'
 
-const ROW_SIZE = 10
-const COL_SIZE = 20
-
 const Grid = () => {
-  const style = {
-    width: '250px',
-    heigth: '250px',
-    display: 'grid',
-    gridTemplate: `repeat(${ROW_SIZE}, 1fr) / repeat(${COL_SIZE}, 1fr)`,
+  // Style pour le Grid
+  const gridStyle: React.CSSProperties = {
+    position: 'relative',
+    border: '1px solid #000000',
+    backgroundColor: '#d0d0d0',
+    width: '85vw', // par exemple, 80% de la largeur de la vue
+    height: '60vh', // par exemple, 80% de la hauteur de la vue
+    margin: '0 auto', // Centrer le Grid
   }
-  return <div style={style}></div>
+
+  const netStyle: React.CSSProperties = {
+    position: 'absolute',
+    width: '2px',
+    height: '100%',
+    backgroundColor: 'white',
+    left: '50%',
+    transform: 'translateX(-50%)',
+  }
+
+  return (
+    <div style={gridStyle}>
+      <div style={netStyle}></div>
+      {/* Autres éléments du Grid */}
+    </div>
+  )
 }
 
 export { Grid }
