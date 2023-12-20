@@ -1,24 +1,70 @@
-import React, { useEffect, useId, useState } from 'react'
+import { AxiosError } from 'axios'
+import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
 import { IFriends, IUser } from '../types/User'
-
+import { addFriend, getAllFriends, getNonFriends, removeFriend } from '../utils/friendService'
 const Profile: React.FC = () => {
   const { user: loggedInUser, signout } = useAuth()
-  const { userId } = useParams<{ userId: string }>()
   const [profilUser, setProfilUser] = useState<IUser>()
+  const [addFriends, setAddFriends] = useState<IFriends>()
+  const [nonFriends, setNonFriends] = useState<IUser[]>([])
+  const [friends, setFriends] = useState<IUser[]>([])
+
   const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()
     await signout()
   }
 
-  const [isFriend, setIsFriend] = useState(false)
-  const [addFriends, setAddFriends] = useState<IFriends>()
+  useEffect(() => {
+    async function getNonFriend() {
+      try {
+        const response = await getNonFriends()
+        console.log('Non friend: ' + response)
+        setNonFriends(response)
+      } catch (e) {
+        const err = e as AxiosError
+        console.log('Error in Non Friends', err.response?.data)
+      }
+    }
+    getNonFriend()
+  }, [])
+
+  useEffect(() => {
+    async function getAllFriend() {
+      try {
+        const response = await getAllFriends()
+        console.log('All friends: ' + response)
+      } catch (e) {
+        const err = e as AxiosError
+        console.log('Error in All Friends', err.response?.data)
+      }
+    }
+    getAllFriend()
+  }, [])
+
+  async function addNewFriends(userId: number) {
+    try {
+      const response = await addFriend(userId)
+      console.log('Add new friend: ' + response.data)
+    } catch (e) {
+      console.log(`Error in ${addNewFriends.name}`, (e as Error).message)
+    }
+  }
+
+  async function removeFriends(userId: number) {
+    try {
+      const response = await removeFriend(userId)
+      console.log('Remove friends: ' + response)
+    } catch (e) {
+      console.log(`Error in ${addNewFriends.name}`, (e as Error).message)
+    }
+  }
 
   const isUserId = () => {
-    if (loggedInUser && profilUser?.id !== loggedInUser.id) {
+    if (loggedInUser && profilUser?.id === loggedInUser.id) {
       return (
         <div>
           <button className='btn btn-primary drop-shadow-xl rounded-lg' onClick={onButtonClick}>
@@ -41,23 +87,23 @@ const Profile: React.FC = () => {
     }
   }
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        let response
-        if (loggedInUser && profilUser?.id !== loggedInUser.id)
-          response = await fetch(`localhost:3001/profile/${profilUser?.id}`)
-        else if (loggedInUser) response = await fetch(`localhost:3001/profile/me`)
-        if (response && response.ok) {
-          const userData = await response.json()
-          setProfilUser(userData)
-        }
-      } catch (error) {
-        console.error('Error fetching user data: ', error)
-      }
-    }
-    fetchData()
-  }, [loggedInUser, userId])
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       let response
+  //       if (loggedInUser && profilUser?.id !== loggedInUser.id)
+  //         response = await fetch(`localhost:3001/profile/${profilUser?.id}`)
+  //       else if (loggedInUser) response = await fetch(`localhost:3001/profile/me`)
+  //       if (response && response.ok) {
+  //         const userData = await response.json()
+  //         setProfilUser(userData)
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching user data: ', error)
+  //     }
+  //   }
+  //   fetchData()
+  // }, [loggedInUser, userId])
   return (
     <div
       className='hero pt-6'

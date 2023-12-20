@@ -39,8 +39,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ user, message, members }) => {
   const imageStyle = clsx({
     ['w-6 h-6 rounded-full']: true,
     ['order-2']: message.senderId === user.id,
-    ['order-1 hover:w-8 hover:h-8 hover:border-blue hover:border-4 rounded-full']:
-      message.senderId !== user.id,
+    ['order-1 hover:shadow-lg hover:shadow-indigo-500/50']: message.senderId !== user.id,
   })
 
   useEffect(() => {
@@ -63,22 +62,21 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ user, message, members }) => {
         </div>
       </div>
       {BubbleChannelModal({ openModal, setOpenModal, message, user })}
-      <button
-        type='button'
-        className='block'
-        onClick={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          if (message.senderId !== user.id) setOpenModal(!openModal)
-        }}
-      >
+      {message.senderId !== user.id ? (
+        <button
+          type='button'
+          className='block'
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setOpenModal(!openModal)
+          }}
+        >
+          <img src={sender.user.image} alt='My profile' className={imageStyle} />
+        </button>
+      ) : (
         <img src={sender.user.image} alt='My profile' className={imageStyle} />
-      </button>
-      {/* <Link
-        to={message.senderId === user?.id ? '/profile/me' : '/profile/${member.userId}'}
-        placeholder={'${members.userId}'}
-      >
-      </Link> */}
+      )}
     </div>
   )
 }
