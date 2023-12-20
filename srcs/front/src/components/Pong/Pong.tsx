@@ -14,8 +14,11 @@ const Pong = () => {
   const paddleHeightVh = 15 // Exemple : 15vh
   const initialPlayerY = (gridHeightVh - paddleHeightVh) / 2
 
-  const [playerPosition, setPlayerPosition] = useState({ x: 8, y: initialPlayerY }) // 5vw du bord gauche
-  const [opponentPosition, setOpponentPosition] = useState({ x: 90, y: initialPlayerY }) // 95vw du bord droit
+  const [playerPosition, setPlayerPosition] = useState({ x: 7, y: initialPlayerY }) // 5vw du bord gauche
+  const [opponentPosition, setOpponentPosition] = useState({
+    x: gridWidthVw + 10,
+    y: initialPlayerY,
+  }) // 95vw du bord droit
   const [ballPosition, setBallPosition] = useState({ x: 50, y: gridHeightVh / 2 })
   const maxY = gridHeightVh - paddleHeightVh
 
@@ -25,13 +28,13 @@ const Pong = () => {
         // Exemple : Déplacer la raquette vers le haut
         setPlayerPosition((prevPosition) => ({
           ...prevPosition,
-          y: Math.max(prevPosition.y - 10, 18),
+          y: Math.max(prevPosition.y - 2, 18.5),
         }))
       } else if (event.key === 'ArrowDown') {
         // Exemple : Déplacer la raquette vers le bas
         setPlayerPosition((prevPosition) => ({
           ...prevPosition,
-          y: Math.min(prevPosition.y + 10, maxY - 2.5), // 'maxY' dépend de la hauteur de votre terrain de jeu
+          y: Math.min(prevPosition.y + 2, maxY - 1.5), // 'maxY' dépend de la hauteur de votre terrain de jeu
         }))
       }
     }
@@ -66,7 +69,7 @@ const Pong = () => {
     }
   }, [ballDirection, gridWidthVw])
   return (
-    <div className='m-10 justify-center items-center'>
+    <div className='mt-10'>
       <Grid />
       <Paddle position={playerPosition} isPlayer={true} />
       <Paddle position={opponentPosition} isPlayer={false} />

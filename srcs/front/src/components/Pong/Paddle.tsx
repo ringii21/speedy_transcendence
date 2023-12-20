@@ -18,7 +18,7 @@ const Paddle: React.FC<PaddleProps> = ({ position, isPlayer }) => {
     left: `${position.x}vw`,
     top: `${position.y}vh`,
     transform: 'translate(-50%, -50%)',
-    margin: '10px',
+    marginLeft: '1.5%',
   }
 
   return <div style={paddleStyle}></div>
