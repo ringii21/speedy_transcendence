@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { FriendsService } from "./friends.service";
-import { JwtPayload } from "src/auth/jwt/jwt-auth.strategy";
-import { UserDecorator } from "src/users/decorator/users.decorator";
+import { JwtPayload } from "../auth/jwt/jwt-auth.strategy";
+import { UserDecorator } from "../users/decorator/users.decorator";
 
 @UseGuards(AuthGuard)
 @Controller('friends')
