@@ -2,7 +2,6 @@ import clsx from 'clsx'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-import { useAuth } from '../../providers/AuthProvider'
 import { IChannelMember } from '../../types/Chat'
 import { IChannelMessage } from '../../types/Message'
 import { IUser } from '../../types/User'
