@@ -1,16 +1,8 @@
+import clsx from 'clsx'
 import React, { useState } from 'react'
-import {
-  BrowserView,
-  isBrowser,
-  isDesktop,
-  isMobile,
-  isTablet,
-  MobileOnlyView,
-  MobileView,
-  TabletView,
-} from 'react-device-detect'
-import { RxHamburgerMenu } from 'react-icons/rx'
-import { Link, Navigate } from 'react-router-dom'
+import { FaHashtag, FaList, FaLock, FaUser } from 'react-icons/fa'
+import { useMediaQuery } from 'react-responsive'
+import { Navigate } from 'react-router-dom'
 
 import { ChatConv, ChatSelection, ChatUsers } from '../components/Chat'
 import { WithNavbar } from '../hoc/WithNavbar'
@@ -20,119 +12,97 @@ import { useSocket } from '../providers/SocketProvider'
 
 const Chat = () => {
   const { user } = useAuth()
-  const [channelList, setChannelList] = useState(true)
-  const [conv, setConv] = useState(false)
+  const [channelList, setChannelList] = useState(false)
   const [userChannelList, setUserChannelList] = useState(false)
   if (!user) return <Navigate to='/login' replace />
 
   const { socket, isConnected } = useSocket()
   if (!isConnected) socket?.connect()
-  const { channel } = useChat()
+  const { channel, selectedChannel } = useChat()
 
-  const handleChatSelectionOpen = () => {
-    setConv(true)
-    setChannelList(false)
-    setUserChannelList(false)
+  const isDesktop = useMediaQuery({ minWidth: 1224 })
+  const isTabletOrMobile = useMediaQuery({ maxWidth: 1224 })
+
+  const openChannelList = () => {
+    if (userChannelList) setUserChannelList(!userChannelList)
+    setChannelList(!channelList)
+  }
+  const openUserList = () => {
+    if (channelList) setChannelList(!channelList)
+    setUserChannelList(!userChannelList)
   }
 
-  const handleChatSelectionClose = () => {
-    setChannelList(true)
-    setConv(false)
-    setUserChannelList(false)
-  }
+  const arrowSubWrapperStyle = clsx({
+    ['flex space-x-2 pl-4']: isTabletOrMobile,
+    ['flex space-x-2 pl-4 md:hidden']: !isTabletOrMobile,
+  })
+  const buttonArrowStyle = clsx({
+    ['flex justify-end space-x-2 pr-4']: isTabletOrMobile,
+    ['flex justify-end space-x-2 pr-4 md:hidden']: !isTabletOrMobile,
+  })
 
-  const handleUserChannelList = () => {
-    setConv(false)
-    setUserChannelList(true)
-    setChannelList(false)
-  }
-
-  const showUsersChannel = (): React.ReactNode => {
-    let content: React.ReactNode = null
-    if (channel?.data) {
-      content = (
-        <div className='bg-gray-100 md:flex hidden'>
-          <ChatUsers members={channel.data.members ?? []} onClickConv={null} />
-        </div>
-      )
-    } else content = <div></div>
-    return content
-  }
-
-  const showUsersList = (): React.ReactNode => {
-    let content: React.ReactNode = null
-    if (channel?.data) {
-      content = (
-        <div className='h-screen relative md:w-2/4 w-screen'>
-          <ChatConv me={user} onClickChannelList={null} onClickUserChannelList={null} />
+  const conditionnalRender = (): React.ReactNode => {
+    if (isDesktop) {
+      return (
+        <div className='flex flex-row'>
+          <div>
+            <ChatSelection openChannelList={openChannelList} />
+          </div>
+          <div>
+            <ChatConv me={user} openChannelList={openChannelList} openUserList={openUserList} />
+          </div>
+          <ChatUsers members={channel?.data?.members ?? []} />
         </div>
       )
     } else {
-      content = (
-        <div className='md:flex flex-col items-center mt-4 hidden'>
-          <span className='text-xl'>Select a channel</span>
+      return (
+        <div className='flex flex-col'>
+          {channelList || userChannelList ? (
+            <div className='flex flex-col'>
+              {channelList && <ChatSelection openChannelList={openChannelList} />}
+              {userChannelList && <ChatUsers members={channel?.data?.members ?? []} />}
+            </div>
+          ) : (
+            <ChatConv me={user} openChannelList={openChannelList} openUserList={openUserList} />
+          )}
         </div>
       )
     }
-    return content
   }
 
-  const showUsersMobile = (): React.ReactNode => {
-    let content: React.ReactNode = null
-    if (channel?.data?.id) {
-      if (conv && !channelList && !userChannelList) {
-        content = (
-          <div className='h-screen w-screen relative'>
-            <ChatConv
-              me={user}
-              onClickChannelList={handleChatSelectionClose}
-              onClickUserChannelList={handleUserChannelList}
-            />
-          </div>
-        )
-      } else if (!conv && !channelList && userChannelList) {
-        content = (
-          <div className='h-screen w-screen bg-gray-200'>
-            <ChatUsers members={channel.data.members ?? []} onClickConv={handleChatSelectionOpen} />
-          </div>
-        )
-      } else {
-        content = (
-          <div className='bg-gray-100 relative sm:flex'>
-            <ChatSelection onClick={() => handleChatSelectionOpen()} />
-          </div>
-        )
-      }
-    } else {
-      content = (
-        <div className='bg-gray-100 relative sm:flex'>
-          <ChatSelection onClick={() => handleChatSelectionOpen()} />
-        </div>
-      )
-    }
-    return content
+  // no channel selected
+  if (!selectedChannel) {
+    return (
+      <div className='md:flex flex-col items-center mt-4'>
+        <ChatSelection openChannelList={openChannelList} />
+      </div>
+    )
   }
 
-  const changeWinFormat = () => {
-    if (isMobile) {
-      return (
-        <MobileView>
-          <div className='flex justify-between w-screen h-screen'>{showUsersMobile()}</div>
-        </MobileView>
-      )
-    } else if (isDesktop || isTablet) {
-      return (
-        <div className='flex h-screen w-screen justify-between'>
-          <div className='bg-gray-100 md:flex hidden'>
-            <ChatSelection onClick={null} />
-          </div>
-          {showUsersList()}
-          {showUsersChannel()}
+  return (
+    <div>
+      <div className='flex justify-between gap-6 mt-4 border-b pb-4'>
+        <div className={arrowSubWrapperStyle}>
+          <button type='button' className='btn btn-ghost' onClick={openChannelList}>
+            <FaList size={18} className='text-gray-500 mt-1' />
+          </button>
         </div>
-      )
-    }
-  }
-  return <div>{changeWinFormat()}</div>
+        {channel?.data && (
+          <div className='flex items-center'>
+            {channel.data.channelType === 'public' && <FaHashtag size={12} />}
+            {['private', 'protected'].includes(channel.data.channelType) && <FaLock size={12} />}
+            {channel.data.name}
+          </div>
+        )}
+        <div className={buttonArrowStyle}>
+          <button type='button' className='btn btn-ghost' onClick={openUserList}>
+            <FaUser size={18} className='text-gray-500 mt-1' />
+          </button>
+        </div>
+      </div>
+      {conditionnalRender()}
+    </div>
+  )
 }
 
 const ChatWithNavbar = WithNavbar(Chat)

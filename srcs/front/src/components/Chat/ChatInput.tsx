@@ -59,7 +59,7 @@ const ChatInput: React.FC<GetChannel> = ({ channel }) => {
         onKeyDown={handleKeyDown}
         onChange={(e) => setInputMessage(e.target.value)}
         placeholder='Message'
-        className='block ps-4 text-gray-600 pl-4 bg-gray-200 rounded-lg py-3 mt-4 w-full'
+        className='block ps-4 text-gray-600 pl-4 rounded-lg py-3 mt-4 w-full'
       />
       <div>
         <button

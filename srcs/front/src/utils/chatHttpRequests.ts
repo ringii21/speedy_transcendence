@@ -8,8 +8,14 @@ export const getMyChannels = async () => {
   return data
 }
 
+export const getMyPrivateChannels = async () => {
+  const { data } = await httpInstance().get<IChannel[]>('/api/chat/channels/pms')
+  return data
+}
+
 export const getChannel = async ({ queryKey }: { queryKey: QueryKey }) => {
-  const [_, channelId] = queryKey
+  const [_channelName, channelId] = queryKey
+
   if (!channelId) throw new Error('channelId is required')
   const { data } = await httpInstance().get<IChannel>(`/api/chat/channels/${channelId}`)
   return data

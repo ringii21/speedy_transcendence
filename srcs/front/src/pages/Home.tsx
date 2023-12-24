@@ -12,7 +12,7 @@ const Home = () => {
   socket?.connect()
   return (
     <div className='w-screen'>
-      <h1 className='text-center text-4xl uppercase welcome md:text-7xl bg-gray-900'>Welcome</h1>
+      <h1 className='text-center text-4xl uppercase welcome md:text-7xl'>Welcome</h1>
       <Link
         to='#'
         className='flex flex-col items-center btnImg justify-center w-screen bg-black shadow md:flex-row'

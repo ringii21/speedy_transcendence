@@ -27,6 +27,7 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
     handleSubmit,
     formState: { errors },
     setError,
+    reset,
   } = useForm<FormValues>({
     defaultValues: {
       channelType: 'public',
@@ -43,11 +44,11 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
     },
     onError: (error) => {
       if (error instanceof AxiosError) {
-        if (error.status === 409)
+        if (error.response?.status === 409)
           setError('name', {
             message: 'Channel name already exists',
           })
-        else if (error.status === 400) {
+        else if (error.response?.status === 400) {
           error.message.includes('password') &&
             setError('password', {
               message: 'Password must be between 3 and 10 characters',
@@ -73,9 +74,15 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
     ['btn']: true,
     ['btn-disabled']: isPending,
   })
+
+  const onClose = () => {
+    reset()
+    setCreateModalOpen(false)
+  }
+
   return (
     <Transition appear show={isCreateModalOpen} as={Fragment}>
-      <Dialog as='div' className='relative z-10' onClose={() => setCreateModalOpen(false)}>
+      <Dialog as='div' className='relative z-10' onClose={onClose}>
         <Transition.Child
           as={Fragment}
           enter='ease-out duration-300'
@@ -114,6 +121,7 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
                           type='text'
                           id='channel_name'
                           placeholder='Enter the channel name'
+                          autoComplete='off'
                           aria-invalid={errors.name ? 'true' : 'false'}
                           {...register('name', {
                             required: true,
@@ -158,6 +166,7 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
                             type='text'
                             id='password'
                             placeholder='Enter the password'
+                            autoComplete='off'
                             {...register('password', {
                               minLength: {
                                 value: 3,
@@ -185,10 +194,7 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
                         <button type='submit' className={`${buttonStyle} btn-success`}>
                           Create
                         </button>
-                        <button
-                          onClick={() => setCreateModalOpen(false)}
-                          className={`${buttonStyle} btn-error`}
-                        >
+                        <button onClick={onClose} className={`${buttonStyle} btn-error`}>
                           Cancel
                         </button>
                       </div>

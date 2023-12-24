@@ -41,6 +41,13 @@ export class ChatController {
     return channels.map((channel) => new ChannelEntity(channel))
   }
 
+  @Get('/channels/pms')
+  async getPmChannels(@Req() req: RequestWithDbUser) {
+    // TODO: implement
+    console.log(req)
+    return []
+  }
+
   @Get('/channels/:id')
   async getChannel(
     @Req() req: RequestWithDbUser,

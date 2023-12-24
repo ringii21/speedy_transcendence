@@ -1,122 +1,143 @@
 import { useQuery } from '@tanstack/react-query'
 import clsx from 'clsx'
-import React, { useEffect, useState } from 'react'
-import { HiHashtag } from 'react-icons/hi2'
+import React, { useState } from 'react'
+import { FaHashtag } from 'react-icons/fa'
+import { useParams } from 'react-router-dom'
 
 import { useChat } from '../../providers/ChatProvider'
 import { IChannel } from '../../types/Chat'
-import { getMyChannels } from '../../utils/chatHttpRequests'
+import { getMyChannels, getMyPrivateChannels } from '../../utils/chatHttpRequests'
 import { CreateChannelModal } from './CreateChannelModal'
 import { JoinChannelModal } from './JoinChannelModal'
 
-interface PropsEvent {
-  onClick: ((e: React.MouseEvent<HTMLTableRowElement, MouseEvent>) => void) | null
-}
-
-const ChannelRow: React.FC<{
-  channel: IChannel
-  onClick: ((e: React.MouseEvent<HTMLTableRowElement, MouseEvent>) => void) | null
-  selected: boolean
-}> = ({ channel, selected, onClick }) => (
-  <tr
-    onClick={onClick ? (e) => onClick(e) : undefined}
-    className={clsx({
-      'bg-base-200 border-b border-t border-gray-200': selected,
-    })}
-  >
-    <td className='flex'>
-      <HiHashtag size={10} />
-      {channel.name}
-    </td>
-    <td>{channel.channelType}</td>
-    <td>{0}</td>
-  </tr>
-)
-
-const ChatSelection: React.FC<PropsEvent> = ({ onClick }) => {
+const ChatSelection = ({ openChannelList }: { openChannelList: () => void }) => {
+  const { channelId } = useParams()
   const { selectedChannel, setSelectedChannel } = useChat()
   const [isCreateModalOpen, setCreateModalOpen] = useState(false)
   const [isJoinModalOpen, setJoinModalOpen] = useState(false)
+
   const channelsData = useQuery<IChannel[]>({
     queryKey: ['channels', 'joined'],
     queryFn: getMyChannels,
   })
 
-  const handleClickEvent = (e: React.MouseEvent<HTMLTableRowElement, MouseEvent> | null) => {
-    if (onClick && e) onClick(e)
+  const privateChannelsData = useQuery<IChannel[]>({
+    queryKey: ['private'],
+    queryFn: getMyPrivateChannels,
+  })
+
+  const chatClass = (id: number, selectedId: number | null) =>
+    clsx({
+      ['flex p-2 hover:bg-gray-100 hover:rounded cursor-pointer']: true,
+      ['flex p-2 hover:bg-gray-100 hover:rounded cursor-pointer bg-base-200']: id === selectedId,
+    })
+
+  const collapseClass = (open: boolean, hasChannels: boolean) =>
+    clsx({
+      ['collapse collapse-arrow']: true,
+      ['collapse collapse-arrow collapse-open']: open && hasChannels,
+      ['collapse collapse-arrow collapse-close']: open && hasChannels,
+    })
+
+  const hasChannelSelected = (selectedChannel: number | null) => {
+    if (!selectedChannel) return false
+    if (channelsData.data?.length === 0) return false
+    const channel = channelsData.data?.find((channel) => channel.id === selectedChannel)
+    if (!channel) return false
+    if (channel.channelType !== 'direct') return true
+    return false
+  }
+
+  const hasPrivateMessageSelected = (selectedChannel: number | null) => {
+    if (!selectedChannel) return false
+    if (privateChannelsData.data?.length === 0) return false
+    const channel = privateChannelsData.data?.find((channel) => channel.id === selectedChannel)
+    if (!channel) return false
+    if (channel.channelType === 'direct') return true
+    return false
   }
 
   return (
-    <div className='md:flex flex-col space-y-4 items-center pl-4 pr-4 lg:pr-4 mt-6 gap-12 w-screen lg:w-full md:w-full relative'>
+    <div className='items-center gap-12'>
       {CreateChannelModal({ isCreateModalOpen, setCreateModalOpen })}
       {JoinChannelModal({ isJoinModalOpen, setJoinModalOpen })}
-      <div className='flex justify-around'>
-        <div className='flex flex-col sm:flex-row gap-4 border-b pb-8'>
-          <button
-            onClick={(e) => {
-              e.preventDefault()
-              setCreateModalOpen(!isCreateModalOpen)
-            }}
-            className='btn btn-primary'
-          >
-            Add Channel
-          </button>
-          <button
-            onClick={(e) => {
-              e.preventDefault()
-              setJoinModalOpen(!isJoinModalOpen)
-            }}
-            className='btn btn-secondary text-center'
-          >
-            Join Channel
-          </button>
+      <div className='flex flex-col gap-2 border-b p-4'>
+        <button
+          onClick={(e) => {
+            e.preventDefault()
+            setCreateModalOpen(!isCreateModalOpen)
+          }}
+          className='btn btn-primary'
+        >
+          Add Channel
+        </button>
+        <button
+          onClick={(e) => {
+            e.preventDefault()
+            setJoinModalOpen(!isJoinModalOpen)
+          }}
+          className='btn btn-secondary'
+        >
+          Join Channel
+        </button>
+      </div>
+      <div
+        tabIndex={0}
+        className={collapseClass(
+          hasChannelSelected(selectedChannel),
+          (channelsData.data?.length ?? 0) > 0,
+        )}
+      >
+        <input type='checkbox' />
+        <div className='collapse-title text-xl font-medium'>Channels</div>
+        <div className='collapse-content visible'>
+          {channelsData.data &&
+            channelsData.data.map((channel, i) => (
+              <div
+                key={i}
+                className={chatClass(channel.id, selectedChannel)}
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (selectedChannel !== channel.id) {
+                    setSelectedChannel(channel.id)
+                    openChannelList()
+                  }
+                }}
+              >
+                <div className='flex items-center mr-4'>
+                  <FaHashtag size={12} className='text-gray-500' />
+                  <span className='ml-2 font-normal'>{channel.name}</span>
+                </div>
+                <div className='flex-grow text-right'>{channel.members?.length || 0}</div>
+              </div>
+            ))}
         </div>
       </div>
-      <div className='collapse collapse-arrow'>
-        <div tabIndex={0} className='collapse collapse-arrow'>
-          <input type='checkbox' />
-          <div className='collapse-title text-xl font-medium'>Channels</div>
-          <div className='collapse-content'>
-            <table className='table'>
-              <thead>
-                <tr>
-                  <th className='text-left'>Name</th>
-                  <th className='text-left'>Type</th>
-                  <th className='text-left'>User count</th>
-                </tr>
-              </thead>
-              <tbody>
-                {channelsData.isLoading && (
-                  <tr>
-                    <td colSpan={2}>
-                      <span className='loading loading-lg'></span>
-                    </td>
-                  </tr>
-                )}
-                {!channelsData.isLoading &&
-                  channelsData.data &&
-                  channelsData.data.map((channel, i) => (
-                    <ChannelRow
-                      key={i}
-                      channel={channel}
-                      onClick={(e) => {
-                        setSelectedChannel(channel.id)
-                        if (e) handleClickEvent(e)
-                      }}
-                      selected={channel.id === (selectedChannel ?? null)}
-                    />
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <div tabIndex={0} className='collapse collapse-arrow'>
+      <div
+        tabIndex={0}
+        className={collapseClass(
+          hasPrivateMessageSelected(selectedChannel),
+          (privateChannelsData.data?.length ?? 0) > 0,
+        )}
+      >
         <input type='checkbox' />
         <div className='collapse-title text-xl font-medium'>Private Messages</div>
         <div className='collapse-content'>
-          {channelsData.isLoading && <span className='loading loading-lg'></span>}
-          pms
+          {privateChannelsData.isLoading && <span className='loading loading-lg'></span>}
+          {privateChannelsData.data &&
+            privateChannelsData.data.map((channel, i) => (
+              <div
+                key={i}
+                className={chatClass(channel.id, selectedChannel)}
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (selectedChannel !== channel.id) {
+                    setSelectedChannel(channel.id)
+                    openChannelList()
+                  }
+                }}
+              />
+            ))}
         </div>
       </div>
     </div>
