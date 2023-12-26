@@ -12,3 +12,9 @@ export class QueryUsersDto {
   @Transform(({ value }) => parseInt(value, 10))
   take: number
 }
+
+export class QueryFindUsersDto {
+  @IsNumber()
+  @Transform(({ value }) => parseInt(value, 10))
+  take: number
+}

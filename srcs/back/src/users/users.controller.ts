@@ -1,9 +1,12 @@
 import {
+  BadRequestException,
   Body,
   ClassSerializerInterceptor,
   Controller,
   Get,
+  ParseIntPipe,
   Patch,
+  Post,
   Query,
   Req,
   UploadedFile,
@@ -13,7 +16,7 @@ import {
 import { UsersService } from './users.service'
 import { UserEntity } from './entity/user.entity'
 import { PatchUserDto } from './dto/patch-user.dto'
-import { QueryUsersDto } from './dto/query-users.dto'
+import { QueryFindUsersDto, QueryUsersDto } from './dto/query-users.dto'
 import JwtTwoFaGuard from '../auth/jwt/jwt-2fa.guard'
 import { UploadUserImage } from './decorator/file-upload.decorator'
 import { ConfigService } from '@nestjs/config'
@@ -40,6 +43,33 @@ export class UsersController {
   async me(@Req() req: RequestWithDbUser) {
     return new UserEntity(req.user)
   }
+
+  // ******************** Get user by id *************************
+  // @Get(':id')
+  // async userId(
+  //   @Req() req: RequestWithDbUser,
+  //   @Param('id', ParseIntPipe) id: number
+  //   ) {
+  //     if (!(await this.usersService.isUserExist(req.user.id)))
+  //       throw new BadRequestException('Users is not found')
+  //     // const users = await this.usersService.
+  //   return new UserEntity(req.user)
+  // }
+  // *************************************************************
+  
+  // *************** Post user's data from id ******************** //
+  @Post()
+  async getAllUsers(@Query() queryUsersDto: QueryFindUsersDto) {
+    const allUsers = await this.usersService.findMany(queryUsersDto)
+
+    return allUsers.map((users) => new UserEntity(users))
+  }
+
+  @Post(':userId')
+  async id(@Req() req: RequestWithDbUser) {
+    return new UserEntity(req.user)
+  }
+  // ***********************************************************
 
   @Patch('me')
   @UploadUserImage()
