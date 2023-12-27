@@ -1,3 +1,4 @@
+import { useQueries, useQuery } from '@tanstack/react-query'
 import clsx from 'clsx'
 import React, { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -6,6 +7,7 @@ import { useAuth } from '../../providers/AuthProvider'
 import { IChannelMember } from '../../types/Chat'
 import { IChannelMessage } from '../../types/Message'
 import { IUser } from '../../types/User'
+import { fetchAllUsers } from '../../utils/userHttpRequests'
 import { BubbleChannelModal } from './BubbleChannelModal'
 
 type ChatBubbleProps = {
@@ -16,9 +18,15 @@ type ChatBubbleProps = {
 
 const ChatBubble: React.FC<ChatBubbleProps> = ({ user, message, members }) => {
   const [openModal, setOpenModal] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<IUser>()
   const ref = useRef<HTMLDivElement>(null)
   const sender = members.find((member) => member.userId === message.senderId)
   if (!sender) return <span>Error</span>
+
+  const getUser = useQuery<IUser[]>({
+    queryKey: ['user', selectedUser],
+    queryFn: fetchAllUsers,
+  })
 
   const messagePosition = clsx({
     ['flex space-y-2 text-xs max-w-xs mx-2']: true,

@@ -2,38 +2,39 @@ import { UseBaseQueryResult, useQuery, UseQueryResult } from '@tanstack/react-qu
 import { AxiosError } from 'axios'
 import { findSourceMap } from 'module'
 import React, { createContext, Dispatch, SetStateAction, useEffect, useState } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams, useResolvedPath } from 'react-router-dom'
 
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
 import { IFriends, IUser } from '../types/User'
 import { addFriend, getAllFriends, getNonFriends, removeFriend } from '../utils/friendService'
-import { fetchFindUser, getUserById } from '../utils/userHttpRequests'
+import { fetchAllUsers, getAllUsers } from '../utils/userHttpRequests'
 
 const Profile = () => {
-  const { user: loggedInUser, signout } = useAuth()
-  const [profilUser, setProfilUser] = useState<IUser | null>(null)
-  /*
-  const [addFriends, setAddFriends] = useState<IFriends>()
-  const [nonFriends, setNonFriends] = useState<IUser[]>([])
-  const [friends, setFriends] = useState<IUser[]>([])
-  */
+  const { user, signout } = useAuth()
+  const [profilUser, setProfilUser] = useState<IUser>()
 
   const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()
     await signout()
   }
 
-  const [selectedUser, setSelectedUser] = useState<number | null>(null)
-  // const findUsers = useQuery<IUser, Error>({
-  //   queryKey: ['user', selectedUser],
-  //   queryFn: fetchFindUser,
-  // })
-
-  const otherUser = useQuery<IUser>({
+  const [selectedUser, setSelectedUser] = useState<number>()
+  const findUsers = useQuery<IUser[]>({
     queryKey: ['user', selectedUser],
-    queryFn: getUserById,
+    queryFn: fetchAllUsers,
   })
+
+  // const getUsers = useQuery<IUser[]>({
+  //   queryKey: ['user', selectedUser],
+  //   queryFn: getAllUsers,
+  // })
+  // useEffect(() => {
+  //   if (findUsers.data && Array.isArray(findUsers.data)) {
+  //     const userId = findUsers.data.map((user) => user.id)
+  //     const userName = findUsers.data.map((user) => user.username)
+  //   }
+  // }, [findUsers.data])
 
   // useEffect(() => {
   //   setSelectedUser(6)
@@ -93,62 +94,75 @@ const Profile = () => {
   //   }
   // }
 
-  const isUserId = () => {
-    if (loggedInUser) {
-      return (
-        <div>
-          <button className='btn btn-primary drop-shadow-xl rounded-lg' onClick={onButtonClick}>
-            Logout
-          </button>
-        </div>
-      )
-      /*
-    } else {
-      return (
-        <div className='flex justify-evenly'>
-          {loggedInUser?.id ? (
-            <button className='btn btn-primary drop-shadow-xl rounded-lg'>Follow</button>
-          ) : (
-            <button className='btn btn-primary drop-shadow-xl rounded-lg'>Unfollow</button>
-          )}
-
-          <button className='btn btn-secondary drop-shadow-xl rounded-lg'>Message</button>
-        </div>
-      )
-    */
-    }
-  }
-
   const navigation = useNavigate()
   const location: any = useLocation()
   useEffect(() => {
     const userIdFromUrl: number = parseInt(location.pathname.split('/').pop(), 10)
-    console.log('Url: ' + userIdFromUrl)
     if (!isNaN(userIdFromUrl) || window.location.pathname.includes('me')) {
       setSelectedUser(userIdFromUrl)
-    } else navigation('*')
+    } else {
+      navigation('*')
+    }
     const fetchData = async () => {
-      console.log(`UserIds: ` + otherUser.data?.id)
-      console.log(`LoggedIn: ` + loggedInUser?.id)
-      try {
-        let response
-        if (!window.location.pathname.includes('me')) {
-          response = await fetch(`http://localhost:3000/api/users/${userIdFromUrl}`)
-        } else {
-          response = await fetch(`http://localhost:3000/api/users/me`)
+      if (findUsers.data && Array.isArray(findUsers.data)) {
+        try {
+          for (const users of findUsers.data) {
+            if (users.id === userIdFromUrl) {
+              let response
+              if (!window.location.pathname.includes('me')) {
+                setSelectedUser(userIdFromUrl)
+                const userProfil = findUsers.data?.find((getUser) => getUser.id === userIdFromUrl)
+                if (userProfil?.id === users.id) {
+                  response = await fetch(`http://localhost:3000/api/users/${users.id}`)
+                }
+              } else {
+                response = await fetch(`http://localhost:3000/api/users/me`)
+              }
+              if (response && response.ok) {
+                const userData = await response.json()
+                setProfilUser(userData)
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching user data: ', error)
         }
-        console.log(response)
-        if (response && response.ok) {
-          console.log('response ok')
-          const userData = await response.json()
-          setProfilUser(userData)
-        }
-      } catch (error) {
-        console.error('Error fetching user data: ', error)
       }
     }
     fetchData()
-  }, [loggedInUser])
+  }, [])
+
+  let userData
+  if (Array.isArray(findUsers.data)) {
+    userData = findUsers.data.find((users) => users.id === selectedUser)
+  }
+
+  const isUserId = () => {
+    if (Array.isArray(findUsers.data)) {
+      const users = findUsers.data.find((users) => users.id === selectedUser)
+      if (!users || users.id === user?.id) {
+        return (
+          <div>
+            <button className='btn btn-primary drop-shadow-xl rounded-lg' onClick={onButtonClick}>
+              Logout
+            </button>
+          </div>
+        )
+      } else {
+        return (
+          <div className='flex justify-evenly'>
+            {/* { ? (
+              <button className='btn btn-primary drop-shadow-xl rounded-lg'>Follow</button>
+            ) : (
+              <button className='btn btn-primary drop-shadow-xl rounded-lg'>Unfollow</button>
+            )} */}
+            <button className='btn btn-secondary drop-shadow-xl rounded-lg'>Message</button>
+          </div>
+        )
+      }
+    }
+  }
+
   return (
     <div
       className='hero pt-6'
@@ -160,11 +174,11 @@ const Profile = () => {
       <div className='hero-content text-center text-neutral-content'>
         <div className='max-w-md'>
           <h1 className='mb-5 text-5xl font-bold text-purple-100'>
-            {profilUser ? profilUser.username : loggedInUser?.username}
+            {userData ? <span>{userData.username}</span> : <span>{user?.username}</span>}
           </h1>
           <div className='avatar'>
             <div className='w-36 rounded-full drop-shadow-lg hover:drop-shadow-xl justify-self-start'>
-              <img src={profilUser ? profilUser.image : loggedInUser?.image} alt='avatar' />
+              <img src={userData ? userData.image : user?.image} alt='avatar' />
             </div>
           </div>
           <div className='columns-3 flex-auto space-y-20'>
