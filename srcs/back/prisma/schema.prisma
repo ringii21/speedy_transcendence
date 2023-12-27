@@ -30,8 +30,8 @@ model User {
   actions  ChannelAction[]
   messages ChannelMessage[]
 
-  friends  User[] @relation("friends")
-  friendOf User[] @relation("friends")
+  friends  Friends[]
+  friendOf FriendsOf[]
 
   playedAsp1 Game[] @relation("player1")
   playedAsp2 Game[] @relation("player2")
@@ -39,14 +39,27 @@ model User {
   @@map("users")
 }
 
-model Profile {
-  id        Int       @id @default(autoincrement())
-  username  String    @unique
-  image     String
-  user      User      @relation(fields: [userId], references: [id])
-  userId    Int       @unique
+model Friends {
+  id       Int    @id @default(autoincrement())
+  image    String
+  username String @unique
+  email    String @unique
+  userId   Int    @unique
+  User     User   @relation(fields: [userId], references: [id])
 
-  @@map("profile")
+  @@index([userId, id])
+  @@map("friends")
+}
+
+model FriendsOf {
+  id       Int    @id @default(autoincrement())
+  image    String
+  username String @unique
+  userId   Int    @unique
+  User     User   @relation(fields: [userId], references: [id])
+
+  @@index([userId, id])
+  @@map("friends_of")
 }
 
 model ChannelMessage {

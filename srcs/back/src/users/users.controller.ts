@@ -39,6 +39,13 @@ export class UsersController {
     return users.map((user) => new UserEntity(user))
   }
 
+  @Post()
+  async postAllUsers(@Query() queryUsersDto: QueryUsersDto) {
+    const users = await this.usersService.findMany(queryUsersDto)
+
+    return users.map((user) => new UserEntity(user))
+  }
+
   @Get('me')
   async me(@Req() req: RequestWithDbUser) {
     return new UserEntity(req.user)
@@ -56,16 +63,15 @@ export class UsersController {
   //   return new UserEntity(req.user)
   // }
   // *************************************************************
-  
+
   // *************** Post user's data from id ******************** //
-  @Post()
+  @Post(':id')
   async getAllUsers(@Query() queryUsersDto: QueryFindUsersDto) {
     const allUsers = await this.usersService.findMany(queryUsersDto)
-
     return allUsers.map((users) => new UserEntity(users))
   }
 
-  @Post(':userId')
+  @Post(':id')
   async id(@Req() req: RequestWithDbUser) {
     return new UserEntity(req.user)
   }
