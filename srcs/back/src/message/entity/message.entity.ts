@@ -3,7 +3,7 @@ import { ChannelMessage as PrismaChannelMessage } from '@prisma/client'
 export class ChannelMessageEntity implements PrismaChannelMessage {
   id: number
   content: string
-  channelId: number
+  channelId: string
   senderId: number
   createdAt: Date
   deletedAt: Date | null

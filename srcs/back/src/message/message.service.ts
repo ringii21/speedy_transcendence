@@ -14,7 +14,7 @@ export class MessageService {
    */
   async saveChannelMessage(
     senderId: number,
-    channelId: number,
+    channelId: string,
     content: string,
   ) {
     return this.prisma.channelMessage.create({
@@ -39,7 +39,7 @@ export class MessageService {
    * @param channelId - The ID of the channel.
    * @returns A promise that resolves to an array of channel messages.
    */
-  async getChannelMessages(channelId: number) {
+  async getChannelMessages(channelId: string) {
     return this.prisma.channelMessage.findMany({
       where: {
         channelId,

@@ -37,7 +37,7 @@ describe('ChannelService', () => {
       }
 
       const expectedChannel: Channel = {
-        id: 1,
+        id: '1',
         name,
         password: expect.any(String),
         channelType,

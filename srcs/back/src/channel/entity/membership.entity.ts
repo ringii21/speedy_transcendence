@@ -6,7 +6,7 @@ export class ChannelMemberEntity implements PrismaChannelMember {
   id: number
   userId: number
   role: $Enums.Role
-  channelId: number
+  channelId: string
   @Type(() => ChannelMemberEntity)
   user: UserEntity
 

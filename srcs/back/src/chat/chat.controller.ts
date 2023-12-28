@@ -6,7 +6,7 @@ import {
   Get,
   NotFoundException,
   Param,
-  ParseIntPipe,
+  ParseUUIDPipe,
   Post,
   Req,
   UseGuards,
@@ -41,17 +41,10 @@ export class ChatController {
     return channels.map((channel) => new ChannelEntity(channel))
   }
 
-  @Get('/channels/pms')
-  async getPmChannels(@Req() req: RequestWithDbUser) {
-    // TODO: implement
-    console.log(req)
-    return []
-  }
-
   @Get('/channels/:id')
   async getChannel(
     @Req() req: RequestWithDbUser,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
   ) {
     if (!(await this.channelService.isUserInChannel(req.user.id, id)))
       throw new BadRequestException('You are not in this channel')
@@ -81,14 +74,10 @@ export class ChatController {
   @Post('/channels/:id/join')
   async joinChannel(
     @Req() req: RequestWithDbUser,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body('password') password?: string,
   ) {
-    const channel = await this.channelService.joinChannel(
-      req.user.id,
-      id,
-      password,
-    )
-    return new ChannelEntity(channel)
+    await this.channelService.joinChannel(req.user.id, id, password)
+    return { success: true }
   }
 }

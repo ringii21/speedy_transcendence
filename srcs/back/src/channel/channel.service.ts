@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common'
 import { ChannelType, Prisma } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { createHmac, randomBytes } from 'crypto'
@@ -52,7 +56,7 @@ export class ChannelService {
    * @param channelId - The ID of the channel.
    * @returns A boolean indicating whether the user is a member of the channel.
    */
-  async isUserInChannel(userId: number, channelId: number) {
+  async isUserInChannel(userId: number, channelId: string) {
     const channelMember = await this.prismaService.channelMember.findFirst({
       where: {
         userId,
@@ -67,12 +71,11 @@ export class ChannelService {
    * @param userId - The ID of the user joining the channel.
    * @param channelId - The ID of the channel to join.
    * @param password - (Optional) The password for the channel, if required.
-   * @returns A Promise that resolves to the created channel member.
    * @throws BadRequestException if the channel is not found, the user is already in the channel,
    * the channel is a direct message, the channel type does not match the password requirement,
    * or the provided password is invalid.
    */
-  async joinChannel(userId: number, channelId: number, password?: string) {
+  async joinChannel(userId: number, channelId: string, password?: string) {
     const channel = await this.prismaService.channel.findUnique({
       where: {
         id: channelId,
@@ -90,6 +93,8 @@ export class ChannelService {
         throw new BadRequestException(
           'Private channels must not have passwords',
         )
+
+      // Hash the password and compare it to the stored password
       const hashedPassword = createHmac(
         'sha256',
         randomBytes(32).toString('hex'),
@@ -97,9 +102,10 @@ export class ChannelService {
         .update(password)
         .digest('hex')
       if (hashedPassword !== channel.password)
-        throw new BadRequestException('Invalid password')
+        throw new ForbiddenException('Invalid password')
     }
-    return this.prismaService.channelMember.create({
+    // Create a new channel member
+    await this.prismaService.channelMember.create({
       data: {
         userId,
         channelId,
@@ -113,7 +119,7 @@ export class ChannelService {
    * @param channelId - The ID of the channel.
    * @returns A promise that resolves to the number of channel members deleted.
    */
-  async leaveChannel(userId: number, channelId: number) {
+  async leaveChannel(userId: number, channelId: string) {
     return this.prismaService.channelMember.deleteMany({
       where: {
         userId,
@@ -123,7 +129,7 @@ export class ChannelService {
   }
 
   async getChannel(
-    id: number,
+    id: string,
     userId: number,
     {
       withMessages = false,
@@ -233,7 +239,7 @@ export class ChannelService {
    * @param channelId - The ID of the channel.
    * @returns A promise that resolves to an array of channel members, including their ID, username, and image.
    */
-  async getMembers(channelId: number) {
+  async getMembers(channelId: string) {
     return this.prismaService.channelMember.findMany({
       where: {
         channelId,
