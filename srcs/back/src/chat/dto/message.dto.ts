@@ -1,9 +1,9 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator'
+import { IsNotEmpty, IsString, IsUUID } from 'class-validator'
 
 export class MessageDto {
-  @IsNumber()
+  @IsUUID()
   @IsNotEmpty()
-  channelId: number
+  channelId: string
 
   @IsNotEmpty()
   @IsString()

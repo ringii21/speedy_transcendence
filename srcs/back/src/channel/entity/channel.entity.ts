@@ -5,7 +5,7 @@ import { ChannelActionEntity } from './action.entity'
 import { ChannelMessageEntity } from '../../message/entity/message.entity'
 
 export class ChannelEntity implements PrismaChannel {
-  id: number
+  id: string
   name: string | null
   channelType: $Enums.ChannelType
   ownerId: number

@@ -4,7 +4,7 @@ import { $Enums, ChannelAction as PrismaChannelAction } from '@prisma/client'
 export class ChannelActionEntity implements PrismaChannelAction {
   id: number
   actionType: $Enums.ActionType
-  channelId: number
+  channelId: string
   userId: number
 
   @Exclude()
