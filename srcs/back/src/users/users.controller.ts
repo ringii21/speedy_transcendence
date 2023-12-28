@@ -39,15 +39,20 @@ export class UsersController {
     return users.map((user) => new UserEntity(user))
   }
 
-  @Post()
-  async postAllUsers(@Query() queryUsersDto: QueryUsersDto) {
-    const users = await this.usersService.findMany(queryUsersDto)
-
-    return users.map((user) => new UserEntity(user))
-  }
-
   @Get('me')
   async me(@Req() req: RequestWithDbUser) {
+    return new UserEntity(req.user)
+  }
+
+  // @Get(':id')
+  // async postAllUsers(@Query() queryUsersDto: QueryUsersDto) {
+  //   const users = await this.usersService.findMany(queryUsersDto)
+
+  //   return users.map((user) => new UserEntity(user))
+  // }
+
+  @Get(':id')
+  async id(@Req() req: RequestWithDbUser) {
     return new UserEntity(req.user)
   }
 
@@ -65,16 +70,12 @@ export class UsersController {
   // *************************************************************
 
   // *************** Post user's data from id ******************** //
-  @Post(':id')
-  async getAllUsers(@Query() queryUsersDto: QueryFindUsersDto) {
-    const allUsers = await this.usersService.findMany(queryUsersDto)
-    return allUsers.map((users) => new UserEntity(users))
-  }
+  // @Post(':id')
+  // async getAllUsers(@Query() queryUsersDto: QueryFindUsersDto) {
+  //   const allUsers = await this.usersService.findMany(queryUsersDto)
+  //   return allUsers.map((users) => new UserEntity(users))
+  // }
 
-  @Post(':id')
-  async id(@Req() req: RequestWithDbUser) {
-    return new UserEntity(req.user)
-  }
   // ***********************************************************
 
   @Patch('me')

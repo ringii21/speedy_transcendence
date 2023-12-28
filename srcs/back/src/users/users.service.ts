@@ -31,15 +31,6 @@ export class UsersService {
     })
   }
 
-  async isUserExist(id: number) {
-    const userMember = await this.prisma.user.findUnique({
-      where: {
-        id
-      },
-    })
-    return !! userMember
-  }
-
   async create(data: Prisma.UserCreateInput): Promise<User> {
     return this.prisma.user.create({
       data,

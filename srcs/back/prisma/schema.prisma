@@ -40,23 +40,26 @@ model User {
 }
 
 model Friends {
-  id       Int    @id @default(autoincrement())
-  image    String
-  username String @unique
-  email    String @unique
-  userId   Int    @unique
-  User     User   @relation(fields: [userId], references: [id])
+  id        Int         @id @default(autoincrement())
+  image     String
+  username  String      @unique
+  email     String      @unique
+  userId    Int         @unique
+  friendsOf FriendsOf[]
+  User      User        @relation(fields: [userId], references: [id])
 
   @@index([userId, id])
   @@map("friends")
 }
 
 model FriendsOf {
-  id       Int    @id @default(autoincrement())
-  image    String
-  username String @unique
-  userId   Int    @unique
-  User     User   @relation(fields: [userId], references: [id])
+  id        Int      @id @default(autoincrement())
+  image     String
+  username  String   @unique
+  User      User     @relation(fields: [userId], references: [id])
+  userId    Int      @unique
+  Friends   Friends? @relation(fields: [friendsId], references: [id])
+  friendsId Int?
 
   @@index([userId, id])
   @@map("friends_of")
