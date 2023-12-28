@@ -68,22 +68,24 @@ const App = () => {
                   </RequireAuth>
                 }
               />
-              <Route
-                path='/profile/me'
-                element={
-                  <RequireAuth>
-                    <ProfileWithNavbar />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path='/profile/:id'
-                element={
-                  <RequireAuth>
-                    <ProfileWithNavbar />
-                  </RequireAuth>
-                }
-              />
+              <Route path='/profile'>
+                <Route
+                  path=':me'
+                  element={
+                    <RequireAuth>
+                      <ProfileWithNavbar />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path=':id'
+                  element={
+                    <RequireAuth>
+                      <ProfileWithNavbar />
+                    </RequireAuth>
+                  }
+                />
+              </Route>
               {/* non authenticated */}
               <Route path='/login' element={<Login />} />
               <Route path='/login/2fa' element={<TwoFactorSignin />} />

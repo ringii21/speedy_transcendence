@@ -9,10 +9,6 @@ export const updateUser = async (user: FormData) =>
   httpInstance().patch<IUser>('/api/users/me', user, {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
-export const fetchAllUsers = async () => (await httpInstance().post<IUser[]>('/api/users')).data
-export const getAllUsers = async ({ queryKey }: { queryKey: QueryKey }) => {
-  const [_, id] = queryKey
-  if (!id) throw new Error('Id is required')
-  const { data } = await httpInstance().get<IUser[]>(`/api/users/${id}`)
-  return data
-}
+export const fetchAllUsers = async () => (await httpInstance().get<IUser[]>(`/api/users`)).data
+export const getUser = async (id: number) =>
+  (await httpInstance().get<IUser>(`/api/users/${id}`)).data

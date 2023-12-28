@@ -3,15 +3,20 @@ import { AxiosError } from 'axios'
 import { findSourceMap } from 'module'
 import React, { createContext, Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams, useResolvedPath } from 'react-router-dom'
+import { parseArgs } from 'util'
 
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
-import { IFriends, IUser } from '../types/User'
+import { IUser } from '../types/User'
 import { addFriend, getAllFriends, getNonFriends, removeFriend } from '../utils/friendService'
-import { fetchAllUsers, getAllUsers } from '../utils/userHttpRequests'
+import httpInstance from '../utils/httpClient'
+import { fetchAllUsers, fetchUser } from '../utils/userHttpRequests'
+import { IMe } from './../../../back/src/auth/42/42-oauth.types'
 
+export const loader = async () => await fetchUser()
 const Profile = () => {
-  const { user, signout } = useAuth()
+  const { user: loggedIn, signout } = useAuth()
+  const { id } = useParams()
   const [profilUser, setProfilUser] = useState<IUser>()
 
   const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
@@ -19,35 +24,20 @@ const Profile = () => {
     await signout()
   }
 
-  const [selectedUser, setSelectedUser] = useState<number>()
+  const [selectedUser, setSelectedUser] = useState<number | undefined>(undefined)
   const findUsers = useQuery<IUser[]>({
     queryKey: ['user', selectedUser],
     queryFn: fetchAllUsers,
   })
 
-  // const getUsers = useQuery<IUser[]>({
-  //   queryKey: ['user', selectedUser],
-  //   queryFn: getAllUsers,
-  // })
-  // useEffect(() => {
-  //   if (findUsers.data && Array.isArray(findUsers.data)) {
-  //     const userId = findUsers.data.map((user) => user.id)
-  //     const userName = findUsers.data.map((user) => user.username)
-  //   }
-  // }, [findUsers.data])
-
-  // useEffect(() => {
-  //   setSelectedUser(6)
-  //   try {
-  //     if (findUsers.data) {
-  //       console.log('userId: ' + findUsers.data?.id)
-  //       console.log('username: ' + findUsers.data?.username)
-  //     }
-  //   } catch (e) {
-  //     const err = e as AxiosError
-  //     console.log(`Error: ` + err.response?.data)
-  //   }
-  // })
+  useEffect(() => {
+    if (findUsers.data && Array.isArray(findUsers.data)) {
+      const userId = findUsers.data.map((user) => user.id)
+      const userName = findUsers.data.map((user) => user.username)
+      console.log('ID: ', userId)
+      console.log('Username: ', userName)
+    }
+  }, [findUsers.data])
 
   // useEffect(() => {
   //   async function getNonFriend() {
@@ -96,67 +86,88 @@ const Profile = () => {
 
   const navigation = useNavigate()
   const location: any = useLocation()
+
+  const idUrl = () => {
+    const id: number = parseInt(location.pathname.split('/').pop(), 10)
+    if (!isNaN(id)) return id
+  }
+
+  const idFromUrl = async (id: number) => {
+    await httpInstance()
+      .get<IUser>(`http://localhost:3000/api/users/${id}`)
+      .then((response) => {
+        if (!response) {
+          throw new Error('Network or servor error')
+        }
+        if (response.status === 404) navigation('*')
+        return response
+      })
+      .catch((error) => {
+        console.error('Error fetching user data: ', error)
+      })
+  }
+
+  const meFromUrl = async () => {
+    await httpInstance()
+      .get<IUser>(`http://localhost:3000/api/users/me`)
+      .then((response) => {
+        if (!response) {
+          throw new Error('Network or servor error')
+        }
+        if (response.status === 404) navigation('*')
+        return response
+      })
+      .catch((error) => {
+        console.error('Error fetching user data: ', error)
+      })
+  }
+
   useEffect(() => {
-    const userIdFromUrl: number = parseInt(location.pathname.split('/').pop(), 10)
-    if (!isNaN(userIdFromUrl) || window.location.pathname.includes('me')) {
-      setSelectedUser(userIdFromUrl)
-    } else {
-      navigation('*')
-    }
     const fetchData = async () => {
       if (findUsers.data && Array.isArray(findUsers.data)) {
-        try {
-          for (const users of findUsers.data) {
-            if (users.id === userIdFromUrl) {
-              let response
-              if (!window.location.pathname.includes('me')) {
-                setSelectedUser(userIdFromUrl)
-                const userProfil = findUsers.data?.find((getUser) => getUser.id === userIdFromUrl)
-                if (userProfil?.id === users.id) {
-                  response = await fetch(`http://localhost:3000/api/users/${users.id}`)
-                }
-              } else {
-                response = await fetch(`http://localhost:3000/api/users/me`)
-              }
-              if (response && response.ok) {
-                const userData = await response.json()
-                setProfilUser(userData)
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Error fetching user data: ', error)
+        for (const users of findUsers.data) {
+          if (!window.location.hostname.includes('me')) {
+            setSelectedUser(idUrl())
+            return idFromUrl(users.id)
+          } else return meFromUrl()
         }
       }
     }
     fetchData()
-  }, [])
+  }, [setProfilUser, findUsers])
 
   let userData
   if (Array.isArray(findUsers.data)) {
-    userData = findUsers.data.find((users) => users.id === selectedUser)
+    userData = findUsers.data.find((user) => user.id === selectedUser)
+  }
+
+  const isFriends = () => {
+    if (loggedIn && loggedIn.friends) {
+      const friends = loggedIn.friends.flat()
+      if (friends) return friends.some((friend) => friend.id)
+    }
+    return false
   }
 
   const isUserId = () => {
     if (Array.isArray(findUsers.data)) {
-      const users = findUsers.data.find((users) => users.id === selectedUser)
-      if (!users || users.id === user?.id) {
+      if (!window.location.pathname.includes('me') && selectedUser !== loggedIn?.id) {
+        return (
+          <div className='flex justify-evenly'>
+            {!isFriends() ? (
+              <button className='btn btn-primary drop-shadow-xl rounded-lg'>Follow</button>
+            ) : (
+              <button className='btn btn-primary drop-shadow-xl rounded-lg'>Unfollow</button>
+            )}
+            <button className='btn btn-secondary drop-shadow-xl rounded-lg'>Message</button>
+          </div>
+        )
+      } else {
         return (
           <div>
             <button className='btn btn-primary drop-shadow-xl rounded-lg' onClick={onButtonClick}>
               Logout
             </button>
-          </div>
-        )
-      } else {
-        return (
-          <div className='flex justify-evenly'>
-            {/* { ? (
-              <button className='btn btn-primary drop-shadow-xl rounded-lg'>Follow</button>
-            ) : (
-              <button className='btn btn-primary drop-shadow-xl rounded-lg'>Unfollow</button>
-            )} */}
-            <button className='btn btn-secondary drop-shadow-xl rounded-lg'>Message</button>
           </div>
         )
       }
@@ -174,11 +185,11 @@ const Profile = () => {
       <div className='hero-content text-center text-neutral-content'>
         <div className='max-w-md'>
           <h1 className='mb-5 text-5xl font-bold text-purple-100'>
-            {userData ? <span>{userData.username}</span> : <span>{user?.username}</span>}
+            {userData ? <span>{userData.username}</span> : <span>{loggedIn?.username}</span>}
           </h1>
           <div className='avatar'>
             <div className='w-36 rounded-full drop-shadow-lg hover:drop-shadow-xl justify-self-start'>
-              <img src={userData ? userData.image : user?.image} alt='avatar' />
+              <img src={userData ? userData.image : loggedIn?.image} alt='avatar' />
             </div>
           </div>
           <div className='columns-3 flex-auto space-y-20'>
