@@ -4,9 +4,9 @@ import { IUser } from './User'
 export type ChannelType = 'public' | 'private' | 'protected' | 'direct'
 
 export type IChannel = {
-  id: number
+  id: string
   name: string | null
-  channelType: ChannelType
+  type: ChannelType
   ownerId: number
   createdAt: Date
   updatedAt: Date
@@ -18,9 +18,8 @@ export type IChannel = {
 
 export type IChannelMember = {
   role: 'admin' | 'user' | 'owner'
-  id: number
   userId: number
-  channelId: number
+  channelId: string
   channel: IChannel
   user: IUser
 }

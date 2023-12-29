@@ -17,6 +17,7 @@ import { RequestWithDbUser } from 'src/types/Request'
 import { ChannelService } from 'src/channel/channel.service'
 import { ChannelEntity } from 'src/channel/entity/channel.entity'
 import { CreateChannelDto } from './dto/create-channel.dto'
+import { CreatePmDto } from './dto/create-pm.dto'
 
 @Controller('chat')
 @UseGuards(JwtTwoFaGuard)
@@ -26,7 +27,7 @@ export class ChatController {
 
   @Get('/channels')
   async getNotJoinedChannels(@Req() req: RequestWithDbUser) {
-    const channels = await this.channelService.getNotJoinedPublicChannels(
+    const channels = await this.channelService.getNotJoinedVisibleChannels(
       req.user.id,
     )
     if (!channels) return []
@@ -64,10 +65,23 @@ export class ChatController {
   ) {
     const channel = await this.channelService.createChannel({
       name: createChannel.name,
-      channelType: createChannel.channelType,
+      type: createChannel.type,
       userId: req.user.id,
       password: createChannel.password,
     })
+    return new ChannelEntity(channel)
+  }
+
+  @Post('/pms')
+  async createPms(
+    @Req() req: RequestWithDbUser,
+    @Body() createPm: CreatePmDto,
+  ) {
+    const channel = await this.channelService.createPm({
+      userId: req.user.id,
+      targetId: createPm.targetId,
+    })
+    if (!channel) throw new BadRequestException('Invalid target ID')
     return new ChannelEntity(channel)
   }
 
@@ -78,6 +92,15 @@ export class ChatController {
     @Body('password') password?: string,
   ) {
     await this.channelService.joinChannel(req.user.id, id, password)
+    return { success: true }
+  }
+
+  @Post('/channels/:id/leave')
+  async leaveChannel(
+    @Req() req: RequestWithDbUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    await this.channelService.leaveChannel(req.user.id, id)
     return { success: true }
   }
 }

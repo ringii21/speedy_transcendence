@@ -1,7 +1,7 @@
 export type IChannelMessage = {
   content: string
   senderId: number
-  channelId: number
+  channelId: string
 }
 
 export type IDbChannelMessage = {

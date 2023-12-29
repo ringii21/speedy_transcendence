@@ -4,7 +4,7 @@ import { Socket } from 'socket.io-client'
 import { chatSocket as socket } from '../utils/socketService'
 
 interface SocketContextData {
-  socket: Socket | null
+  socket: Socket
   isConnected: boolean
 }
 
@@ -13,7 +13,7 @@ type Props = {
 }
 
 export const SocketContext = createContext<SocketContextData>({
-  socket: null,
+  socket,
   isConnected: false,
 })
 
