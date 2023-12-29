@@ -26,13 +26,13 @@ describe('ChannelService', () => {
       // Arrange
       const name = 'test'
       const password = 'test'
-      const channelType = ChannelType.protected
+      const type = ChannelType.protected
       const userId = 1
 
       const createChannelDto = {
         name,
         password,
-        channelType,
+        type,
         userId,
       }
 
@@ -40,7 +40,7 @@ describe('ChannelService', () => {
         id: '1',
         name,
         password: expect.any(String),
-        channelType,
+        type,
         createdAt: new Date(),
         updatedAt: new Date(),
         deletedAt: null,
@@ -58,7 +58,7 @@ describe('ChannelService', () => {
       expect(prismaService.channel.create).toHaveBeenCalledWith({
         data: {
           name,
-          channelType,
+          type,
           password: expect.any(String),
           owner: {
             connect: {
@@ -78,12 +78,12 @@ describe('ChannelService', () => {
     it('should create a channel without password', async () => {
       // Arrange
       const name = 'test'
-      const channelType = ChannelType.public
+      const type = ChannelType.public
       const userId = 1
 
       const createChannelDto = {
         name,
-        channelType,
+        type,
         userId,
       }
 
@@ -91,7 +91,7 @@ describe('ChannelService', () => {
         id: 1,
         name,
         password: undefined,
-        channelType,
+        type,
         createdAt: new Date(),
         updatedAt: new Date(),
         deletedAt: null,
@@ -109,7 +109,7 @@ describe('ChannelService', () => {
       expect(prismaService.channel.create).toHaveBeenCalledWith({
         data: {
           name,
-          channelType,
+          type,
           password: undefined,
           owner: {
             connect: {
@@ -129,12 +129,12 @@ describe('ChannelService', () => {
     it('should throw BadRequestException for named PMs', async () => {
       // Arrange
       const name = 'test'
-      const channelType = ChannelType.direct
+      const type = ChannelType.direct
       const userId = 1
 
       const createChannelDto = {
         name,
-        channelType,
+        type,
         userId,
       }
 
@@ -148,13 +148,13 @@ describe('ChannelService', () => {
       // Arrange
       const name = undefined
       const password = 'test'
-      const channelType = ChannelType.direct
+      const type = ChannelType.direct
       const userId = 1
 
       const createChannelDto = {
         name,
         password,
-        channelType,
+        type,
         userId,
       }
 
@@ -168,13 +168,13 @@ describe('ChannelService', () => {
       // Arrange
       const name = undefined
       const password = undefined
-      const channelType = ChannelType.public
+      const type = ChannelType.public
       const userId = 1
 
       const createChannelDto = {
         name,
         password,
-        channelType,
+        type,
         userId,
       }
 
@@ -188,13 +188,13 @@ describe('ChannelService', () => {
       // Arrange
       const name = 'test'
       const password = 'test'
-      const channelType = ChannelType.public
+      const type = ChannelType.public
       const userId = 1
 
       const createChannelDto = {
         name,
         password,
-        channelType,
+        type,
         userId,
       }
 
@@ -208,13 +208,13 @@ describe('ChannelService', () => {
       // Arrange
       const name = undefined
       const password = undefined
-      const channelType = ChannelType.private
+      const type = ChannelType.private
       const userId = 1
 
       const createChannelDto = {
         name,
         password,
-        channelType,
+        type,
         userId,
       }
 
@@ -228,13 +228,13 @@ describe('ChannelService', () => {
       // Arrange
       const name = 'test'
       const password = 'test'
-      const channelType = ChannelType.private
+      const type = ChannelType.private
       const userId = 1
 
       const createChannelDto = {
         name,
         password,
-        channelType,
+        type,
         userId,
       }
 

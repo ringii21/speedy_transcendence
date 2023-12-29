@@ -1,18 +1,70 @@
 import { useQuery } from '@tanstack/react-query'
 import clsx from 'clsx'
 import React, { useState } from 'react'
-import { FaHashtag } from 'react-icons/fa'
-import { useParams } from 'react-router-dom'
+import { FaHashtag, FaUser } from 'react-icons/fa'
+import { Link } from 'react-router-dom'
 
-import { useChat } from '../../providers/ChatProvider'
-import { IChannel } from '../../types/Chat'
-import { getMyChannels, getMyPrivateChannels } from '../../utils/chatHttpRequests'
+import { useSelectedChannel } from '../../hooks/Channel.hook'
+import { useAuth } from '../../providers/AuthProvider'
+import { IChannel, IChannelMember } from '../../types/Chat'
+import { getMyChannels } from '../../utils/chatHttpRequests'
 import { CreateChannelModal } from './CreateChannelModal'
 import { JoinChannelModal } from './JoinChannelModal'
 
-const ChatSelection = ({ openChannelList }: { openChannelList: () => void }) => {
-  const { channelId } = useParams()
-  const { selectedChannel, setSelectedChannel } = useChat()
+type ChannelProps = {
+  channel: IChannel
+  selectedChannel?: string
+  openChannelList: () => void
+}
+
+const Channel = ({ channel, selectedChannel, openChannelList }: ChannelProps) => {
+  const { user } = useAuth()
+  if (!user) return <></>
+  const findNotMe = (members?: IChannelMember[]) => {
+    return members?.find((member) => member.userId !== user.id)?.user.username || 'No Name'
+  }
+  const chatClass = (id: string, selectedId?: string) =>
+    clsx({
+      ['flex p-2 hover:bg-base-300 cursor-pointer']: true,
+      ['bg-base-300']: id === selectedId,
+    })
+
+  const wrapper = (divs: React.JSX.Element) => (
+    <Link
+      onClick={() => {
+        openChannelList()
+      }}
+      to={`/chat/${channel.id}`}
+      className={chatClass(channel.id, selectedChannel)}
+    >
+      <div className='flex items-center mr-4'>{divs}</div>
+      <div className='flex-grow text-right'>{channel.members?.length || 0}</div>
+    </Link>
+  )
+  if (channel.type === 'direct') {
+    return wrapper(
+      <>
+        <FaUser size={12} className='text-base-content' />
+        <span className='ml-2 font-normal'>{findNotMe(channel.members)}</span>
+      </>,
+    )
+  } else {
+    return wrapper(
+      <>
+        <FaHashtag size={12} className='text-base-content' />
+        <span className='ml-2 font-normal'>{channel.name}</span>
+      </>,
+    )
+  }
+}
+
+type ChatSelectionProps = {
+  openChannelList: () => void
+}
+
+const ChatSelection = ({ openChannelList }: ChatSelectionProps) => {
+  const { channelId } = useSelectedChannel()
+
   const [isCreateModalOpen, setCreateModalOpen] = useState(false)
   const [isJoinModalOpen, setJoinModalOpen] = useState(false)
 
@@ -20,42 +72,6 @@ const ChatSelection = ({ openChannelList }: { openChannelList: () => void }) => 
     queryKey: ['channels', 'joined'],
     queryFn: getMyChannels,
   })
-
-  const privateChannelsData = useQuery<IChannel[]>({
-    queryKey: ['private'],
-    queryFn: getMyPrivateChannels,
-  })
-
-  const chatClass = (id: number, selectedId: number | null) =>
-    clsx({
-      ['flex p-2 hover:bg-gray-100 hover:rounded cursor-pointer']: true,
-      ['flex p-2 hover:bg-gray-100 hover:rounded cursor-pointer bg-base-200']: id === selectedId,
-    })
-
-  const collapseClass = (open: boolean, hasChannels: boolean) =>
-    clsx({
-      ['collapse collapse-arrow']: true,
-      ['collapse collapse-arrow collapse-open']: open && hasChannels,
-      ['collapse collapse-arrow collapse-close']: open && hasChannels,
-    })
-
-  const hasChannelSelected = (selectedChannel: number | null) => {
-    if (!selectedChannel) return false
-    if (channelsData.data?.length === 0) return false
-    const channel = channelsData.data?.find((channel) => channel.id === selectedChannel)
-    if (!channel) return false
-    if (channel.channelType !== 'direct') return true
-    return false
-  }
-
-  const hasPrivateMessageSelected = (selectedChannel: number | null) => {
-    if (!selectedChannel) return false
-    if (privateChannelsData.data?.length === 0) return false
-    const channel = privateChannelsData.data?.find((channel) => channel.id === selectedChannel)
-    if (!channel) return false
-    if (channel.channelType === 'direct') return true
-    return false
-  }
 
   return (
     <div className='items-center gap-12'>
@@ -81,63 +97,20 @@ const ChatSelection = ({ openChannelList }: { openChannelList: () => void }) => 
           Join Channel
         </button>
       </div>
-      <div
-        tabIndex={0}
-        className={collapseClass(
-          hasChannelSelected(selectedChannel),
-          (channelsData.data?.length ?? 0) > 0,
-        )}
-      >
-        <input type='checkbox' />
-        <div className='collapse-title text-xl font-medium'>Channels</div>
-        <div className='collapse-content visible'>
-          {channelsData.data &&
-            channelsData.data.map((channel, i) => (
-              <div
-                key={i}
-                className={chatClass(channel.id, selectedChannel)}
-                onClick={(e) => {
-                  e.preventDefault()
-                  if (selectedChannel !== channel.id) {
-                    setSelectedChannel(channel.id)
-                    openChannelList()
-                  }
-                }}
-              >
-                <div className='flex items-center mr-4'>
-                  <FaHashtag size={12} className='text-gray-500' />
-                  <span className='ml-2 font-normal'>{channel.name}</span>
-                </div>
-                <div className='flex-grow text-right'>{channel.members?.length || 0}</div>
-              </div>
-            ))}
-        </div>
-      </div>
-      <div
-        tabIndex={0}
-        className={collapseClass(
-          hasPrivateMessageSelected(selectedChannel),
-          (privateChannelsData.data?.length ?? 0) > 0,
-        )}
-      >
-        <input type='checkbox' />
-        <div className='collapse-title text-xl font-medium'>Private Messages</div>
-        <div className='collapse-content'>
-          {privateChannelsData.isLoading && <span className='loading loading-lg'></span>}
-          {privateChannelsData.data &&
-            privateChannelsData.data.map((channel, i) => (
-              <div
-                key={i}
-                className={chatClass(channel.id, selectedChannel)}
-                onClick={(e) => {
-                  e.preventDefault()
-                  if (selectedChannel !== channel.id) {
-                    setSelectedChannel(channel.id)
-                    openChannelList()
-                  }
-                }}
-              />
-            ))}
+      <div tabIndex={0}>
+        <div className='p-2'>
+          <h2 className='text-center text-base-content'>Channels</h2>
+          <div className='m-2'>
+            {channelsData.data &&
+              channelsData.data.map((channel, i) => (
+                <Channel
+                  channel={channel}
+                  key={i}
+                  selectedChannel={channelId}
+                  openChannelList={openChannelList}
+                />
+              ))}
+          </div>
         </div>
       </div>
     </div>

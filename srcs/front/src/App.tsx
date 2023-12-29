@@ -61,7 +61,7 @@ const App = () => {
                 }
               />
               <Route
-                path='/chat'
+                path='/chat/:channelId?'
                 element={
                   <RequireAuth>
                     <ChatWithNavbar />

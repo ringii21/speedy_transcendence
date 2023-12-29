@@ -2,6 +2,7 @@ import { Channel, ChannelType } from '@prisma/client'
 import {
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   MaxLength,
@@ -23,5 +24,9 @@ export class CreateChannelDto implements Partial<Channel> {
 
   @IsEnum(ChannelType)
   @IsNotEmpty()
-  channelType: ChannelType
+  type: ChannelType
+
+  @IsOptional()
+  @IsNumber()
+  targetId: number | undefined
 }

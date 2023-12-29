@@ -8,7 +8,7 @@ describe('CreateChannelDto', () => {
     const data = {
       name: 'test',
       password: 'test',
-      channelType: ChannelType.public,
+      type: ChannelType.public,
     }
     const dto = plainToInstance(CreateChannelDto, data)
     const errors = await validate(dto)
@@ -17,7 +17,7 @@ describe('CreateChannelDto', () => {
 
   it('should be valid when only required properties are provided', async () => {
     const data = {
-      channelType: ChannelType.public,
+      type: ChannelType.public,
     }
     const dto = plainToInstance(CreateChannelDto, data)
     const errors = await validate(dto)
@@ -28,7 +28,7 @@ describe('CreateChannelDto', () => {
     const data = {
       name: 'te',
       password: 'test',
-      channelType: ChannelType.public,
+      type: ChannelType.public,
     }
     const dto = plainToInstance(CreateChannelDto, data)
     const errors = await validate(dto)
@@ -39,7 +39,7 @@ describe('CreateChannelDto', () => {
     const data = {
       name: 'testtesttesttest',
       password: 'test',
-      channelType: ChannelType.public,
+      type: ChannelType.public,
     }
     const dto = plainToInstance(CreateChannelDto, data)
     const errors = await validate(dto)
@@ -50,7 +50,7 @@ describe('CreateChannelDto', () => {
     const data = {
       name: 'test',
       password: 'te',
-      channelType: ChannelType.public,
+      type: ChannelType.public,
     }
     const dto = plainToInstance(CreateChannelDto, data)
     const errors = await validate(dto)
@@ -61,14 +61,14 @@ describe('CreateChannelDto', () => {
     const data = {
       name: 'test',
       password: 'testtesttesttest',
-      channelType: ChannelType.public,
+      type: ChannelType.public,
     }
     const dto = plainToInstance(CreateChannelDto, data)
     const errors = await validate(dto)
     expect(errors.length).toBeGreaterThan(0)
   })
 
-  it('should be invalid when channelType is not provided', async () => {
+  it('should be invalid when type is not provided', async () => {
     const data = {
       name: 'test',
       password: 'test',
@@ -84,7 +84,7 @@ describe('CreateChannelDto', () => {
     const data = {
       name: 'test',
       password: 'test',
-      channelType: ChannelType.public,
+      type: ChannelType.public,
     }
     const dto = plainToInstance(CreateChannelDto, data)
     const errors = await validate(dto)

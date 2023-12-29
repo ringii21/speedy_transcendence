@@ -52,24 +52,24 @@ const ChatInput: React.FC<GetChannel> = ({ channel }) => {
 
   if (!isConnected) return <></>
   return (
-    <div className='relative mx-4 mb-20 border-t inline-flex'>
+    <div className='relative flex'>
       <input
         type='text'
         value={inputMessage}
         onKeyDown={handleKeyDown}
         onChange={(e) => setInputMessage(e.target.value)}
         placeholder='Message'
-        className='block ps-4 text-gray-600 pl-4 rounded-lg py-3 mt-4 w-full'
+        className='input input-bordered input-primary w-full'
       />
-      <div>
+      <div className='absolute right-0 items-center inset-y-0 flex'>
         <button
           type='button'
           onClick={handleSendMessage}
-          className='btn absolute btn-primary end-0 bottom-0'
+          className='btn btn-primary'
           disabled={!inputMessage.trim()}
         >
-          <span className='font-bold text-white '>Send</span>
-          <MdSend className='text-lg' />
+          <span className='font-bold text-base-content'>Send</span>
+          <MdSend className='text-base-content text-lg' />
         </button>
       </div>
     </div>

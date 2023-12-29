@@ -6,13 +6,13 @@ import { IChannelMember } from '../../types/Chat'
 import { IChannelMessage } from '../../types/Message'
 import { IUser } from '../../types/User'
 
-type ChatBubbleProps = {
+type ChatMessageProps = {
   user: IUser
   message: IChannelMessage
   members: IChannelMember[]
 }
 
-const ChatBubble = ({ user, message, members }: ChatBubbleProps) => {
+const ChatMessage = ({ user, message, members }: ChatMessageProps) => {
   const sender = members.find((member) => member.userId === message.senderId)
   if (!sender) return <span>Error</span>
 
@@ -55,4 +55,4 @@ const ChatBubble = ({ user, message, members }: ChatBubbleProps) => {
   )
 }
 
-export { ChatBubble }
+export { ChatMessage }

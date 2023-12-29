@@ -15,7 +15,7 @@ type CreateChannelModalProps = {
 
 type FormValues = {
   name: string
-  channelType: ChannelType
+  type: ChannelType
   password?: string
 }
 
@@ -30,7 +30,7 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
     reset,
   } = useForm<FormValues>({
     defaultValues: {
-      channelType: 'public',
+      type: 'public',
     },
   })
 
@@ -49,14 +49,18 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
             message: 'Channel name already exists',
           })
         else if (error.response?.status === 400) {
-          error.message.includes('password') &&
-            setError('password', {
-              message: 'Password must be between 3 and 10 characters',
-            })
-          error.message.includes('name') &&
-            setError('name', {
-              message: 'Channel name must be between 3 and 10 characters',
-            })
+          error.response.data.message.some((msg: string) => {
+            msg.includes('password') &&
+              setError('password', {
+                message: 'Password must be between 3 and 10 characters',
+              })
+          })
+          error.response.data.message.some((msg: string) => {
+            msg.includes('name') &&
+              setError('name', {
+                message: 'Channel name must be between 3 and 10 characters',
+              })
+          })
         }
       }
     },
@@ -68,7 +72,7 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
     } catch (e) {}
   }
 
-  const channelType = watch('channelType')
+  const type = watch('type')
 
   const buttonStyle = clsx({
     ['btn']: true,
@@ -149,7 +153,7 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
                           <span className='label-text'>Channel type</span>
                         </label>
                         <select
-                          {...register('channelType')}
+                          {...register('type')}
                           className='select select-bordered w-full max-w-xs'
                         >
                           <option value={'public'}>Public</option>
@@ -157,13 +161,13 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
                           <option value={'protected'}>Protected</option>
                         </select>
                       </div>
-                      {channelType === 'protected' && (
+                      {type === 'protected' && (
                         <div className='form-control'>
                           <label className='label' htmlFor='password'>
                             <span className='label-text'>Password</span>
                           </label>
                           <input
-                            type='text'
+                            type='password'
                             id='password'
                             placeholder='Enter the password'
                             autoComplete='off'
