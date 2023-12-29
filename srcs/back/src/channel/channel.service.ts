@@ -28,9 +28,20 @@ export class ChannelService {
       where: {
         members: {
           some: {
+            present: true,
             userId,
           },
         },
+        OR: [
+          {
+            type: ChannelType.direct,
+            members: {
+              some: {
+                userId,
+              },
+            },
+          },
+        ],
       },
       include: {
         messages: withMessages,
@@ -61,8 +72,10 @@ export class ChannelService {
       where: {
         userId,
         channelId,
+        present: true,
       },
     })
+
     return !!channelMember
   }
 
@@ -82,14 +95,14 @@ export class ChannelService {
       },
     })
     if (!channel) throw new BadRequestException('Channel not found')
-    if (channel.channelType === ChannelType.direct)
+    if (channel.type === ChannelType.direct)
       throw new BadRequestException('You cannot join a direct message')
     if (await this.isUserInChannel(userId, channelId))
       throw new BadRequestException('You are already in this channel')
     if (password) {
-      if (channel.channelType === ChannelType.public)
+      if (channel.type === ChannelType.public)
         throw new BadRequestException('Public channels cannot have passwords')
-      if (channel.channelType === ChannelType.private)
+      if (channel.type === ChannelType.private)
         throw new BadRequestException(
           'Private channels must not have passwords',
         )
@@ -104,11 +117,21 @@ export class ChannelService {
       if (hashedPassword !== channel.password)
         throw new ForbiddenException('Invalid password')
     }
-    // Create a new channel member
-    await this.prismaService.channelMember.create({
-      data: {
+    // Create a new channel member or update an existing one
+    await this.prismaService.channelMember.upsert({
+      where: {
+        userId_channelId: {
+          channelId,
+          userId,
+        },
+      },
+      create: {
         userId,
         channelId,
+        present: true,
+      },
+      update: {
+        present: true,
       },
     })
   }
@@ -120,10 +143,15 @@ export class ChannelService {
    * @returns A promise that resolves to the number of channel members deleted.
    */
   async leaveChannel(userId: number, channelId: string) {
-    return this.prismaService.channelMember.deleteMany({
+    return this.prismaService.channelMember.update({
       where: {
-        userId,
-        channelId,
+        userId_channelId: {
+          channelId: channelId,
+          userId: userId,
+        },
+      },
+      data: {
+        present: false,
       },
     })
   }
@@ -174,7 +202,7 @@ export class ChannelService {
    * Creates a new channel based on the provided parameters.
    * @param name - The name of the channel (optional for some channel types).
    * @param password - The password for the channel (optional for some channel types).
-   * @param channelType - The type of the channel (direct, protected, public, private).
+   * @param type - The type of the channel (direct, protected, public, private).
    * @param userId - The ID of the user creating the channel.
    * @returns A Promise that resolves to the created channel.
    * @throws BadRequestException if the provided parameters are invalid.
@@ -182,26 +210,25 @@ export class ChannelService {
   async createChannel({
     name,
     password,
-    channelType,
+    type,
     userId,
   }: {
     name?: string
     password?: string
-    channelType: ChannelType
+    type: ChannelType
     userId: number
   }) {
-    if (channelType === ChannelType.direct) {
-      if (name || password)
-        throw new BadRequestException('Pms cannot have names or passwords')
-    } else if (channelType === ChannelType.protected) {
+    if (type === ChannelType.direct) {
+      throw new BadRequestException('use createPm instead')
+    } else if (type === ChannelType.protected) {
       if (!name) throw new BadRequestException('Channels must be named')
       if (!password)
-        throw new BadRequestException('Channels cannot have passwords')
-    } else if (channelType === ChannelType.public) {
+        throw new BadRequestException('Protected channels must have passwords')
+    } else if (type === ChannelType.public) {
       if (!name) throw new BadRequestException('Channels must be named')
       if (password)
         throw new BadRequestException('Public channels cannot have passwords')
-    } else if (channelType === ChannelType.private) {
+    } else if (type === ChannelType.private) {
       if (!name) throw new BadRequestException('Channels must be named')
       if (password)
         throw new BadRequestException(
@@ -215,7 +242,7 @@ export class ChannelService {
     }
     const data: Prisma.ChannelCreateInput = {
       name,
-      channelType,
+      type,
       password: password ?? undefined,
       owner: {
         connect: {
@@ -231,6 +258,57 @@ export class ChannelService {
     }
     return this.prismaService.channel.create({
       data,
+    })
+  }
+
+  async createPm({ userId, targetId }: { userId: number; targetId: number }) {
+    if (userId === targetId)
+      throw new BadRequestException('You cannot create a PM with yourself')
+    const existingChannel = await this.prismaService.channel.findFirst({
+      where: {
+        type: ChannelType.direct,
+        members: {
+          every: {
+            userId: {
+              in: [userId, targetId],
+            },
+          },
+        },
+      },
+    })
+    if (existingChannel) {
+      await this.prismaService.channelMember.update({
+        where: {
+          userId_channelId: {
+            channelId: existingChannel.id,
+            userId: userId,
+          },
+        },
+        data: {
+          present: true,
+        },
+      })
+      return existingChannel
+    }
+    return this.prismaService.channel.create({
+      include: {
+        members: true,
+      },
+      data: {
+        type: ChannelType.direct,
+        members: {
+          createMany: {
+            data: [
+              {
+                userId,
+              },
+              {
+                userId: targetId,
+              },
+            ],
+          },
+        },
+      },
     })
   }
 
@@ -260,15 +338,18 @@ export class ChannelService {
    * Retrieves all public channels where user isnt part of.
    * @returns A promise that resolves to an array of public or protected channels.
    */
-  async getNotJoinedPublicChannels(userId: number) {
+  async getNotJoinedVisibleChannels(userId: number) {
     return this.prismaService.channel.findMany({
       where: {
-        channelType: {
+        type: {
           in: [ChannelType.public, ChannelType.protected],
         },
         members: {
-          none: {
-            userId,
+          every: {
+            NOT: {
+              userId,
+              present: true,
+            },
           },
         },
       },

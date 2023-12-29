@@ -1,60 +1,49 @@
 import { Dialog, Transition } from '@headlessui/react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import clsx from 'clsx'
-import React, { Fragment, useEffect } from 'react'
+import React, { Fragment } from 'react'
 import { useForm } from 'react-hook-form'
 
-import { useSocket } from '../../providers/SocketProvider'
-import { ChatSocketEvent } from '../../types/Events'
-import { getNotJoinedVisibleChannels, joinChannel } from '../../utils/chatHttpRequests'
+import { userAction } from '../../utils/chatHttpRequests'
 
-type CreateChannelModalProps = {
-  isJoinModalOpen: boolean
-  setJoinModalOpen: React.Dispatch<React.SetStateAction<boolean>>
+type UserActionModalProps = {
+  isModalOpen: boolean
+  setModalOpen: React.Dispatch<React.SetStateAction<boolean>>
+  channelId: string
+  userId: number
 }
 
 type FormValues = {
-  id: string
+  action: string
 }
 
-const JoinChannelModal = ({
-  isJoinModalOpen: isOpen,
-  setJoinModalOpen: setIsOpen,
-}: CreateChannelModalProps) => {
-  const { socket } = useSocket()
+const UserActionModal = ({
+  isModalOpen: isOpen,
+  setModalOpen: setIsOpen,
+  channelId,
+  userId,
+}: UserActionModalProps) => {
   const queryClient = useQueryClient()
   const { register, handleSubmit } = useForm<FormValues>({})
 
-  const notJoinedChannels = useQuery({
-    queryKey: ['channels-not-joined'],
-    queryFn: getNotJoinedVisibleChannels,
-  })
-
-  useEffect(() => {
-    if (!isOpen) return
-    notJoinedChannels.refetch()
-  }, [isOpen])
-
-  const joinChan = useMutation({
-    mutationFn: joinChannel,
+  const { mutateAsync, isPending } = useMutation({
+    mutationFn: userAction,
+    mutationKey: ['channels', channelId],
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['channels'],
+        queryKey: ['channels', channelId],
       })
-      setIsOpen(false)
     },
   })
 
-  const buttonStyle = clsx({
-    ['btn']: true,
-    ['btn-disabled']: notJoinedChannels.isPending,
-  })
-
   const onSubmit = (data: FormValues) => {
-    joinChan.mutate(data.id)
-    socket?.emit(ChatSocketEvent.JOIN_CHANNEL, { channelId: data.id })
     setIsOpen(false)
   }
+
+  const buttonStyle = clsx({
+    btn: true,
+    'btn-loading': isPending,
+  })
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -84,46 +73,32 @@ const JoinChannelModal = ({
             >
               <Dialog.Panel className='modal-box'>
                 <Dialog.Title as='h3' className='font-bold text-lg'>
-                  Join a channel
+                  Select an action for this user
                 </Dialog.Title>
                 <div className='modal-action'>
                   <div className='grid grid-cols-1 gap-4 max-w-md mx-auto'>
                     <form method='dialog' onSubmit={handleSubmit(onSubmit)}>
                       <div className='form-control'>
-                        <label className='label' htmlFor='name'>
-                          <span className='label-text'>Channel name</span>
+                        <label className='label' htmlFor='action'>
+                          <span className='label-text'>Action</span>
                         </label>
                         <select
-                          id='id'
-                          {...register('id', { required: true })}
+                          id='action'
+                          {...register('action', { required: true })}
                           className='select select-bordered w-full max-w-xs'
                         >
-                          {notJoinedChannels.isPending && (
-                            <option value='' disabled>
-                              Loading...
-                            </option>
-                          )}
-                          {notJoinedChannels.data?.length === 0 && (
-                            <option value='' disabled>
-                              No available channels
-                            </option>
-                          )}
-                          {notJoinedChannels.data?.map((channel) => (
-                            <option key={channel.id} value={channel.id}>
-                              {channel.name}
-                            </option>
-                          ))}
+                          <option value=''>Select an action</option>
+                          <option value='kick'>Kick</option>
+                          <option value='ban'>Ban</option>
+                          <option value='mute-5'>Mute 5min</option>
                         </select>
                       </div>
                       <div className='flex justify-evenly mt-4'>
                         <button type='submit' className={`${buttonStyle} btn-success`}>
-                          Join
+                          Send
                         </button>
                         <button
-                          onClick={(e) => {
-                            e.preventDefault()
-                            setIsOpen(false)
-                          }}
+                          onClick={() => setIsOpen(false)}
                           className={`${buttonStyle} btn-error`}
                         >
                           Cancel
@@ -141,4 +116,4 @@ const JoinChannelModal = ({
   )
 }
 
-export { JoinChannelModal }
+export { UserActionModal }

@@ -1,5 +1,5 @@
-import { ChatConv } from './ChatConv'
+import { ChatConversation } from './ChatConversation'
 import { ChatSelection } from './ChatSelection'
 import { ChatUsers } from './ChatUsers'
 
-export { ChatConv, ChatSelection, ChatUsers }
+export { ChatConversation, ChatSelection, ChatUsers }
