@@ -35,8 +35,8 @@ const createRandomGame = (): Partial<Game> => {
     scoreP1: faker.number.int({ min: 0, max: 100 }),
     scoreP2: faker.number.int({ min: 0, max: 100 }),
     exchangeCount: faker.number.int({ min: 0, max: 1000 }),
-    player1Id: faker.number.int({ min: 1, max: 10 }),
-    player2Id: faker.number.int({ min: 1, max: 10 }),
+    participant1Id: faker.number.int({ min: 1, max: 10 }),
+    participant2Id: faker.number.int({ min: 1, max: 10 }),
   }
 }
 

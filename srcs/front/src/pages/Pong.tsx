@@ -3,25 +3,33 @@ import { BrowserView, isDesktop, isMobile, MobileView, TabletView } from 'react-
 import { Navigate } from 'react-router-dom'
 
 import PongComponent from '../components/Pong'
+import { Play } from '../components/Pong/Play'
 import { Pong } from '../components/Pong/Pong'
 import { StartComponent } from '../components/Pong/StartComponent'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
-import { useSocket } from '../providers/SocketProvider'
+import { useGameSocket } from '../providers/GameSocketProvider'
 
-const PongWithNavBar = () => {
+const Game = () => {
+  console.log('BONJOURRR')
   const { user } = useAuth()
 
   if (!user) return <Navigate to='/login' replace />
-  const { socket, isConnected } = useSocket()
+  const { socket, isConnected } = useGameSocket()
   if (!isConnected) socket?.connect()
+
+  if (socket?.connected) {
+    console.log('OK')
+  } else {
+    console.log('NOO')
+  }
 
   return (
     <div>
-      <Pong />
+      <Play />
     </div>
   )
 }
 
-const PongWithNavbar = WithNavbar(Pong)
+const PongWithNavbar = WithNavbar(Game)
 export { PongWithNavbar }

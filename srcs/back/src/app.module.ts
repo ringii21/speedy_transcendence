@@ -2,6 +2,8 @@ import { Logger, MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
 import { UsersModule } from './users/users.module'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { AuthModule } from './auth/auth.module'
+import { GameModule } from './game/game.module'
+import { GameController } from './game/game.controller'
 import { LoggerMiddleware } from './logger/logger.middleware'
 import { AuthController } from './auth/auth.controller'
 import { FortyTwoOAuthController } from './auth/42/42-oauth.controller'
@@ -9,15 +11,18 @@ import { UsersController } from './users/users.controller'
 import { TwoFaController } from './auth/2fa/2fa.controller'
 import { ChatModule } from './chat/chat.module'
 import { ChatController } from './chat/chat.controller'
+import { EventEmitterModule } from '@nestjs/event-emitter'
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    EventEmitterModule.forRoot(),
     UsersModule,
     AuthModule,
     ChatModule,
+    GameModule,
   ],
   providers: [Logger],
 })
@@ -43,5 +48,6 @@ export class AppModule implements NestModule {
     consumer.apply(LoggerMiddleware).forRoutes(TwoFaController)
     consumer.apply(LoggerMiddleware).forRoutes(UsersController)
     consumer.apply(LoggerMiddleware).forRoutes(ChatController)
+    consumer.apply(LoggerMiddleware).forRoutes(GameController)
   }
 }
