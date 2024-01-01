@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { ChannelMessage, Game, PrismaClient, User } from '@prisma/client'
 import { Channel } from 'diagnostics_channel'
+import { FriendsService } from 'src/friends/friends.service'
 
 const prisma = new PrismaClient()
 
@@ -26,7 +27,7 @@ const createChannelMessages = (): Partial<ChannelMessage> => {
 const createChannels = (): Partial<Channel> => {
   return {
     name: faker.lorem.word(),
-    
+
   }
 }
 

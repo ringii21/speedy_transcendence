@@ -1,11 +1,14 @@
+import { useQueries, useQuery } from '@tanstack/react-query'
 import clsx from 'clsx'
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useAuth } from '../../providers/AuthProvider'
 import { IChannelMember } from '../../types/Chat'
 import { IChannelMessage } from '../../types/Message'
 import { IUser } from '../../types/User'
+import { fetchAllUsers } from '../../utils/userHttpRequests'
+import { BubbleChannelModal } from './BubbleChannelModal'
 
 type ChatBubbleProps = {
   user: IUser
@@ -13,9 +16,17 @@ type ChatBubbleProps = {
   members: IChannelMember[]
 }
 
-const ChatBubble = ({ user, message, members }: ChatBubbleProps) => {
+const ChatBubble: React.FC<ChatBubbleProps> = ({ user, message, members }) => {
+  const [openModal, setOpenModal] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<IUser>()
+  const ref = useRef<HTMLDivElement>(null)
   const sender = members.find((member) => member.userId === message.senderId)
   if (!sender) return <span>Error</span>
+
+  const getUser = useQuery<IUser[]>({
+    queryKey: ['user', selectedUser],
+    queryFn: fetchAllUsers,
+  })
 
   const messagePosition = clsx({
     ['flex space-y-2 text-xs max-w-xs mx-2']: true,
@@ -36,22 +47,44 @@ const ChatBubble = ({ user, message, members }: ChatBubbleProps) => {
   const imageStyle = clsx({
     ['w-6 h-6 rounded-full']: true,
     ['order-2']: message.senderId === user.id,
-    ['order-1']: message.senderId !== user.id,
+    ['order-1 hover:shadow-lg hover:shadow-indigo-500/50']: message.senderId !== user.id,
   })
 
+  useEffect(() => {
+    const checkIsOpen = (e: MouseEvent) => {
+      const el = e.target as HTMLDivElement
+      if (ref.current && !ref.current.contains(el)) {
+        setOpenModal(false)
+      }
+    }
+    document.addEventListener('click', checkIsOpen)
+    return () => {
+      document.removeEventListener('click', checkIsOpen)
+    }
+  }, [])
   return (
     <div className={messageJustify}>
       <div className={messagePosition}>
-        <div>
+        <div ref={ref}>
           <span className={messageStyle}>{message.content}</span>
         </div>
       </div>
-      <Link
-        to={message.senderId === user?.id ? '/profile/me' : '/profile/${member.userId}'}
-        placeholder={'${members.userId}'}
-      >
+      {BubbleChannelModal({ openModal, setOpenModal, message, user })}
+      {message.senderId !== user.id ? (
+        <button
+          type='button'
+          className='block'
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setOpenModal(!openModal)
+          }}
+        >
+          <img src={sender.user.image} alt='My profile' className={imageStyle} />
+        </button>
+      ) : (
         <img src={sender.user.image} alt='My profile' className={imageStyle} />
-      </Link>
+      )}
     </div>
   )
 }

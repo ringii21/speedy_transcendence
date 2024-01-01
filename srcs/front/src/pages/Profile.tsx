@@ -1,62 +1,179 @@
-import React, { useEffect, useId, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { UseBaseQueryResult, useQuery, UseQueryResult } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
+import { findSourceMap } from 'module'
+import React, { createContext, Dispatch, SetStateAction, useEffect, useState } from 'react'
+import { useLocation, useNavigate, useParams, useResolvedPath } from 'react-router-dom'
+import { parseArgs } from 'util'
 
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
-import { IFriends, IUser } from '../types/User'
+import { IUser } from '../types/User'
+import { addFriend, getAllFriends, getNonFriends, removeFriend } from '../utils/friendService'
+import httpInstance from '../utils/httpClient'
+import { fetchAllUsers, fetchUser } from '../utils/userHttpRequests'
+import { IMe } from './../../../back/src/auth/42/42-oauth.types'
 
-const Profile: React.FC = () => {
-  const { user: loggedInUser, signout } = useAuth()
-  const { userId } = useParams<{ userId: string }>()
+export const loader = async () => await fetchUser()
+const Profile = () => {
+  const { user: loggedIn, signout } = useAuth()
+  const { id } = useParams()
   const [profilUser, setProfilUser] = useState<IUser>()
-  const [isFriend, setIsFriend] = useState(false)
-  const [addFriends, setAddFriends] = useState<IFriends>()
+
   const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()
     await signout()
   }
 
-  const isUserId = () => {
-    if (loggedInUser && profilUser?.id !== loggedInUser.id) {
-      return (
-        <div>
-          <button className='btn btn-primary drop-shadow-xl rounded-lg' onClick={onButtonClick}>
-            Logout
-          </button>
-        </div>
-      )
-    } else {
-      return (
-        <div className='flex justify-evenly'>
-          {addFriends?.id !== profilUser?.id ? (
-            <button className='btn btn-primary drop-shadow-xl rounded-lg'>Follow</button>
-          ) : (
-            <button className='btn btn-primary drop-shadow-xl rounded-lg'>Unfollow</button>
-          )}
+  const [selectedUser, setSelectedUser] = useState<number | undefined>(undefined)
+  const findUsers = useQuery<IUser[]>({
+    queryKey: ['user', selectedUser],
+    queryFn: fetchAllUsers,
+  })
 
-          <button className='btn btn-secondary drop-shadow-xl rounded-lg'>Message</button>
-        </div>
-      )
+  useEffect(() => {
+    if (findUsers.data && Array.isArray(findUsers.data)) {
+      const userId = findUsers.data.map((user) => user.id)
+      const userName = findUsers.data.map((user) => user.username)
+      console.log('ID: ', userId)
+      console.log('Username: ', userName)
     }
+  }, [findUsers.data])
+
+  // useEffect(() => {
+  //   async function getNonFriend() {
+  //     try {
+  //       const response = await getNonFriends()
+  //       console.log('Non friend: ' + response)
+  //       setNonFriends(response)
+  //     } catch (e) {
+  //       const err = e as AxiosError
+  //       console.log('Error in Non Friends', err.response?.data)
+  //     }
+  //   }
+  //   getNonFriend()
+  // }, [])
+
+  // useEffect(() => {
+  //   async function getAllFriend() {
+  //     try {
+  //       const response = await getAllFriends()
+  //       console.log('All friends: ' + response)
+  //     } catch (e) {
+  //       const err = e as AxiosError
+  //       console.log('Error in All Friends', err.response?.data)
+  //     }
+  //   }
+  //   getAllFriend()
+  // }, [])
+
+  // async function addNewFriends(userId: number) {
+  //   try {
+  //     const response = await addFriend(userId)
+  //     console.log('Add new friend: ' + response.data)
+  //   } catch (e) {
+  //     console.log(`Error in ${addNewFriends.name}`, (e as Error).message)
+  //   }
+  // }
+
+  // async function removeFriends(userId: number) {
+  //   try {
+  //     const response = await removeFriend(userId)
+  //     console.log('Remove friends: ' + response)
+  //   } catch (e) {
+  //     console.log(`Error in ${addNewFriends.name}`, (e as Error).message)
+  //   }
+  // }
+
+  const navigation = useNavigate()
+  const location: any = useLocation()
+
+  const idUrl = () => {
+    const id: number = parseInt(location.pathname.split('/').pop(), 10)
+    if (!isNaN(id)) return id
+  }
+
+  const idFromUrl = async (id: number) => {
+    await httpInstance()
+      .get<IUser>(`http://localhost:3000/api/users/${id}`)
+      .then((response) => {
+        if (!response) {
+          throw new Error('Network or servor error')
+        }
+        if (response.status === 404) navigation('*')
+        return response
+      })
+      .catch((error) => {
+        console.error('Error fetching user data: ', error)
+      })
+  }
+
+  const meFromUrl = async () => {
+    await httpInstance()
+      .get<IUser>(`http://localhost:3000/api/users/me`)
+      .then((response) => {
+        if (!response) {
+          throw new Error('Network or servor error')
+        }
+        if (response.status === 404) navigation('*')
+        return response
+      })
+      .catch((error) => {
+        console.error('Error fetching user data: ', error)
+      })
   }
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        let response
-        if (loggedInUser && profilUser?.id !== loggedInUser.id)
-          response = await fetch(`localhost:3001/profile/${profilUser?.id}`)
-        else if (loggedInUser) response = await fetch(`localhost:3001/profile/me`)
-        if (response && response.ok) {
-          const userData = await response.json()
-          setProfilUser(userData)
+      if (findUsers.data && Array.isArray(findUsers.data)) {
+        for (const users of findUsers.data) {
+          if (!window.location.hostname.includes('me')) {
+            setSelectedUser(idUrl())
+            return idFromUrl(users.id)
+          } else return meFromUrl()
         }
-      } catch (error) {
-        console.error('Error fetching user data: ', error)
       }
     }
     fetchData()
-  }, [loggedInUser, userId])
+  }, [setProfilUser, findUsers])
+
+  let userData
+  if (Array.isArray(findUsers.data)) {
+    userData = findUsers.data.find((user) => user.id === selectedUser)
+  }
+
+  const isFriends = () => {
+    if (loggedIn && loggedIn.friends) {
+      const friends = loggedIn.friends.flat()
+      if (friends) return friends.some((friend) => friend.id)
+    }
+    return false
+  }
+
+  const isUserId = () => {
+    if (Array.isArray(findUsers.data)) {
+      if (!window.location.pathname.includes('me') && selectedUser !== loggedIn?.id) {
+        return (
+          <div className='flex justify-evenly'>
+            {!isFriends() ? (
+              <button className='btn btn-primary drop-shadow-xl rounded-lg'>Follow</button>
+            ) : (
+              <button className='btn btn-primary drop-shadow-xl rounded-lg'>Unfollow</button>
+            )}
+            <button className='btn btn-secondary drop-shadow-xl rounded-lg'>Message</button>
+          </div>
+        )
+      } else {
+        return (
+          <div>
+            <button className='btn btn-primary drop-shadow-xl rounded-lg' onClick={onButtonClick}>
+              Logout
+            </button>
+          </div>
+        )
+      }
+    }
+  }
+
   return (
     <div
       className='hero pt-6'
@@ -68,11 +185,11 @@ const Profile: React.FC = () => {
       <div className='hero-content text-center text-neutral-content'>
         <div className='max-w-md'>
           <h1 className='mb-5 text-5xl font-bold text-purple-100'>
-            {profilUser ? profilUser.username : loggedInUser?.username}
+            {userData ? <span>{userData.username}</span> : <span>{loggedIn?.username}</span>}
           </h1>
           <div className='avatar'>
             <div className='w-36 rounded-full drop-shadow-lg hover:drop-shadow-xl justify-self-start'>
-              <img src={profilUser ? profilUser.image : loggedInUser?.image} alt='avatar' />
+              <img src={userData ? userData.image : loggedIn?.image} alt='avatar' />
             </div>
           </div>
           <div className='columns-3 flex-auto space-y-20'>

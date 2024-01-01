@@ -9,7 +9,6 @@ import {
   MobileView,
   TabletView,
 } from 'react-device-detect'
-import { RxHamburgerMenu } from 'react-icons/rx'
 import { Link, Navigate } from 'react-router-dom'
 
 import { ChatConv, ChatSelection, ChatUsers } from '../components/Chat'

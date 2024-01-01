@@ -1,3 +1,5 @@
+import { QueryKey } from '@tanstack/react-query'
+
 import { IUser } from '../types/User'
 import httpInstance from './httpClient'
 
@@ -7,3 +9,6 @@ export const updateUser = async (user: FormData) =>
   httpInstance().patch<IUser>('/api/users/me', user, {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
+export const fetchAllUsers = async () => (await httpInstance().get<IUser[]>(`/api/users`)).data
+export const getUser = async (id: number) =>
+  (await httpInstance().get<IUser>(`/api/users/${id}`)).data
