@@ -15,6 +15,7 @@ import {
   import { $Enums/* , Notification */ } from '@prisma/client';
   import * as crypto from 'crypto';
   import { UsersService } from 'src/users/users.service';
+  import { ChatGateway } from 'src/chat/chat.gateway';
   
   interface GameInvite {
     inviter: string;
@@ -25,24 +26,30 @@ import {
   }
   
   @WebSocketGateway({
-    namespace: 'pong',
+    namespace: 'game',
     cors: {
       origin: process.env.FRONT_URL ?? 'http://localhost:3001',
       credentials: true,
     },
   })
-  export class Gateways implements OnGatewayConnection, OnGatewayDisconnect {
+  export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     constructor(
       private prisma: PrismaService,
       private readonly eventEmitter: EventEmitter2,
       private readonly usersService: UsersService,
+      private readonly chatGateway: ChatGateway,
     ) {}
   
     @WebSocketServer() private server: Server;
     private games_map = new Map<string, Game>();
     private game_invites = new Set<GameInvite>();
     async handleConnection(client: Socket) {
-      const userId = client.data.user.sub;
+      console.log('Je me connecte')
+      const user = await this.chatGateway.getUser(client)
+      if (!user) {
+        client.disconnect()
+        return
+      }
       /* client.join(`User:${userId}`);
       const frienduserIds = await this.prisma.friend.findMany({
         where: {
@@ -73,7 +80,11 @@ import {
     }
   
     async handleDisconnect(client: Socket) {
-      const userId = client.data.user.sub;
+      const user = await this.chatGateway.getUser(client)
+      if (!user) {
+        client.disconnect()
+        return
+      }
   
       //this.server.emit('friendOffline', userId);
       this.eventEmitter.emit('game.start', {

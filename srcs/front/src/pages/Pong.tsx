@@ -18,11 +18,11 @@ const Game = () => {
   const { socket, isConnected } = useGameSocket()
   if (!isConnected) socket?.connect()
 
-  if (socket?.connected) {
+  /* if (socket?.connected) {
     console.log('OK')
   } else {
     console.log('NOO')
-  }
+  } */
 
   return (
     <div>
