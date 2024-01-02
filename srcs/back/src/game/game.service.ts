@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { User } from '@prisma/client';
 import { Socket } from 'socket.io';
+import { ChatGateway } from 'src/chat/chat.gateway';
 import { PrismaService } from 'src/prisma/prisma.service';
 //import { PICTURE } from 'src/profile/dto/profile.dto';
 
@@ -10,6 +11,7 @@ export class GameService {
   constructor(
     private readonly prisma: PrismaService,
     private eventEmitter: EventEmitter2,
+    private readonly chatGateway: ChatGateway
   ) {
     this.launchGame();
   }
@@ -30,11 +32,15 @@ export class GameService {
       const client = data.client;
       if (client.data.user?.inQueue) return;
       const gameMode = data.gameMode;
-      const userId = client.data.user.sub;
-      const userData = await this.getUser(userId);
+      const userData = await this.chatGateway.getUser(client);
+      if (userData) {
+        const userId = userData.id
+      }
+      console.log('Avant')
       client.data.user.inQueue = true;
+      console.log('APRES')
 
-      if (gameMode === 'cassic')
+      if (gameMode === 'classic')
         this.classicwaitingPlayers.push({ socket: client, userData: userData });
       else if (gameMode === 'extra')
         this.extraWaitingPlayers.push({ socket: client, userData: userData });
@@ -42,7 +48,7 @@ export class GameService {
       const client = data.client;
       const gameMode = data.gameMode;
       client.data.user.inQueue = false;
-      if (gameMode === 'cassic')
+      if (gameMode === 'classic')
         this.classicwaitingPlayers = this.classicwaitingPlayers.filter(
           (player) => player.socket.id !== client.id,
         );

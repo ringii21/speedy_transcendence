@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { BsFillArrowLeftCircleFill, BsFillArrowRightCircleFill } from 'react-icons/bs'
-import { Circle, Layer, Line, Rect, Stage } from 'react-konva'
+import { Circle, Image, Layer, Line, Rect, Stage } from 'react-konva'
 import { useNavigate } from 'react-router-dom'
 
+import { WithNavbar } from '../../hoc/WithNavbar'
 import { useGameSocket } from '../../providers/GameSocketProvider'
 import { useGameState } from './States/GameState'
 
@@ -36,6 +37,7 @@ function throttlify(callback: any) {
 }
 
 export const Game = () => {
+  const [image, setImage] = useState(null)
   const gameState = useGameState()
   const { socket, isConnected } = useGameSocket()
   const [level, setLevel] = useState(1)
@@ -60,6 +62,9 @@ export const Game = () => {
     socket?.off('down')
   }
   useEffect(() => {
+    /* const img = new Image()
+    img.src = '../../assets/balle-pong.png'
+    img.onload = () => setImage(img) */
     socket?.on('level', (l: number) => {
       setLevel(l)
     })
@@ -88,7 +93,7 @@ export const Game = () => {
       if (gameState?.side !== paddles.side) gameState.setSide(paddles.side)
     })
     socket?.on('screen Error', () => {
-      navigate('/home')
+      navigate('/')
     })
     socket?.on('players', (players: any) => {
       gameState.setP1(players[0])
@@ -104,13 +109,15 @@ export const Game = () => {
       socket?.off('t')
       socket?.off('game.end')
 
-      window.removeEventListener('keydown', () => {})
+      window.removeEventListener('keydown', () => {
+        return
+      })
     }
     // eslint-disable-next-line
   }, []);
   /* eslint-disable */
   useEffect(() => {
-    if (!gameState.p1) navigate("/home");
+    if (!gameState.p1) navigate("/");
     const divh = document.getElementById("Game")?.offsetHeight;
     const divw = document.getElementById("Game")?.offsetWidth;
     socket?.emit("screen", { h: divh, w: divw });
@@ -258,3 +265,6 @@ export const Game = () => {
     </div>
   );
 };
+
+const GameWithNavbar = WithNavbar(Game)
+export { GameWithNavbar }

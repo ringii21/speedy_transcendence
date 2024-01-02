@@ -31,5 +31,5 @@ const Game = () => {
   )
 }
 
-const PongWithNavbar = WithNavbar(Game)
-export { PongWithNavbar }
+const PlayWithNavbar = WithNavbar(Game)
+export { PlayWithNavbar }

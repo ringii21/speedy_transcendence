@@ -89,7 +89,7 @@ import {
       //this.server.emit('friendOffline', userId);
       this.eventEmitter.emit('game.start', {
         client,
-        gameMode: 'cassic',
+        gameMode: 'classic',
         mode: 'unregister',
       });
       this.eventEmitter.emit('game.start', {
@@ -259,6 +259,7 @@ import {
   
     @SubscribeMessage('startGame')
     handleGameStartEvent(client: Socket, data: { gameMode: string }) {
+      client.data.user = {}
       this.eventEmitter.emit('game.start', {
         client,
         gameMode: data.gameMode,

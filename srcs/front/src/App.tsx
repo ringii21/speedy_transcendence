@@ -4,6 +4,8 @@ import React from 'react'
 import { Route, Routes } from 'react-router-dom'
 
 import { ContactOverlay } from './components/ContactOverlay'
+import { Modal } from './components/Pong/Modal'
+import { GameWithNavbar } from './components/Pong/TestPong'
 import { RequireAuth } from './components/RequireAuth'
 import { NotFound } from './pages/404'
 import { ChatWithNavbar } from './pages/Chat'
@@ -11,7 +13,7 @@ import { Footer } from './pages/Footer'
 // import Navbar from "./components/Navbar";
 import { HomeWithNavbar } from './pages/Home'
 import Login from './pages/Login'
-import { PongWithNavbar } from './pages/Pong'
+import { PlayWithNavbar } from './pages/Pong'
 import { ProfileWithNavbar } from './pages/Profile'
 import { SettingsWithNavbar } from './pages/Settings'
 import { TwoFactorSettingsWithNavbar } from './pages/TwoFactor/TwoFactorSettings'
@@ -30,6 +32,7 @@ const App = () => {
         <ChatProvider>
           <SocketProvider>
             <GameSocketProvider>
+              <Modal />
               <Routes>
                 {/* authenticated */}
                 <Route
@@ -41,10 +44,18 @@ const App = () => {
                   }
                 />
                 <Route
-                  path='/game'
+                  path='/play'
                   element={
                     <RequireAuth>
-                      <PongWithNavbar />
+                      <PlayWithNavbar />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path='/game/:id'
+                  element={
+                    <RequireAuth>
+                      <GameWithNavbar />
                     </RequireAuth>
                   }
                 />

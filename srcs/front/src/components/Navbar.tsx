@@ -37,7 +37,7 @@ const Navbar = () => {
               <Link to='/chat'>Chat</Link>
             </li>
             <li>
-              <Link to='/game'>Game</Link>
+              <Link to='/play'>Game</Link>
             </li>
           </ul>
         </div>
@@ -54,7 +54,7 @@ const Navbar = () => {
           </li>
           <li>
             <button type='button' className='btn-menu btn-one letterMove'>
-              <Link to='/game'>Game</Link>
+              <Link to='/play'>Game</Link>
             </button>
           </li>
         </ul>

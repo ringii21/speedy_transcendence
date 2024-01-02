@@ -4,6 +4,9 @@ import toast from 'react-hot-toast'
 import { useGameSocket } from '../../providers/GameSocketProvider'
 import { QueueWaitModal } from './QueueModal'
 export const Play = () => {
+  toast.success('Match making in Progress you can move until find opponent', {
+    duration: 5000,
+  })
   const { socket, isConnected } = useGameSocket()
   const [gameMode, setGameMode] = useState('')
   const queueModalRef = useRef<HTMLDialogElement>(null)
