@@ -21,6 +21,7 @@ import JwtTwoFaGuard from '../auth/jwt/jwt-2fa.guard'
 import { UploadUserImage } from './decorator/file-upload.decorator'
 import { ConfigService } from '@nestjs/config'
 import { RequestWithDbUser } from '../types/Request'
+import { NotFoundException } from '@nestjs/common'
 
 @Controller('users')
 @UseGuards(JwtTwoFaGuard)
@@ -43,40 +44,20 @@ export class UsersController {
   async me(@Req() req: RequestWithDbUser) {
     return new UserEntity(req.user)
   }
-
-  // @Get(':id')
-  // async postAllUsers(@Query() queryUsersDto: QueryUsersDto) {
-  //   const users = await this.usersService.findMany(queryUsersDto)
-
-  //   return users.map((user) => new UserEntity(user))
-  // }
-
+  
   @Get(':id')
   async id(@Req() req: RequestWithDbUser) {
-    return new UserEntity(req.user)
+    try {
+      const user = await this.usersService.findUserById(req.user.id)
+      return new UserEntity(req.user)
+
+    } catch (e) {
+      if (e instanceof NotFoundException) {
+        return { message: 'User not found', status: 404 }
+      }
+      return { message: 'Internal server error', status: 500 }
+    }
   }
-
-  // ******************** Get user by id *************************
-  // @Get(':id')
-  // async userId(
-  //   @Req() req: RequestWithDbUser,
-  //   @Param('id', ParseIntPipe) id: number
-  //   ) {
-  //     if (!(await this.usersService.isUserExist(req.user.id)))
-  //       throw new BadRequestException('Users is not found')
-  //     // const users = await this.usersService.
-  //   return new UserEntity(req.user)
-  // }
-  // *************************************************************
-
-  // *************** Post user's data from id ******************** //
-  // @Post(':id')
-  // async getAllUsers(@Query() queryUsersDto: QueryFindUsersDto) {
-  //   const allUsers = await this.usersService.findMany(queryUsersDto)
-  //   return allUsers.map((users) => new UserEntity(users))
-  // }
-
-  // ***********************************************************
 
   @Patch('me')
   @UploadUserImage()

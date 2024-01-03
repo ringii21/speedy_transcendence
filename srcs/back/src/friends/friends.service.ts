@@ -1,22 +1,12 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { User } from '@prisma/client'
+import { User, Friends } from '@prisma/client'
 import { userInfo } from 'os'
+import { IsNumber } from 'class-validator';
 
 @Injectable()
 export class FriendsService {
   constructor(private prisma: PrismaService) {}
-
-  async findUser(userId: number) {
-    return this.prisma.user.findUnique({
-      where: {
-        id: userId
-      },
-      include: {
-        friends: true
-      },
-    })
-  }
 
   async addFriend(userId: number, friendId: number): Promise<User> {
     return await this.prisma.user.update({
@@ -30,29 +20,6 @@ export class FriendsService {
         friends: true
       }
     })
-  }
-
-  async allFriends(userId: number) {
-    return await this.prisma.user.findUnique({
-      where: {
-        id: userId
-      },
-      include: {
-        friends: true
-      }
-    })
-  }
-
-  async isNotFriend(userId: number, friendId: number): Promise<User> {
-    const user = await this.findUser(userId)
-    if (user) {
-      const friendExist = user.friends.some((friend) => friend.id === friendId)
-      if (!friendExist) {
-        return this.addFriend(userId, friendId)
-      }
-      return user
-    }
-    throw new NotFoundException(`User ${userId} is not found`)
   }
 
   async deleteFriend(userId: number, friendId: number): Promise<User> {

@@ -1,88 +1,60 @@
-import { UseBaseQueryResult, useQuery, UseQueryResult } from '@tanstack/react-query'
+import {
+  QueryKey,
+  UseBaseQueryResult,
+  useMutation,
+  useQuery,
+  UseQueryResult,
+} from '@tanstack/react-query'
 import { AxiosError } from 'axios'
+import { Response } from 'express'
 import { findSourceMap } from 'module'
-import React, { createContext, Dispatch, SetStateAction, useEffect, useState } from 'react'
+import React, { createContext, Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams, useResolvedPath } from 'react-router-dom'
 import { parseArgs } from 'util'
 
+import { ModalFriendsList } from '../components/ModalFriendsList'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
-import { IUser } from '../types/User'
-import { addFriend, getAllFriends, getNonFriends, removeFriend } from '../utils/friendService'
+import { IFriends, IUser } from '../types/User'
+import { addFriend, getAllFriends, removeFriend } from '../utils/friendService'
 import httpInstance from '../utils/httpClient'
-import { fetchAllUsers, fetchUser } from '../utils/userHttpRequests'
+import { fetchAllUsers, fetchUser, getUser } from '../utils/userHttpRequests'
 import { IMe } from './../../../back/src/auth/42/42-oauth.types'
 
 export const loader = async () => await fetchUser()
+
 const Profile = () => {
-  const { user: loggedIn, signout } = useAuth()
+  const { user, signout } = useAuth()
   const { id } = useParams()
+
   const [profilUser, setProfilUser] = useState<IUser>()
+  const [isFollow, setIsFollow] = useState('follow')
+
+  const [openModal, setOpenModal] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const isOpen = (e: MouseEvent) => {
+      const el = e.target as HTMLDivElement
+      if (ref.current && !ref.current.contains(el)) {
+        setOpenModal(false)
+      }
+    }
+    document.addEventListener('click', isOpen)
+    return () => {
+      document.removeEventListener('click', isOpen)
+    }
+  }, [])
 
   const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()
     await signout()
   }
 
-  const [selectedUser, setSelectedUser] = useState<number | undefined>(undefined)
+  const [selectedUser, setSelectedUser] = useState<number | undefined>()
   const findUsers = useQuery<IUser[]>({
     queryKey: ['user', selectedUser],
     queryFn: fetchAllUsers,
   })
-
-  useEffect(() => {
-    if (findUsers.data && Array.isArray(findUsers.data)) {
-      const userId = findUsers.data.map((user) => user.id)
-      const userName = findUsers.data.map((user) => user.username)
-      console.log('ID: ', userId)
-      console.log('Username: ', userName)
-    }
-  }, [findUsers.data])
-
-  // useEffect(() => {
-  //   async function getNonFriend() {
-  //     try {
-  //       const response = await getNonFriends()
-  //       console.log('Non friend: ' + response)
-  //       setNonFriends(response)
-  //     } catch (e) {
-  //       const err = e as AxiosError
-  //       console.log('Error in Non Friends', err.response?.data)
-  //     }
-  //   }
-  //   getNonFriend()
-  // }, [])
-
-  // useEffect(() => {
-  //   async function getAllFriend() {
-  //     try {
-  //       const response = await getAllFriends()
-  //       console.log('All friends: ' + response)
-  //     } catch (e) {
-  //       const err = e as AxiosError
-  //       console.log('Error in All Friends', err.response?.data)
-  //     }
-  //   }
-  //   getAllFriend()
-  // }, [])
-
-  // async function addNewFriends(userId: number) {
-  //   try {
-  //     const response = await addFriend(userId)
-  //     console.log('Add new friend: ' + response.data)
-  //   } catch (e) {
-  //     console.log(`Error in ${addNewFriends.name}`, (e as Error).message)
-  //   }
-  // }
-
-  // async function removeFriends(userId: number) {
-  //   try {
-  //     const response = await removeFriend(userId)
-  //     console.log('Remove friends: ' + response)
-  //   } catch (e) {
-  //     console.log(`Error in ${addNewFriends.name}`, (e as Error).message)
-  //   }
-  // }
 
   const navigation = useNavigate()
   const location: any = useLocation()
@@ -122,6 +94,37 @@ const Profile = () => {
       })
   }
 
+  const byId = useQuery<IUser[]>({
+    queryKey: ['user', selectedUser],
+    queryFn: () => getUser(selectedUser as number),
+  })
+
+  const buttonFollow = async () => {
+    const users = byId.data
+    if (users && Array.isArray(users)) {
+      users.find((user) => {
+        if (user.id === selectedUser) {
+          httpInstance()
+            .post(`http//localhost:3000/api/friends`)
+            .then((friend) => console.log(friend))
+        }
+      })
+    }
+  }
+
+  const addNewFriend = async (id: number) => {
+    await httpInstance()
+      .post<IFriends>(`/api/friends/new/2`)
+      .then((responseData) => {
+        setIsFollow('unfollow')
+        console.log('Added friend successfully', responseData.data)
+      })
+      .catch((error) => {
+        console.error('Error adding friend: ', error)
+        // Gérer les erreurs ici
+      })
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       if (findUsers.data && Array.isArray(findUsers.data)) {
@@ -142,8 +145,8 @@ const Profile = () => {
   }
 
   const isFriends = () => {
-    if (loggedIn && loggedIn.friends) {
-      const friends = loggedIn.friends.flat()
+    if (user && user.friends) {
+      const friends = user.friends.flat()
       if (friends) return friends.some((friend) => friend.id)
     }
     return false
@@ -151,22 +154,37 @@ const Profile = () => {
 
   const isUserId = () => {
     if (Array.isArray(findUsers.data)) {
-      if (!window.location.pathname.includes('me') && selectedUser !== loggedIn?.id) {
+      if (!window.location.pathname.includes('me') && selectedUser !== user?.id) {
+        const currentUser = findUsers.data.find((friend) => friend.id === selectedUser)
+        if (!currentUser) return
         return (
           <div className='flex justify-evenly'>
-            {!isFriends() ? (
-              <button className='btn btn-primary drop-shadow-xl rounded-lg'>Follow</button>
-            ) : (
-              <button className='btn btn-primary drop-shadow-xl rounded-lg'>Unfollow</button>
-            )}
+            <button
+              onClick={() => buttonFollow()}
+              className='btn btn-primary drop-shadow-xl rounded-lg'
+            >
+              {isFollow}
+            </button>
             <button className='btn btn-secondary drop-shadow-xl rounded-lg'>Message</button>
           </div>
         )
       } else {
         return (
-          <div>
+          <div ref={ref} className='flex justify-evenly'>
             <button className='btn btn-primary drop-shadow-xl rounded-lg' onClick={onButtonClick}>
               Logout
+            </button>
+            {ModalFriendsList({ openModal, setOpenModal, user })}
+            <button
+              type='button'
+              className='btn btn-secondary drop-shadow-xl rounded-lg'
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setOpenModal(!openModal)
+              }}
+            >
+              Friends
             </button>
           </div>
         )
@@ -185,11 +203,11 @@ const Profile = () => {
       <div className='hero-content text-center text-neutral-content'>
         <div className='max-w-md'>
           <h1 className='mb-5 text-5xl font-bold text-purple-100'>
-            {userData ? <span>{userData.username}</span> : <span>{loggedIn?.username}</span>}
+            {userData ? <span>{userData.username}</span> : <span>{user?.username}</span>}
           </h1>
           <div className='avatar'>
             <div className='w-36 rounded-full drop-shadow-lg hover:drop-shadow-xl justify-self-start'>
-              <img src={userData ? userData.image : loggedIn?.image} alt='avatar' />
+              <img src={userData ? userData.image : user?.image} alt='avatar' />
             </div>
           </div>
           <div className='columns-3 flex-auto space-y-20'>

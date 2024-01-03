@@ -68,9 +68,9 @@ const App = () => {
                   </RequireAuth>
                 }
               />
-              <Route path='/profile'>
+              <Route path='/profile/*' element={<ProfileWithNavbar />}>
                 <Route
-                  path=':me'
+                  path='me'
                   element={
                     <RequireAuth>
                       <ProfileWithNavbar />
@@ -85,6 +85,22 @@ const App = () => {
                     </RequireAuth>
                   }
                 />
+                {/* <Route
+                  path='friends'
+                  element={
+                    <RequireAuth>
+                      <ProfileWithNavbar />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path='friends/:id'
+                  element={
+                    <RequireAuth>
+                      <ProfileWithNavbar />
+                    </RequireAuth>
+                  }
+                /> */}
               </Route>
               {/* non authenticated */}
               <Route path='/login' element={<Login />} />
