@@ -11,14 +11,14 @@ export const Modal = () => {
   const [status, setStatus] = useState<undefined | string>(undefined)
   const [timer, setTimer] = useState<undefined | number>(undefined)
   const [gameid, setGameId] = useState<undefined | string>(undefined)
-  const socketStore = useGameSocket()
+  const socket = useGameSocket()
   const navigate = useNavigate()
   useEffect(() => {
-    if (socketStore.socket !== null) {
-      socketStore.socket?.on('game.launched', (GameId: any) => {
+    if (socket.socket !== null) {
+      socket.socket?.on('game.launched', (GameId: any) => {
         setGameId(GameId.slice(5))
       })
-      socketStore.socket?.on('timer', (msg: any) => {
+      socket.socket?.on('timer', (msg: any) => {
         msg !== 0 && setOpacity('opacity-100')
         msg === 0 && setOpacity('opacity-0')
         setTimer(msg / 1000)
@@ -26,11 +26,11 @@ export const Modal = () => {
           navigate(`/Game/${gameid}`)
         }
       })
-      socketStore.socket?.on('players', (players: any) => {
+      socket.socket?.on('players', (players: any) => {
         gameState.setP1(players[0])
         gameState.setP2(players[1])
       })
-      socketStore.socket?.on('win', (msg: string) => {
+      socket.socket?.on('win', (msg: string) => {
         setResutl(msg)
         setStatus('win')
         setResOpacity('opacity-100')
@@ -46,7 +46,7 @@ export const Modal = () => {
           }
         }, 1000)
       })
-      socketStore.socket?.on('lose', (msg: string) => {
+      socket.socket?.on('lose', (msg: string) => {
         setResutl(msg)
         setStatus('lose')
         setResOpacity('opacity-100')
@@ -64,11 +64,11 @@ export const Modal = () => {
       })
     }
     return () => {
-      socketStore.socket?.off('lose')
-      socketStore.socket?.off('win')
-      socketStore.socket?.off('timer')
-      socketStore.socket?.off('game.launched')
-      socketStore.socket?.off('players')
+      socket.socket?.off('lose')
+      socket.socket?.off('win')
+      socket.socket?.off('timer')
+      socket.socket?.off('game.launched')
+      socket.socket?.off('players')
     }
     // eslint-disable-next-line
   }, [timer]);

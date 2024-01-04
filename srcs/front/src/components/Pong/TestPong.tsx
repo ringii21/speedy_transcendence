@@ -4,6 +4,7 @@ import { Circle, Image, Layer, Line, Rect, Stage } from 'react-konva'
 import { useNavigate } from 'react-router-dom'
 
 import { WithNavbar } from '../../hoc/WithNavbar'
+import { useAuth } from '../../providers/AuthProvider'
 import { useGameSocket } from '../../providers/GameSocketProvider'
 import { useGameState } from './States/GameState'
 
@@ -37,6 +38,7 @@ function throttlify(callback: any) {
 }
 
 export const Game = () => {
+  const { user } = useAuth()
   const [image, setImage] = useState(null)
   const gameState = useGameState()
   const { socket, isConnected } = useGameSocket()
@@ -166,7 +168,7 @@ export const Game = () => {
           <img
             alt=""
             className="rounded-full w-auto h-auto max-w-[10vw] md:max-w-[20vw]"
-            src={`https://res.cloudinary.com/trandandan/image/upload/c_thumb,h_72,w_72/${gameState?.p1?.avatar}`}
+            src={gameState?.p1?.image}
           />
           <span className="font-lexend font-extrabold text-[4vw] xl:text-[2vw] text-current">
             {gameState.ball.p1Score}
@@ -177,9 +179,9 @@ export const Game = () => {
             {gameState?.ball.p2Score}
           </span>
           <img
-            alt=""
+            alt="avatar"
             className="rounded-full w-auto h-auto max-w-[10vw] md:max-w-[20vw]"
-            /* src={`https://res.cloudinary.com/trandandan/image/upload/c_thumb,h_72,w_72/${gameState?.p2?.avatar}`} */
+            src={gameState?.p2?.image}
           />
         </div>
         <button className="btn" onClick={leave}>
