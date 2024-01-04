@@ -112,18 +112,18 @@ const Profile = () => {
     }
   }
 
-  const addNewFriend = async (id: number) => {
-    await httpInstance()
-      .post<IFriends>(`/api/friends/new/2`)
-      .then((responseData) => {
-        setIsFollow('unfollow')
-        console.log('Added friend successfully', responseData.data)
-      })
-      .catch((error) => {
-        console.error('Error adding friend: ', error)
-        // Gérer les erreurs ici
-      })
-  }
+  // const addNewFriend = async (id: number) => {
+  //   await httpInstance()
+  //     .post<IFriends>(`/api/friends/new/2`)
+  //     .then((responseData) => {
+  //       setIsFollow('unfollow')
+  //       console.log('Added friend successfully', responseData.data)
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error adding friend: ', error)
+  //       // Gérer les erreurs ici
+  //     })
+  // }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -174,7 +174,7 @@ const Profile = () => {
             <button className='btn btn-primary drop-shadow-xl rounded-lg' onClick={onButtonClick}>
               Logout
             </button>
-            {ModalFriendsList({ openModal, setOpenModal, user })}
+            <ModalFriendsList openModal={openModal} setOpenModal={setOpenModal} user={user} />
             <button
               type='button'
               className='btn btn-secondary drop-shadow-xl rounded-lg'
