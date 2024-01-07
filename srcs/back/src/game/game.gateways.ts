@@ -44,7 +44,6 @@ import {
     private games_map = new Map<string, Game>();
     private game_invites = new Set<GameInvite>();
     async handleConnection(client: Socket) {
-      console.log('Je me connecte')
       const user = await this.chatGateway.getUser(client)
       if (!user) {
         client.disconnect()
@@ -98,29 +97,6 @@ import {
         mode: 'unregister',
       });
     }
-  
-    /* @OnEvent('sendMessages')
-    async sendMessage(
-      message: MessageFormatDto,
-      blockedRoomMembersIds?: string[],
-    ) {
-      const chanellname: string = `Room:${message.roomId}`;
-      if (!blockedRoomMembersIds) {
-        this.server.to(chanellname).emit('message', message);
-      } else {
-        const sockets = await this.server.in(chanellname).fetchSockets();
-        for await (const socket of sockets) {
-          if (!blockedRoomMembersIds.includes(socket.data.user.sub)) {
-            socket.emit('message', message);
-          } else {
-            socket.emit('message', {
-              ...message,
-              content: '[REDACTED]',
-            });
-          }
-        }
-      }
-    } */
   
     /* private async createNotification(notif: Partial<Notification>) {
       const newNotif = await this.prisma.notification.create({
@@ -425,12 +401,12 @@ import {
       if (data.resign === 0) {
         await this.prisma.game.create({
           data: {
-            participant1Id: data.p1Data.userId,
-            participant2Id: data.p2Data.userId,
+            participant1Id: data.p1Data.id,
+            participant2Id: data.p2Data.id,
             winner_id:
               data.p1Score > data.p2Score
-                ? data.p1Data.userId
-                : data.p2Data.userId,
+                ? data.p1Data.id
+                : data.p2Data.id,
             scoreP1: data.p1Score,
             scoreP2: data.p2Score,
           },
@@ -438,9 +414,9 @@ import {
       } else if (data.resign === 1) {
         await this.prisma.game.create({
           data: {
-            participant1Id: data.p1Data.userId,
-            participant2Id: data.p2Data.userId,
-            winner_id: data.p2Data.userId,
+            participant1Id: data.p1Data.id,
+            participant2Id: data.p2Data.id,
+            winner_id: data.p2Data.id,
             scoreP1: 0,
             scoreP2: 5,
           },
@@ -448,29 +424,15 @@ import {
       } else if (data.resign === 2) {
         await this.prisma.game.create({
           data: {
-            participant1Id: data.p1Data.userId,
-            participant2Id: data.p2Data.userId,
-            winner_id: data.p1Data.userId,
+            participant1Id: data.p1Data.id,
+            participant2Id: data.p2Data.id,
+            winner_id: data.p1Data.id,
             scoreP1: 5,
             scoreP2: 0,
           },
         });
       }
     }
-  
-    /* @SubscribeMessage('joinRoom')
-    async handleJoinRoomEvent(client: Socket, data: any) {
-      const userId = client.data.user.sub;
-      const member = await this.prisma.roomMember.findFirst({
-        where: {
-          userId: data.memberId,
-          roomId: data.roomId,
-        },
-      });
-      if (member && !member.is_banned && userId === data.memberId) {
-        client.join(`Room:${data.roomId}`);
-      }
-    } */
   
     @SubscribeMessage('PingOnline')
     async handlePingOnlineEvent(client: Socket, data: any) {
@@ -481,54 +443,4 @@ import {
         client.emit('friendOffline', friendId);
       }
     }
-  
-    /* @SubscribeMessage('unban')
-    async handleUnbanEvent(client: Socket, data: any) {
-      const owner = await this.prisma.roomMember.findFirst({
-        where: {
-          userId: client.data.user.sub,
-          roomId: data.roomId,
-        },
-      });
-      if (!owner || owner.is_admin === false) {
-        return;
-      }
-      const member = await this.prisma.roomMember.findFirst({
-        where: {
-          userId: data.memberId,
-          roomId: data.roomId,
-        },
-      });
-      if (member) {
-        const banedClientSocket = await this.server
-          .in(`User:${data.memberId}`)
-          .fetchSockets();
-        if (banedClientSocket.length > 0) {
-          banedClientSocket[0].join(`Room:${data.roomId}`);
-        }
-      }
-    } */
-  
-    /* @SubscribeMessage('roomDeparture')
-    async hundleDeparture(
-      @MessageBody() data: { roomId: string; memberId: string; type: string },
-    ) {
-      const clients = await this.server
-        .in(`User:${data.memberId}`)
-        .fetchSockets();
-      const clientsToBan = clients.filter(
-        (client) => client.data.user.sub === data.memberId,
-      );
-      if (clientsToBan.length) {
-        for await (const client of clientsToBan) {
-          client.leave(`Room:${data.roomId}`);
-          if (data?.type === 'kick') {
-            client.emit('roomDeparture', {
-              roomId: data.roomId,
-              type: 'kick',
-            });
-          }
-        }
-      }
-    } */
   }

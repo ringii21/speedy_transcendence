@@ -109,7 +109,7 @@ model Game {
   id             Int     @id @default(autoincrement())
   participant1Id Int
   participant2Id Int
-  winner_id      String?
+  winner_id      Int?
   scoreP1         Int?
   scoreP2         Int?
   gametype       String?

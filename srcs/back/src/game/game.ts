@@ -282,12 +282,12 @@ export class Game {
     this.p2socket.once('leave', this.handleP2Disconnect);
   }
   private checkForWinner() {
-    if (this.p1Score >= 5) {
+    if (this.p1Score >= 11) {
       this.p1socket.emit('win', 'you won');
       this.p2socket.emit('lose', 'you lost');
       this.emitGameEnd('end');
     }
-    if (this.p2Score >= 5) {
+    if (this.p2Score >= 11) {
       this.p2socket.emit('win', 'you won');
       this.p1socket.emit('lose', 'you lost');
       this.emitGameEnd('end');

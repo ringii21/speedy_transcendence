@@ -39,7 +39,7 @@ function throttlify(callback: any) {
 
 export const Game = () => {
   const { user } = useAuth()
-  const [image, setImage] = useState(null)
+  const [ballImage, setBallImage] = useState<HTMLImageElement | null>(null)
   const gameState = useGameState()
   const { socket, isConnected } = useGameSocket()
   const [level, setLevel] = useState(1)
@@ -64,6 +64,9 @@ export const Game = () => {
     socket?.off('down')
   }
   useEffect(() => {
+    /* const img = new window.Image()
+    img.src = '../../assets/balle-pong.png'
+    img.onload = () => setBallImage(img) */
     /* const img = new Image()
     img.src = '../../assets/balle-pong.png'
     img.onload = () => setImage(img) */
@@ -165,11 +168,14 @@ export const Game = () => {
     <div className="flex flex-col gap-10 justify-start md:justify-center md:items-center items-center pt-12 md:pt-0  h-full w-full">
       <div className="flex items-center justify-center gap-x10 w-full xl:pt-4">
         <div className="flex items-center justify-center w-1/4 gap-6">
-          <img
-            alt=""
-            className="rounded-full w-auto h-auto max-w-[10vw] md:max-w-[20vw]"
-            src={gameState?.p1?.image}
-          />
+          <div className="flex flex-col items-center justify-center w-1/4">
+            <img
+              alt=""
+              className="rounded-full w-auto h-auto max-w-[10vw] md:max-w-[20vw]"
+              src={gameState?.p1?.image}
+            />
+            <span>{ gameState?.p1?.username }</span>
+          </div>
           <span className="font-lexend font-extrabold text-[4vw] xl:text-[2vw] text-current">
             {gameState.ball.p1Score}
           </span>
@@ -178,11 +184,14 @@ export const Game = () => {
           <span className="font-lexend font-extrabold text-[4vw] xl:text-[2vw] text-current">
             {gameState?.ball.p2Score}
           </span>
-          <img
-            alt="avatar"
-            className="rounded-full w-auto h-auto max-w-[10vw] md:max-w-[20vw]"
-            src={gameState?.p2?.image}
-          />
+          <div className="flex flex-col items-center justify-center w-1/4">
+            <img
+              alt="avatar"
+              className="rounded-full w-auto h-auto max-w-[10vw] md:max-w-[20vw]"
+              src={gameState?.p2?.image}
+            />
+            <span>{ gameState?.p2?.username }</span>
+          </div>
         </div>
         <button className="btn" onClick={leave}>
           Leave
@@ -203,7 +212,7 @@ export const Game = () => {
           height={gameState.height}
           style={{
             borderWidth: "4px",
-            borderColor: "#7940CF",
+            borderColor: "white",
             borderRadius: "4px",
           }}
         >
@@ -249,6 +258,16 @@ export const Game = () => {
               x={gameState.ball.x}
               y={gameState.ball.y}
             />
+            {/* { ballImage && (
+              <Image
+                image={ballImage}
+                x={gameState.ball.x}
+                y={gameState.ball.y}
+                height={gameState.ball.size}
+                width={gameState.ball.size}
+              />
+              )
+            } */}
           </Layer>
         </Stage>
       </div>
