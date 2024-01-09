@@ -16,7 +16,7 @@ import { ModalFriendsList } from '../components/ModalFriendsList'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
 import { IFriends, IUser } from '../types/User'
-import { addFriend, getAllFriends, removeFriend } from '../utils/friendService'
+import { addFriends, getAllFriends, removeFriend } from '../utils/friendService'
 import httpInstance from '../utils/httpClient'
 import { fetchAllUsers, fetchUser, getUser } from '../utils/userHttpRequests'
 import { IMe } from './../../../back/src/auth/42/42-oauth.types'
@@ -29,7 +29,6 @@ const Profile = () => {
 
   const [profilUser, setProfilUser] = useState<IUser>()
   const [isFollow, setIsFollow] = useState('follow')
-
   const [openModal, setOpenModal] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -99,31 +98,42 @@ const Profile = () => {
     queryFn: () => getUser(selectedUser as number),
   })
 
-  const buttonFollow = async () => {
-    const users = byId.data
-    if (users && Array.isArray(users)) {
-      users.find((user) => {
-        if (user.id === selectedUser) {
-          httpInstance()
-            .post(`http//localhost:3000/api/friends`)
-            .then((friend) => console.log(friend))
-        }
-      })
+  const foundFriendById = async (userId: number) => {
+    try {
+      if (!byId.data) return undefined
+      const user: IUser | undefined = byId.data.find((u) => u.id === userId)
+      if (!user) {
+        console.error(`User with ID ${userId} not found`)
+        return undefined
+      }
+      // console.log('user: ', user)
+      return user
+    } catch (e: any) {
+      console.error('Error: ', e.message)
+      return undefined
     }
   }
 
-  // const addNewFriend = async (id: number) => {
-  //   await httpInstance()
-  //     .post<IFriends>(`/api/friends/new/2`)
-  //     .then((responseData) => {
-  //       setIsFollow('unfollow')
-  //       console.log('Added friend successfully', responseData.data)
-  //     })
-  //     .catch((error) => {
-  //       console.error('Error adding friend: ', error)
-  //       // Gérer les erreurs ici
-  //     })
-  // }
+  function buttonFollow(id: number) {
+    const fetchData = async () => {
+      try {
+        const dataUser = await foundFriendById(id)
+        if (!dataUser) console.error(`Error can not found userId ${id}`)
+        console.log(dataUser)
+        const addFriendResponse = await addFriends({
+          userId: dataUser,
+        })
+
+        console.log('Friend added: ', addFriendResponse.data)
+        return addFriendResponse
+        // resolve(dataUser)
+      } catch (e: any) {
+        console.error('Error: ', e.message)
+        // reject(e)
+      }
+    }
+    return fetchData()
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -160,7 +170,7 @@ const Profile = () => {
         return (
           <div className='flex justify-evenly'>
             <button
-              onClick={() => buttonFollow()}
+              onClick={() => buttonFollow(selectedUser as number)}
               className='btn btn-primary drop-shadow-xl rounded-lg'
             >
               {isFollow}
@@ -174,7 +184,7 @@ const Profile = () => {
             <button className='btn btn-primary drop-shadow-xl rounded-lg' onClick={onButtonClick}>
               Logout
             </button>
-            <ModalFriendsList openModal={openModal} setOpenModal={setOpenModal} user={user} />
+            {ModalFriendsList({ openModal, setOpenModal, user })}
             <button
               type='button'
               className='btn btn-secondary drop-shadow-xl rounded-lg'

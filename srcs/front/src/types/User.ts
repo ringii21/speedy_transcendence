@@ -14,17 +14,21 @@ export interface IUser {
 
 export type IFriends = {
   id: number
-  image: string
-  username: string
-  email: string
   userId: number
+  expiresAt?: Date
+  createdAt: Date
+  updatedAt: Date
+  deletedAt?: Date
   user: IUser
 }
 
 export type IFriendsOf = {
   id: number
-  image: string
-  username: string
   userId: number
+  expiresAt?: Date
+  createdAt: Date
+  updatedAt: Date
+  deletedAt?: Date
   user: IUser
+  friendId: IFriends
 }
