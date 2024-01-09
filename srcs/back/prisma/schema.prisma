@@ -41,25 +41,26 @@ model User {
 
 model Friends {
   id        Int         @id @default(autoincrement())
-  image     String
-  username  String      @unique
-  email     String      @unique
-  userId    Int         @unique
+  user      User        @relation(fields: [userId], references: [id])
+  userId    Int         @map("user_id")
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+  deletedAt DateTime?   @map("deleted_at")
   friendsOf FriendsOf[]
-  User      User        @relation(fields: [userId], references: [id])
 
   @@index([userId, id])
   @@map("friends")
 }
 
 model FriendsOf {
-  id        Int      @id @default(autoincrement())
-  image     String
-  username  String   @unique
-  User      User     @relation(fields: [userId], references: [id])
-  userId    Int      @unique
-  Friends   Friends? @relation(fields: [friendsId], references: [id])
-  friendsId Int?
+  id        Int       @id @default(autoincrement())
+  user      User      @relation(fields: [userId], references: [id])
+  userId    Int       @unique
+  friends   Friends   @relation(fields: [friendsId], references: [id])
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  friendsId Int       @map("friends_id")
 
   @@index([userId, id])
   @@map("friends_of")

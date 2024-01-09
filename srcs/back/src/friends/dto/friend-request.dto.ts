@@ -1,8 +1,8 @@
+import { User } from '@prisma/client'
 import { Transform } from 'class-transformer'
 import { IsNumber, IsNotEmpty, NotEquals } from 'class-validator'
-import { User } from '@prisma/client'
 
-export class FriendshipRemovalDto {
+export class FriendsRequestDto {
   @IsNotEmpty()
   @IsNumber()
   @Transform(({ value }) => parseInt(value, 10))

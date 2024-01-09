@@ -1,10 +1,17 @@
 import { Transform } from 'class-transformer'
-import { IsNumber, IsNotEmpty } from 'class-validator'
+import { IsNumber, IsNotEmpty, IsOptional } from 'class-validator'
 import { User } from '@prisma/client'
 
-export class FriendshipSearchDto implements Partial<User> {
+export class FriendshipSearchDto {
+  @IsOptional()
   @IsNumber()
   @IsNotEmpty()
   @Transform(({ value }) => parseInt(value, 10))
-  id: number
+  skip: number
+
+  @IsOptional()
+  @IsNumber()
+  @IsNotEmpty()
+  @Transform(({ value }) => parseInt(value, 10))
+  take: number
 }

@@ -1,24 +1,13 @@
 import { Type, Exclude } from 'class-transformer';
 import { UserEntity } from '../../users/entity/user.entity'
-import { User as PrismaUserFriend } from '@prisma/client'
+import { Friends as FriendPrisma, User, Friends } from "@prisma/client";
 
-export class UserFriendEntity implements PrismaUserFriend {
+export class FriendEntity implements FriendPrisma {
   id: number
+  user: User
   userId: number
-  name: string | null
-  username: string
-  image: string
-
-  @Exclude()
-  email: string
-  @Exclude()
-  twoFaEnabled: boolean
-  @Exclude()
-  twoFaSecret: string | null
-  @Exclude()
-  refreshToken: string | null
-  @Exclude()
-  accessToken: string | null
+  friendsOf: Friends
+  
   @Exclude()
   createdAt: Date
   @Exclude()
@@ -28,7 +17,7 @@ export class UserFriendEntity implements PrismaUserFriend {
   @Exclude()
   updatedAt: Date
   
-  constructor(partial: Partial<UserFriendEntity>) {
+  constructor(partial: Partial<FriendEntity>) {
     Object.assign(this, partial)
   }
 }
