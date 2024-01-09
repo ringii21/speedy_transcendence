@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "react-hot-toast": "^2.4.1",
+    "react-konva": "^18.2.10",
+    "zustand": "^4.4.7"
+  }
+}

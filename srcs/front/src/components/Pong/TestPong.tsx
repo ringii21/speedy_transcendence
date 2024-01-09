@@ -169,28 +169,28 @@ export const Game = () => {
       <div className="flex items-center justify-center gap-x10 w-full xl:pt-4">
         <div className="flex items-center justify-center w-1/4 gap-6">
           <div className="flex flex-col items-center justify-center w-1/4">
-            <img
+{/*             <img
               alt=""
               className="rounded-full w-auto h-auto max-w-[10vw] md:max-w-[20vw]"
               src={gameState?.p1?.image}
-            />
+            /> */}
             <span>{ gameState?.p1?.username }</span>
+            <span className="font-lexend font-extrabold text-[4vw] xl:text-[2vw] text-current">
+                {gameState.ball.p1Score}
+            </span>
           </div>
-          <span className="font-lexend font-extrabold text-[4vw] xl:text-[2vw] text-current">
-            {gameState.ball.p1Score}
-          </span>
         </div>
         <div className="flex items-center justify-center w-1/4 gap-6">
-          <span className="font-lexend font-extrabold text-[4vw] xl:text-[2vw] text-current">
-            {gameState?.ball.p2Score}
-          </span>
           <div className="flex flex-col items-center justify-center w-1/4">
-            <img
+{/*             <img
               alt="avatar"
               className="rounded-full w-auto h-auto max-w-[10vw] md:max-w-[20vw]"
               src={gameState?.p2?.image}
-            />
+            /> */}
             <span>{ gameState?.p2?.username }</span>
+            <span className="font-lexend font-extrabold text-[4vw] xl:text-[2vw] text-current">
+                {gameState?.ball.p2Score}
+            </span>
           </div>
         </div>
         <button className="btn" onClick={leave}>
@@ -203,7 +203,7 @@ export const Game = () => {
         </div>
       </div>
       <div
-        className="flex items-center justify-center min-h-16 max-h-[80%] max-w-[800px] 3xl:max-w-[1150px] min-w-92 w-[95%] rounded-xl aspect-video border-primary border-4"
+        className="flex items-center justify-center min-h-16 max-h-[80%] max-w-[800px] 3xl:max-w-[1150px] min-w-92 w-[95%] rounded-xl aspect-video border-1"
         id="Game"
       >
         <Stage
