@@ -7,12 +7,11 @@ import {
     WebSocketServer,
   } from '@nestjs/websockets';
   import { Server, Socket } from 'socket.io';
-  //import { MessageFormatDto } from 'src/messages/dto/message-format.dto';
   import {} from '@nestjs/platform-socket.io';
   import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
   import { PrismaService } from 'src/prisma/prisma.service';
   import { Game } from 'src/game/game';
-  import { $Enums/* , Notification */ } from '@prisma/client';
+  import { $Enums } from '@prisma/client';
   import * as crypto from 'crypto';
   import { UsersService } from 'src/users/users.service';
   import { ChatGateway } from 'src/chat/chat.gateway';
@@ -49,33 +48,6 @@ import {
         client.disconnect()
         return
       }
-      /* client.join(`User:${userId}`);
-      const frienduserIds = await this.prisma.friend.findMany({
-        where: {
-          OR: [
-            {
-              fromId: userId,
-            },
-            {
-              toId: userId,
-            },
-          ],
-        },
-        select: {
-          fromId: true,
-          toId: true,
-        },
-      });
-  
-      const friendIds = frienduserIds
-        .map((friend) => (friend.toId === userId ? friend.fromId : friend.toId))
-        .filter(
-          (id) => this.server.sockets.adapter.rooms.get(`User:${id}`)?.size,
-        );
-  
-      client.emit('onlineFriends', friendIds);
-  
-      this.server.emit('friendOnline', userId); */
     }
   
     async handleDisconnect(client: Socket) {
@@ -98,130 +70,10 @@ import {
       });
     }
   
-    /* private async createNotification(notif: Partial<Notification>) {
-      const newNotif = await this.prisma.notification.create({
-        data: {
-          actorId: notif.actorId,
-          receiverId: notif.receiverId,
-          type: notif.type,
-          entity_type: notif.entity_type,
-          entityId: notif.entityId,
-        },
-        include: {
-          actor: {
-            select: {
-              firstName: true,
-              lastName: true,
-              avatar: true,
-            },
-          },
-          receiver: {
-            select: {
-              firstName: true,
-              lastName: true,
-              avatar: true,
-            },
-          },
-        },
-      });
-      return newNotif;
-    } */
-  
-   /*  @OnEvent('sendNotification')
-    async sendNotification(
-      notif: Partial<Notification>,
-      blockedRoomMembersIds?: string[],
-    ) {
-      // create the notification on the database
-      switch (notif.type) {
-        case $Enums.NotifType.acceptFriend:
-        case $Enums.NotifType.addFriend: {
-          const newNotif = await this.createNotification(notif);
-          const channellname: string = `User:${newNotif.receiverId}`;
-          this.server.to(channellname).emit('notification', {
-            ...newNotif,
-            entity: null,
-          });
-          break;
-        }
-        case $Enums.NotifType.message: {
-          const message = await this.prisma.message.findUnique({
-            where: {
-              id: notif.entityId,
-            },
-            include: {
-              author: {
-                select: {
-                  avatar: true,
-                  Username: true,
-                },
-              },
-              room: {
-                select: {
-                  type: true,
-                },
-              },
-            },
-          });
-          let roomMembers = await this.prisma.roomMember.findMany({
-            where: {
-              roomId: message.roomId,
-            },
-            select: {
-              userId: true,
-              is_banned: true,
-            },
-          });
-          roomMembers = roomMembers.filter(
-            (member) =>
-              member.userId !== message.authorId &&
-              member.userId !== notif.actorId &&
-              !member.is_banned,
-          );
-  
-          const clientsSockets = await this.server
-            .in(`Room:${message.roomId}`)
-            .fetchSockets();
-          for await (const member of roomMembers) {
-            if (blockedRoomMembersIds?.includes(member.userId)) {
-              continue;
-            }
-  
-            let found = false;
-            for await (const clientSocket of clientsSockets) {
-              if (clientSocket.data.user.sub === member.userId) {
-                found = true;
-                break;
-              }
-            }
-  
-            if (found) {
-              continue;
-            }
-            const newNotif = await this.createNotification({
-              ...notif,
-              receiverId: member.userId,
-            });
-            const channellname: string = `User:${newNotif.receiverId}`;
-            this.server.to(channellname).emit('notification', {
-              ...newNotif,
-              entity: new MessageFormatDto(message),
-            });
-          }
-          break;
-        }
-      }
-    } */
   
     @SubscribeMessage('status')
     async handleStatusEvent(@MessageBody() data: any) {
       const userId = data.userId;
-      /* const status = this.server.sockets.adapter.rooms.get(`User:${userId}`)?.size
-        ? 'online'
-        : 'offline';
-      if (status === 'offline') {
-        return { status, inGame: false };
-      } */
       const userSockets = await this.server.in(`User:${userId}`).fetchSockets();
       let inGame = false;
       for await (const socket of userSockets) {

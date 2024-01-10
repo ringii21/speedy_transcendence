@@ -9,18 +9,11 @@ import { useAuth } from '../providers/AuthProvider'
 import { useGameSocket } from '../providers/GameSocketProvider'
 
 const Game = () => {
-  console.log('BONJOURRR')
   const { user } = useAuth()
 
   if (!user) return <Navigate to='/login' replace />
   const { socket, isConnected } = useGameSocket()
   if (!isConnected) socket?.connect()
-
-  /* if (socket?.connected) {
-    console.log('OK')
-  } else {
-    console.log('NOO')
-  } */
 
   return (
     <div>
