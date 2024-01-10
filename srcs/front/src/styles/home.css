@@ -1,4 +1,5 @@
 @import 'https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300';
+@import 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400&display=swap';
 
 .mainContainer {
   position: fixed;
@@ -41,13 +42,22 @@
 }
 
 .welcome {
-  color: black;
+  color: white;
   font-weight: bolder;
-  text-shadow: rgba(128, 128, 128, 1) 0px 4px 16px;
-  font-family: 'Open Sans Condensed', sans-serif;
+  text-shadow: rgb(17, 250, 192) 0px 4px 16px;
+  font-family: 'Space Grotesk', sans-serif;
   text-decoration-color: black;
   padding-top: 1rem;
   padding-bottom: 1rem;
+}
+.pongRule
+{
+    color: white;
+    font-weight: bolder;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    padding-top: 1rem;
+    text-align: center;
 }
 
 /* LAUNCH GAME BUTTON */

@@ -34,6 +34,9 @@ const Navbar = () => {
           </div>
           <ul className='menu menu-sm dropdown-content mt-3 z-[1] p-2 bg-base-100 w-52'>
             <li>
+              <Link to='/'>Home</Link>
+            </li>
+            <li>
               <Link to='/chat'>Chat</Link>
             </li>
             <li>
