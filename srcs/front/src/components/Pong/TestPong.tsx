@@ -61,6 +61,7 @@ export const Game = () => {
     socket?.emit('down')
     socket?.off('down')
   }
+
   useEffect(() => {
     /* const img = new window.Image()
     img.src = '../../assets/balle-pong.png'
