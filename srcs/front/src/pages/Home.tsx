@@ -8,8 +8,8 @@ import { useSocket } from '../providers/SocketProvider'
 import pongTheme from './../assets/boardcard_pong.png'
 
 const Home = () => {
-  const { socket } = useSocket()
-  socket?.connect()
+  const { chatSocket } = useSocket()
+  chatSocket?.connect()
   return (
     <div className='w-screen'>
       <h1 className='text-center text-4xl uppercase welcome md:text-7xl bg-gray-900'>Welcome</h1>

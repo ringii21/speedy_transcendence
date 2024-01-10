@@ -6,11 +6,33 @@ import { IFriends, IUser } from '../types/User'
 type FriendsListModal = {
   openModal: boolean
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>
-  user: IUser | null
+  friends?: IFriends[]
+  me: IUser
 }
 
-const ModalFriendsList: React.FC<FriendsListModal> = ({ openModal, setOpenModal, user }) => {
-  console.log(openModal)
+const getCorrectFriend = (friend: IFriends, me: IUser) => {
+  if (me.id === friend.friendId) return friend.friendOf
+  return friend.friend
+}
+
+const line = (friend: IUser, index: number) => {
+  return (
+    <Menu.Item key={index}>
+      <a
+        href='#'
+        className='flex items-center p-3 text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white'
+      >
+        <div className='avatar'>
+          <div className='w-12 rounded-full'>
+            <img className='img' src={friend.image} alt='img' />
+          </div>
+        </div>
+        <span className='flex-1 ms-3 whitespace-nowrap'>{friend.username}</span>
+      </a>
+    </Menu.Item>
+  )
+}
+const ModalFriendsList: React.FC<FriendsListModal> = ({ openModal, setOpenModal, friends, me }) => {
   return (
     <Menu as='div'>
       <Transition appear show={openModal} as={Fragment}>
@@ -46,33 +68,7 @@ const ModalFriendsList: React.FC<FriendsListModal> = ({ openModal, setOpenModal,
             </div>
             <div className='p-4 md:p-5'>
               <div className='my-4 space-y-3'>
-                <Menu.Item>
-                  <a
-                    href='#'
-                    className='flex items-center p-3 text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white'
-                  >
-                    <svg
-                      aria-hidden='true'
-                      className='h-4'
-                      viewBox='0 0 40 38'
-                      fill='none'
-                      xmlns='http://www.w3.org/2000/svg'
-                    >
-                      <path
-                        d='M39.0728 0L21.9092 12.6999L25.1009 5.21543L39.0728 0Z'
-                        fill='#E17726'
-                      />
-                      <path
-                        d='M0.966797 0.0151367L14.9013 5.21656L17.932 12.7992L0.966797 0.0151367Z'
-                        fill='#E27625'
-                      />
-                    </svg>
-                    <span className='flex-1 ms-3 whitespace-nowrap'>MetaMask</span>
-                    <span className='inline-flex items-center justify-center px-2 py-0.5 ms-3 text-xs font-medium text-gray-500 bg-gray-200 rounded dark:bg-gray-700 dark:text-gray-400'>
-                      Popular
-                    </span>
-                  </a>
-                </Menu.Item>
+                {friends && friends.map((f, i) => line(getCorrectFriend(f, me), i))}
               </div>
             </div>
           </div>

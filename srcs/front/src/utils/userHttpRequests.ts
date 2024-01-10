@@ -10,8 +10,8 @@ export const updateUser = async (user: FormData) =>
     headers: { 'Content-Type': 'multipart/form-data' },
   })
 export const fetchAllUsers = async () => (await httpInstance().get<IUser[]>(`/api/users`)).data
-export const getUser = async (id: number) => {
-  const { data } = await httpInstance().get<IUser[]>(`/api/users/${id}`)
-  if (!data) console.log('Error user is not found')
+export const getUser = async ({ queryKey }: { queryKey: QueryKey }) => {
+  const [_, id] = queryKey
+  const { data } = await httpInstance().get<IUser>(`/api/users/${id}`)
   return data
 }

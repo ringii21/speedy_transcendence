@@ -1,11 +1,15 @@
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
 import { Socket } from 'socket.io-client'
 
-import { chatSocket as socket, friendsSocket as friends } from '../utils/socketService'
+import { chatSocket, gameSocket, notificationSocket } from '../utils/socketService'
 
 interface SocketContextData {
-  socket: Socket | null
-  isConnected: boolean
+  chatSocket: Socket
+  gameSocket: Socket
+  notificationSocket: Socket
+  isChatConnected: boolean
+  isGameConnected: boolean
+  isNotificationConnected: boolean
 }
 
 type Props = {
@@ -13,35 +17,52 @@ type Props = {
 }
 
 export const SocketContext = createContext<SocketContextData>({
-  socket: null,
-  isConnected: false,
+  chatSocket,
+  gameSocket,
+  notificationSocket,
+  isChatConnected: false,
+  isGameConnected: false,
+  isNotificationConnected: false,
 })
 
 export const SocketProvider = ({ children }: Props) => {
-  const [isConnected, setIsConnected] = useState<boolean>(false)
-  const [friendsRequest, setFriendsRequest] = useState<string[]>([])
+  const [isChatConnected, setIsChatConnected] = useState<boolean>(false)
+  const [isGameConnected, setIsGameConnected] = useState<boolean>(false)
+  const [isNotificationConnected, setIsNotificationConnected] = useState<boolean>(false)
+
   useEffect(() => {
-    socket.on('connect', () => setIsConnected(true))
-    friends.on('connect', () => setIsConnected(true))
-    socket.on('disconnect', () => setIsConnected(false))
-    friends.on('disconnect', () => setIsConnected(false))
+    chatSocket.on('connect', () => setIsChatConnected(true))
+    chatSocket.on('disconnect', () => setIsChatConnected(false))
+    chatSocket.on('connect_error', console.error)
 
-    friends.on('friends_request', (request) => {
-      setFriendsRequest((prevRequest) => [...prevRequest, request])
-    })
+    gameSocket.on('connect', () => setIsGameConnected(true))
+    gameSocket.on('disconnect', () => setIsGameConnected(false))
+    gameSocket.on('connect_error', console.error)
 
-    socket.on('connect_error', console.error)
-    friends.on('connect_error', console.error)
+    notificationSocket.on('connect', () => setIsNotificationConnected(true))
+    notificationSocket.on('disconnect', () => setIsNotificationConnected(false))
+    notificationSocket.on('connect_error', console.error)
 
     return () => {
-      socket.removeAllListeners()
-      friends.removeAllListeners()
-      socket.disconnect()
-      friends.disconnect()
+      chatSocket.removeAllListeners()
+      chatSocket.disconnect()
+
+      gameSocket.removeAllListeners()
+      gameSocket.disconnect()
+
+      notificationSocket.removeAllListeners()
+      notificationSocket.disconnect()
     }
   }, [])
 
-  const values = { socket, friends, isConnected, friendsRequest }
+  const values = {
+    chatSocket,
+    isChatConnected,
+    gameSocket,
+    isGameConnected,
+    notificationSocket,
+    isNotificationConnected,
+  }
   return <SocketContext.Provider value={values}>{children}</SocketContext.Provider>
 }
 

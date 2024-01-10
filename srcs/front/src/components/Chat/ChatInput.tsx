@@ -12,7 +12,7 @@ type GetChannel = {
 }
 
 const ChatInput: React.FC<GetChannel> = ({ channel }) => {
-  const { socket, isConnected } = useSocket()
+  const { chatSocket, isChatConnected } = useSocket()
   const { setMessages } = useChat()
   const { user } = useAuth()
 
@@ -26,7 +26,7 @@ const ChatInput: React.FC<GetChannel> = ({ channel }) => {
         content: inputMessage,
         senderId: user.id,
       }
-      socket?.emit('message', newMessage)
+      chatSocket?.emit('message', newMessage)
       setMessages((prevMessages) => ({
         ...prevMessages,
         [channel.id]: [...(prevMessages[channel.id] ?? []), newMessage],
@@ -43,14 +43,14 @@ const ChatInput: React.FC<GetChannel> = ({ channel }) => {
       }))
     }
 
-    socket?.on('message', messageListener)
-  }, [socket])
+    chatSocket?.on('message', messageListener)
+  }, [chatSocket])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleSendMessage()
   }
 
-  if (!isConnected) return <></>
+  if (!isChatConnected) return <></>
   return (
     <div className='relative mx-4 mb-20 border-t inline-flex'>
       <input
