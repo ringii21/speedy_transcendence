@@ -30,25 +30,25 @@ export class GameService {
   }) {
     if (data.mode === 'register') {
       const client = data.client;
+      client.data.user = await this.chatGateway.getUser(client);
       client.data.user.inQueue = false
       if (client.data.user?.inQueue) {
         return;
       }
       const gameMode = data.gameMode;
-      const userData = await this.chatGateway.getUser(client);
-      if (userData) {
-        const userId = userData.id
+      if (client.data.user) {
+        const userId = client.data.user.id
       }
       client.data.user.inQueue = true;
 
       if (gameMode === 'classic')
-        this.classicwaitingPlayers.push({ socket: client, userData: userData });
+        this.classicwaitingPlayers.push({ socket: client, userData: client.data.user });
       else if (gameMode === 'extra')
-        this.extraWaitingPlayers.push({ socket: client, userData: userData });
+        this.extraWaitingPlayers.push({ socket: client, userData: client.data.user });
     } else if (data.mode === 'unregister') {
       const client = data.client;
+      client.data.user = await this.chatGateway.getUser(client);
       const gameMode = data.gameMode;
-      console.log('JE PASSE ICICICICCICICICICICICICICICCICICIIIII')
       client.data.user.inQueue = false;
       if (gameMode === 'classic')
         this.classicwaitingPlayers = this.classicwaitingPlayers.filter(

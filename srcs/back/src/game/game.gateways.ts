@@ -87,7 +87,6 @@ import {
   
     @SubscribeMessage('startGame')
     handleGameStartEvent(client: Socket, data: { gameMode: string }) {
-      client.data.user = {}
       this.eventEmitter.emit('game.start', {
         client,
         gameMode: data.gameMode,

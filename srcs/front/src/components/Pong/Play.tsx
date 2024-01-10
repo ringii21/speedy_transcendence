@@ -1,9 +1,15 @@
 import { useRef, useState } from 'react'
 import toast from 'react-hot-toast'
+import { Navigate } from 'react-router-dom'
 
+import { useAuth } from '../../providers/AuthProvider'
 import { useGameSocket } from '../../providers/GameSocketProvider'
+import { IUser } from '../../types/User'
 import { QueueWaitModal } from './QueueModal'
+
 export const Play = () => {
+  const { user } = useAuth()
+  if (!user) return <Navigate to='/login' replace />
   toast.success('Match making in Progress you can move until find opponent', {
     duration: 5000,
   })
