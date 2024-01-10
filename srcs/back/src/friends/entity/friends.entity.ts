@@ -3,11 +3,10 @@ import { UserEntity } from '../../users/entity/user.entity'
 import { Friends as FriendPrisma, User, Friends } from "@prisma/client";
 
 export class FriendEntity implements FriendPrisma {
-  id: number
-  user: User
-  userId: number
-  friendsOf: Friends
-  
+  friendId: number;
+  confirmed: boolean;
+  friendOfId: number;
+
   @Exclude()
   createdAt: Date
   @Exclude()
@@ -16,7 +15,7 @@ export class FriendEntity implements FriendPrisma {
   expiresAt: Date | null
   @Exclude()
   updatedAt: Date
-  
+
   constructor(partial: Partial<FriendEntity>) {
     Object.assign(this, partial)
   }

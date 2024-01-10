@@ -4,7 +4,7 @@ import { Prisma, User } from '@prisma/client'
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async find(
     userWhereUniqueInput: Prisma.UserWhereUniqueInput,
@@ -17,15 +17,12 @@ export class UsersService {
   async findUserById(id: number) {
     const user = await this.prisma.user.findUnique({
       where: {
-        id: id,
+        id,
       }
     })
-    if (!user) {
-      throw new NotFoundException('User is not found')
-    }
     return user
   }
-  
+
   async findMany(params: {
     skip?: number
     take?: number

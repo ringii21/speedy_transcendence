@@ -4,6 +4,7 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Get,
+  Param,
   ParseIntPipe,
   Patch,
   Post,
@@ -31,7 +32,7 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   @Get()
   async getUsers(@Query() queryUsersDto: QueryUsersDto) {
@@ -44,19 +45,13 @@ export class UsersController {
   async me(@Req() req: RequestWithDbUser) {
     return new UserEntity(req.user)
   }
-  
-  @Get(':id')
-  async id(@Req() req: RequestWithDbUser) {
-    try {
-      const user = await this.usersService.findUserById(req.user.id)
-      return new UserEntity(req.user)
 
-    } catch (e) {
-      if (e instanceof NotFoundException) {
-        return { message: 'User not found', status: 404 }
-      }
-      return { message: 'Internal server error', status: 500 }
-    }
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const user = await this.usersService.findUserById(id)
+    if (!user)
+      return new NotFoundException('user not found')
+    return new UserEntity(user)
   }
 
   @Patch('me')

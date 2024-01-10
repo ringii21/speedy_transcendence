@@ -6,11 +6,5 @@ export class FriendshipRemovalDto {
   @IsNotEmpty()
   @IsNumber()
   @Transform(({ value }) => parseInt(value, 10))
-  id: number
-
-  @IsNotEmpty()
-  @IsNumber()
-  @Transform(({ value }) => parseInt(value, 10))
-  @NotEquals('id', { message: 'friendId must be different from id' })
-  friendId: number
+  friendOfId: number
 }

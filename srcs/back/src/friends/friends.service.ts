@@ -1,44 +1,113 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { User, Friends, Prisma } from '@prisma/client'
-import { userInfo } from 'os'
-import { IsNumber } from 'class-validator';
-import { FriendEntity } from "./entity/friends.entity";
 
 @Injectable()
 export class FriendsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
+
 
   async findFriend(
-    userId: number,
+    friendId: number,
+    friendOfId: number
   ) {
-    return this.prisma.friends.findUnique({
+    return this.prisma.friends.findFirst({
       where: {
-        id: userId,
-      },
+        friendId,
+        friendOfId
+      }
     })
   }
-  
-  async create(data: Prisma.FriendsCreateInput): Promise<Friends> {
+
+  async getMyFriends(
+    userId: number,
+  ) {
+    return this.prisma.friends.findMany({
+      where: {
+        OR: [
+          {
+            friendId: userId
+          },
+          {
+            friendOfId: userId
+          }
+        ],
+        confirmed: true
+      },
+      include: {
+        friend: {
+          select: {
+            id: true,
+            image: true,
+            username: true
+          }
+        },
+        friendOf: {
+          select: {
+            id: true,
+            image: true,
+            username: true
+          }
+        },
+      }
+    })
+  }
+
+  async create(friendId: number, friendOfId: number) {
     return this.prisma.friends.create({
-      data,
+      data: {
+        friendId,
+        friendOfId,
+        confirmed: false,
+      }
     })
   }
 
   async addFriends(
-    userId: number,
-    id: number,
-    ) {
-    const friend = await this.findFriend(userId)
-    console.log('Friend service: ', friend)
-    return friend
+    friendId: number,
+    friendOfId: number
+  ) {
+    await this.prisma.friends.update({
+      where: {
+        friendId_friendOfId: {
+          friendId,
+          friendOfId
+        }
+      },
+      data: {
+        confirmed: true
+      }
+    })
   }
-    
-  async delete(where: Prisma.FriendsWhereUniqueInput): Promise<boolean> {
+
+
+  //faux
+  async delete(friendId: number, friendOfId: number): Promise<boolean> {
     const friend = await this.prisma.friends.delete({
-      where,
+      where: {
+        friendId_friendOfId: {
+          friendId,
+          friendOfId
+        }
+      },
     })
     return !!friend
+  }
+
+  //faux
+  async getNonConfirmedFriends(userId: number) {
+    return this.prisma.user.findMany({
+      where: {
+        id: userId,
+      },
+      include: {
+        friend: {
+          where: {
+            confirmed: false
+          }
+        }
+      }
+    })
   }
 
   // async findFriendById(id: number) {

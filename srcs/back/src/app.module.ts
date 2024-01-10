@@ -9,6 +9,8 @@ import { UsersController } from './users/users.controller'
 import { TwoFaController } from './auth/2fa/2fa.controller'
 import { ChatModule } from './chat/chat.module'
 import { ChatController } from './chat/chat.controller'
+import { FriendsModule } from './friends/friends.module'
+import { FriendsControler } from './friends/friends.controler'
 
 @Module({
   imports: [
@@ -18,6 +20,7 @@ import { ChatController } from './chat/chat.controller'
     UsersModule,
     AuthModule,
     ChatModule,
+    FriendsModule,
   ],
   providers: [Logger],
 })
@@ -44,5 +47,6 @@ export class AppModule implements NestModule {
     consumer.apply(LoggerMiddleware).forRoutes(TwoFaController)
     consumer.apply(LoggerMiddleware).forRoutes(UsersController)
     consumer.apply(LoggerMiddleware).forRoutes(ChatController)
+    consumer.apply(LoggerMiddleware).forRoutes(FriendsControler)
   }
 }
