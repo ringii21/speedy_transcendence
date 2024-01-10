@@ -27,6 +27,7 @@ export const Modal = () => {
         }
       })
       socket.socket?.on('players', (players: any) => {
+        console.log('Je suis dnas le emit players de Modal.tsx')
         gameState.setP1(players[0])
         gameState.setP2(players[1])
       })

@@ -30,15 +30,16 @@ export class GameService {
   }) {
     if (data.mode === 'register') {
       const client = data.client;
-      if (client.data.user?.inQueue) return;
+      client.data.user.inQueue = false
+      if (client.data.user?.inQueue) {
+        return;
+      }
       const gameMode = data.gameMode;
       const userData = await this.chatGateway.getUser(client);
       if (userData) {
         const userId = userData.id
       }
-      console.log('Avant')
       client.data.user.inQueue = true;
-      console.log('APRES')
 
       if (gameMode === 'classic')
         this.classicwaitingPlayers.push({ socket: client, userData: userData });
@@ -47,6 +48,7 @@ export class GameService {
     } else if (data.mode === 'unregister') {
       const client = data.client;
       const gameMode = data.gameMode;
+      console.log('JE PASSE ICICICICCICICICICICICICICICCICICIIIII')
       client.data.user.inQueue = false;
       if (gameMode === 'classic')
         this.classicwaitingPlayers = this.classicwaitingPlayers.filter(

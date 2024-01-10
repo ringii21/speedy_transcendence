@@ -149,7 +149,6 @@ export const Game = () => {
       socket?.off("screen");
       window.removeEventListener("resize", () => {});
     };
-
     // disable eslit next line
   }, []);
 

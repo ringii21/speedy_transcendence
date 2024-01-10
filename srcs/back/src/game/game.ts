@@ -211,6 +211,7 @@ export class Game {
   }
 
   setplayerScokets(
+    game_channel: string,
     p1socket: Socket,
     p2socket: Socket,
     p1Data: any,
@@ -220,7 +221,7 @@ export class Game {
     this.p2socket = p2socket;
     this.p1Data = p1Data;
     this.p2Data = p2Data;
-    this.server.emit('players', [p1Data, p2Data]);
+    this.server.to(game_channel).emit('players', [p1Data, p2Data]);
 
     if (this.mode === 'extra') {
       let l = 1;

@@ -230,6 +230,7 @@ import {
       const new_game = new Game(this.eventEmitter, this.server, mode);
   
       new_game.setplayerScokets(
+        game_channel,
         clients[0].socket,
         clients[1].socket,
         clients[0].userData,

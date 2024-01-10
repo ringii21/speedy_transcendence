@@ -14,7 +14,7 @@ const Home = () => {
     <div className='w-screen'>
       <h1 className='text-center text-4xl uppercase welcome md:text-7xl bg-gray-900'>Welcome</h1>
       <Link
-        to='#'
+        to='/play'
         className='flex flex-col items-center btnImg justify-center w-screen bg-black shadow md:flex-row'
       >
         <div className='flex flex-col'>

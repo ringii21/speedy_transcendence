@@ -3,7 +3,6 @@ import { BrowserView, isDesktop, isMobile, MobileView, TabletView } from 'react-
 import { Navigate } from 'react-router-dom'
 
 import { Play } from '../components/Pong/Play'
-import { StartComponent } from '../components/Pong/StartComponent'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
 import { useGameSocket } from '../providers/GameSocketProvider'
