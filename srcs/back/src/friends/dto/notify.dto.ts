@@ -1,9 +1,9 @@
+import { IsNotEmpty, IsNumber } from 'class-validator'
 import { Transform } from 'class-transformer'
-import { IsNumber, IsNotEmpty } from 'class-validator'
 
-export class FriendsRequestDto {
+export class NotifyDto {
   @IsNotEmpty()
   @IsNumber()
   @Transform(({ value }) => parseInt(value, 10))
-  friendOfId: number
+  receiverId: number
 }

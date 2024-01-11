@@ -5,7 +5,12 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { ModalFriendsList } from '../components/ModalFriendsList'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
-import { createFriendRequest, getFriends, removeFriend } from '../utils/friendService'
+import {
+  createFriendRequest,
+  getFriends,
+  getNotification,
+  removeFriend,
+} from '../utils/friendService'
 import { fetchUser, getUser } from '../utils/userHttpRequests'
 
 const Profile = () => {
@@ -23,7 +28,7 @@ const Profile = () => {
   const ref = useRef<HTMLDivElement>(null)
 
   let queryConfig
-  if (id === ' me') {
+  if (id === 'me') {
     queryConfig = {
       queryKey: ['profile', 'me'],
       queryFn: fetchUser,
@@ -69,6 +74,16 @@ const Profile = () => {
     e.preventDefault()
     await signout()
   }
+
+  // const notification = useQuery({
+  //   queryKey: ['notification'],
+  //   queryFn: getNotification,
+  // })
+
+  // console.log(notification)
+  // const friendRequest = () => {
+
+  // }
 
   const isUserId = () => {
     if (!profileUser) return <></>

@@ -33,10 +33,24 @@ model User {
   friend    Friends[] @relation("friend")
   friendOf  Friends[] @relation("friendOf")
 
+  sender    Notify[]    @relation("sender")
+  received  Notify[]    @relation("received")
+
   playedAsp1 Game[] @relation("player1")
   playedAsp2 Game[] @relation("player2")
 
   @@map("users")
+}
+
+model Notify {
+  sender      User      @relation("sender", fields: [senderId], references: [id])
+  received    User      @relation("received", fields: [receivedId], references: [id])
+  senderId  Int       @map("sender_id")
+  receivedId  Int       @map("received_id")
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  @@id([senderId, receivedId])
+  @@map("notify")
 }
 
 model Friends {
@@ -52,7 +66,6 @@ model Friends {
   @@id([friendId, friendOfId])
   @@map("friends")
 }
-
 
 model ChannelMessage {
   id        Int       @id @default(autoincrement())

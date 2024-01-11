@@ -1,11 +1,10 @@
-import { Type, Exclude } from 'class-transformer';
-import { UserEntity } from '../../users/entity/user.entity'
-import { Friends as FriendPrisma, User, Friends } from "@prisma/client";
+import { Exclude } from 'class-transformer'
+import { Friends as FriendPrisma } from '@prisma/client'
 
 export class FriendEntity implements FriendPrisma {
-  friendId: number;
-  confirmed: boolean;
-  friendOfId: number;
+  friendId: number
+  friendOfId: number
+  confirmed: boolean
 
   @Exclude()
   createdAt: Date

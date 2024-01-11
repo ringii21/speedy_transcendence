@@ -8,22 +8,20 @@ import {
   ClassSerializerInterceptor,
   BadRequestException,
   Post,
-} from "@nestjs/common";
-import { FriendsService } from './friends.service';
+} from '@nestjs/common'
+import { FriendsService } from './friends.service'
 import { FriendshipRemovalDto } from './dto/friend-removal.dto'
-import { FriendshipSearchDto } from "./dto/friend-search.dto";
-import { JwtAuthGuard } from "../auth/jwt/jwt-auth.guard";
-import { FriendEntity } from "./entity/friends.entity";
-import { RequestWithDbUser } from "../types/Request";
-import { FriendsRequestDto } from "./dto/friend-request.dto";
+// import { FriendshipSearchDto } from './dto/friend-search.dto'
+import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard'
+import { FriendEntity } from './entity/friends.entity'
+import { RequestWithDbUser } from '../types/Request'
+import { FriendsRequestDto } from './dto/friend-request.dto'
 
 @Controller('friends')
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 export class FriendsControler {
-  constructor(
-    private readonly friendsService: FriendsService
-  ) { }
+  constructor(private readonly friendsService: FriendsService) {}
 
   @Get()
   async getFriends(@Req() req: RequestWithDbUser) {
@@ -31,7 +29,6 @@ export class FriendsControler {
 
     return friends.map((friend) => new FriendEntity(friend))
   }
-
 
   // afficher les demandes d'ami
   // confirmer les demandes d'ami
@@ -44,21 +41,36 @@ export class FriendsControler {
   @Post()
   async addNewFriend(
     @Req() req: RequestWithDbUser,
-    @Body() friendsRequestDto: FriendsRequestDto
+    @Body() friendsRequestDto: FriendsRequestDto,
   ) {
     if (req.user.id === friendsRequestDto.friendOfId)
       throw new BadRequestException('You cannot be friend with yourself')
-    if (await this.friendsService.findFriend(req.user.id, friendsRequestDto.friendOfId))
-      throw new BadRequestException('Already friend or friendship not confirmed')
+    if (
+      await this.friendsService.findFriend(
+        req.user.id,
+        friendsRequestDto.friendOfId,
+      )
+    )
+      throw new BadRequestException(
+        'Already friend or friendship not confirmed',
+      )
     return this.friendsService.create(req.user.id, friendsRequestDto.friendOfId)
   }
 
   @Get(':id')
-  async removeFriend(@Req() req: RequestWithDbUser,
-    @Body() friendshipRemovalDto: FriendshipRemovalDto,) {
+  async removeFriend(
+    @Req() req: RequestWithDbUser,
+    @Body() friendshipRemovalDto: FriendshipRemovalDto,
+  ) {
     return this.friendsService.delete(
       req.user.id,
-      friendshipRemovalDto.friendOfId
+      friendshipRemovalDto.friendOfId,
     )
+  }
+
+  @Get('request')
+  async getNotification(@Req() req: RequestWithDbUser) {
+    const data = this.friendsService.getNonConfirmedFriends(req.user.id)
+    console.log(data)
   }
 }

@@ -223,7 +223,7 @@ export class ChannelService {
         },
       },
     }
-      return this.prismaService.channel.create({
+    return this.prismaService.channel.create({
       data,
     })
   }
