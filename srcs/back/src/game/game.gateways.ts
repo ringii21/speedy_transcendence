@@ -243,7 +243,6 @@ import {
     @OnEvent('game.end')
     async handleGameEndEvent(data: any) {
       this.games_map.delete(data.gameid);
-  
       const sockets = await this.server.in(data.gameid).fetchSockets();
       this.server.to(data.gameid).emit('game.end', data);
   

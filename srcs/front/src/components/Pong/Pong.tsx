@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { BsFillArrowLeftCircleFill, BsFillArrowRightCircleFill } from 'react-icons/bs'
 import { Circle, Image, Layer, Line, Rect, Stage } from 'react-konva'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import { WithNavbar } from '../../hoc/WithNavbar'
 import { useGameSocket } from '../../providers/GameSocketProvider'
@@ -43,6 +43,7 @@ export const Game = () => {
   const [level, setLevel] = useState(1)
   const [t, setT] = useState(0)
   const navigate = useNavigate()
+  const location = useLocation()
 
   const leave = useCallback(() => {
     socket?.emit('leave')
@@ -50,6 +51,9 @@ export const Game = () => {
     // eslint-disable-next-line
   }, []);
 
+  /* useEffect(() => {
+    return leave()
+  }, [leave]) */
   const handleMove = throttlify((e: any) => {
     socket?.emit('mouse', e.evt.layerY)
   })

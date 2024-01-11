@@ -5,12 +5,11 @@ import { Route, Routes } from 'react-router-dom'
 
 import { ContactOverlay } from './components/ContactOverlay'
 import { Modal } from './components/Pong/Modal'
-import { GameWithNavbar } from './components/Pong/TestPong'
+import { GameWithNavbar } from './components/Pong/Pong'
 import { RequireAuth } from './components/RequireAuth'
 import { NotFound } from './pages/404'
 import { ChatWithNavbar } from './pages/Chat'
 import { Footer } from './pages/Footer'
-// import Navbar from "./components/Navbar";
 import { HomeWithNavbar } from './pages/Home'
 import Login from './pages/Login'
 import { PlayWithNavbar } from './pages/Pong'
@@ -22,7 +21,6 @@ import { AuthProvider } from './providers/AuthProvider'
 import { ChatProvider } from './providers/ChatProvider'
 import { GameSocketProvider } from './providers/GameSocketProvider'
 import { SocketProvider } from './providers/SocketProvider'
-//import Pong from './components/Pong'
 
 const App = () => {
   const queryClient = new QueryClient()

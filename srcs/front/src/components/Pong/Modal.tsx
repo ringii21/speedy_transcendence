@@ -27,6 +27,7 @@ export const Modal = () => {
         }
       })
       socket.socket?.on('players', (players: any) => {
+        console.log(players)
         gameState.setP1(players[0])
         gameState.setP2(players[1])
       })
