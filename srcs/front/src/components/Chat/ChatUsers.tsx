@@ -19,10 +19,19 @@ type UserProps = HTMLAttributes<HTMLDivElement> & {
   setModalOpen: React.Dispatch<React.SetStateAction<boolean>>
   modalOpen: boolean
   setSelectedUser: React.Dispatch<React.SetStateAction<IUser | null>>
+  showActionModal: boolean
+  user: IUser
 }
 
-const User: FC<UserProps> = ({ member, index, setModalOpen, modalOpen, setSelectedUser }) => {
-  const { user } = useAuth()
+const User: FC<UserProps> = ({
+  member,
+  index,
+  setModalOpen,
+  modalOpen,
+  setSelectedUser,
+  showActionModal,
+  user,
+}) => {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
 
@@ -53,12 +62,7 @@ const User: FC<UserProps> = ({ member, index, setModalOpen, modalOpen, setSelect
   }
 
   return (
-    <div
-      onClick={() => {
-        if (member.user.id !== user?.id) mutate(member.user.id)
-      }}
-      className={userStyle}
-    >
+    <div className={userStyle}>
       <div className='flex items-center'>
         {member.role == 'owner' && <FaCrown className='text-error mt-1 m-1' />}
         {member.role == 'admin' && <PiSwordFill className='text-warning mt-1 m-1' />}
@@ -66,15 +70,15 @@ const User: FC<UserProps> = ({ member, index, setModalOpen, modalOpen, setSelect
         {member.user.username}
       </div>
       <div className='flex items-center gap-2'>
+        {showActionModal && (
+          <button onClick={onClickAction} className='btn btn-xs btn-error'>
+            <FaGavel />
+          </button>
+        )}
         {member.user.id !== user?.id && (
           <Link className='btn btn-xs btn-primary' to={`/profile/${member.user.id}`}>
             <FaUser />
           </Link>
-        )}
-        {(member.role === 'owner' || member.role === 'admin') && member.user.id !== user?.id && (
-          <button onClick={onClickAction} className='btn btn-xs btn-secondary'>
-            <FaGavel />
-          </button>
         )}
       </div>
     </div>
@@ -82,14 +86,28 @@ const User: FC<UserProps> = ({ member, index, setModalOpen, modalOpen, setSelect
 }
 
 const ChatUsers: FC = () => {
+  const { user } = useAuth()
   const { channelData, channelId } = useSelectedChannel()
   const [userChannelList, setUserChannelList] = useState(true)
   const [isModalOpen, setModalOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null)
 
+  if (!user) return <></>
+
   useEffect(() => {
     if (userChannelList) setUserChannelList(false)
   }, [userChannelList])
+
+  const findRole = (userId: number, members?: IChannelMember[]) =>
+    members?.find((member) => member.userId === userId)?.role
+
+  const userRole = findRole(user.id, channelData?.members)
+  const showActionModal = (member: IChannelMember) => {
+    if (userRole === 'user') return false
+    if (userRole === 'admin') return member.role === 'user'
+    if (userRole === 'owner') return member.role !== 'owner'
+    return false
+  }
 
   return (
     <div>
@@ -104,6 +122,7 @@ const ChatUsers: FC = () => {
       <h1 className='text-lg text-base-content text-center'>Users</h1>
       <div className='p-2'>
         {channelData?.members
+          .filter((member) => member.present)
           .sort((a, b) => (a.user.username > b.user.username ? 1 : -1))
           .map((member, i) => (
             <User
@@ -113,6 +132,8 @@ const ChatUsers: FC = () => {
               setModalOpen={setModalOpen}
               modalOpen={isModalOpen}
               setSelectedUser={setSelectedUser}
+              user={user}
+              showActionModal={showActionModal(member)}
             />
           ))}
       </div>

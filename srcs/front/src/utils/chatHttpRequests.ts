@@ -1,6 +1,4 @@
-import { QueryKey } from '@tanstack/react-query'
-
-import { ChannelType, IChannel } from '../types/Chat'
+import { ChannelType, IChannel, IChannelMember } from '../types/Chat'
 import httpInstance from './httpClient'
 
 export const getMyChannels = async () => {
@@ -8,10 +6,7 @@ export const getMyChannels = async () => {
   return data
 }
 
-export const getChannel = async ({ queryKey }: { queryKey: QueryKey }) => {
-  const [_channelName, channelId] = queryKey
-
-  if (!channelId) throw new Error('channelId is required')
+export const getChannel = async (channelId: string | undefined) => {
   const { data } = await httpInstance().get<IChannel>(`/api/chat/channels/${channelId}`)
   return data
 }
@@ -26,7 +21,7 @@ export const joinChannel = async (channelId: string) => {
   return data
 }
 
-export const leaveChannel = async (channelId: string) => {
+export const leaveChannel = async (channelId: string): Promise<IChannelMember> => {
   const { data } = await httpInstance().post(`/api/chat/channels/${channelId}/leave`)
   return data
 }
@@ -44,9 +39,15 @@ export const createPm = async (targetId: number) => {
   return data
 }
 
-export const userAction = async (data: {
+export const userAction = async ({
+  channelId,
+  userId,
+  action,
+}: {
   channelId: string
-  userId: string
-  action: 'kick' | 'ban' | 'mute'
+  userId: number
+  action: string
 }) =>
-  httpInstance().post(`/api/chat/channels/${data.channelId}/users/${data.userId}/${data.action}`)
+  httpInstance().post(`/api/chat/channels/${channelId}/${action}`, {
+    userId,
+  })

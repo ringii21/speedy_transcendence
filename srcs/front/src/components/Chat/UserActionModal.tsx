@@ -26,9 +26,9 @@ const UserActionModal = ({
   const queryClient = useQueryClient()
   const { register, handleSubmit } = useForm<FormValues>({})
 
-  const { mutateAsync, isPending } = useMutation({
-    mutationFn: userAction,
+  const { mutate, isPending } = useMutation({
     mutationKey: ['channels', channelId],
+    mutationFn: userAction,
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['channels', channelId],
@@ -37,6 +37,7 @@ const UserActionModal = ({
   })
 
   const onSubmit = (data: FormValues) => {
+    mutate({ channelId, userId, action: data.action })
     setIsOpen(false)
   }
 
@@ -90,7 +91,7 @@ const UserActionModal = ({
                           <option value=''>Select an action</option>
                           <option value='kick'>Kick</option>
                           <option value='ban'>Ban</option>
-                          <option value='mute-5'>Mute 5min</option>
+                          <option value='mute'>Mute 5min</option>
                         </select>
                       </div>
                       <div className='flex justify-evenly mt-4'>

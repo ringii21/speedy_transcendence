@@ -6,29 +6,19 @@ import {
   OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
-  WsException,
+  WebSocketServer,
 } from '@nestjs/websockets'
-import { WsAuthGuard } from '../auth/ws-auth.guard'
 import { Socket } from 'socket.io'
-import { parse } from 'cookie'
-import { JwtAuthService } from '../auth/jwt/jwt-auth.service'
-import { UsersService } from '../users/users.service'
 import { MessageService } from '../message/message.service'
 import { ChannelService } from '.././channel/channel.service'
 import { MessageDto } from './dto/message.dto'
-import { JoinLeaveChannelDto } from './dto/join-leave-channel.dto'
-import { ChannelType } from '@prisma/client'
+import { Server } from 'socket.io'
+import { ChatSocketEvent } from './types/ChatEvent'
+import { UserIsNotBanFromChannelGuard } from './guard/user-ban-from-channel.guard'
+import JwtTwoFaGuard from 'src/auth/jwt/jwt-2fa.guard'
+import { User } from '@prisma/client'
 
-/**
- * sync with front/src/types/Events.ts
- */
-enum ChatSocketEvent {
-  SEND_MESSAGE = 'message',
-  JOIN_CHANNEL = 'join_channel',
-  LEAVE_CHANNEL = 'leave_channel',
-  CONNECTED = 'connected',
-  DISCONNECTED = 'disconnected',
-}
+type SocketWithUser = Socket & { handshake: { user: User } }
 
 @WebSocketGateway({
   namespace: 'chat',
@@ -37,128 +27,82 @@ enum ChatSocketEvent {
     credentials: true,
   },
 })
+@UseGuards(JwtTwoFaGuard)
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger('ChatGateway')
 
+  @WebSocketServer() socket: Server
+
   constructor(
-    private readonly jwtAuthService: JwtAuthService,
     private readonly messageService: MessageService,
     private readonly channelService: ChannelService,
-    private readonly userService: UsersService,
   ) {}
 
-  @SubscribeMessage(ChatSocketEvent.SEND_MESSAGE)
-  @UseGuards(WsAuthGuard)
+  @SubscribeMessage(ChatSocketEvent.MESSAGE)
+  @UseGuards(JwtTwoFaGuard)
   async handleMessage(
-    @ConnectedSocket() socket: Socket,
+    @ConnectedSocket() socket: SocketWithUser,
     @MessageBody(new ValidationPipe()) messageDto: MessageDto,
   ) {
-    const user = await this.getUser(socket)
-    if (!user) {
+    if (!socket.handshake.user) {
       socket.disconnect()
       return
     }
     const msg = await this.messageService.saveChannelMessage(
-      user.id,
+      socket.handshake.user.id,
       messageDto.channelId,
       messageDto.content,
     )
     if (!msg) return
-    socket
-      .to(messageDto.channelId.toString())
-      .emit(ChatSocketEvent.SEND_MESSAGE, msg)
+    socket.to(messageDto.channelId).emit(ChatSocketEvent.MESSAGE, msg)
     this.logger.log(`Client sent message: ${socket.id}`)
   }
 
-  @SubscribeMessage(ChatSocketEvent.JOIN_CHANNEL)
-  @UseGuards(WsAuthGuard)
-  async handleJoinChannel(
-    @ConnectedSocket() socket: Socket,
-    @MessageBody(new ValidationPipe()) joinChannelDto: JoinLeaveChannelDto,
-  ) {
-    const user = await this.getUser(socket)
-    if (!user) {
-      socket.disconnect()
-      return
-    }
-    socket.join(joinChannelDto.channelId.toString())
-    socket
-      .to(joinChannelDto.channelId.toString())
-      .emit(ChatSocketEvent.JOIN_CHANNEL, {
-        channelId: joinChannelDto.channelId,
-      })
+  emitUserJoinChannel(channelId: string, userId: number) {
+    this.socket.to(channelId).emit(ChatSocketEvent.JOIN_CHANNEL, {
+      channelId,
+      userId,
+    })
   }
 
-  @SubscribeMessage(ChatSocketEvent.LEAVE_CHANNEL)
-  @UseGuards(WsAuthGuard)
-  async handleLeaveChannel(
-    @ConnectedSocket() socket: Socket,
-    @MessageBody(new ValidationPipe()) leaveChannelDto: JoinLeaveChannelDto,
-  ) {
-    const user = await this.getUser(socket)
-    if (!user) {
-      socket.disconnect()
-      return
-    }
-    const channel = await this.channelService.getChannel(
-      leaveChannelDto.channelId,
-      user.id,
+  emitUserLeaveChannel(channelId: string, userId: number) {
+    this.socket.to(channelId).emit(ChatSocketEvent.LEAVE_CHANNEL, {
+      channelId,
+      userId,
+    })
+  }
+
+  async handleConnection(socket: SocketWithUser) {
+    const usersChannels = await this.channelService.getMyChannels(
+      socket.handshake.user.id,
       {},
     )
-    if (channel?.type === ChannelType.direct) return
-    socket.leave(leaveChannelDto.channelId.toString())
-    socket
-      .to(leaveChannelDto.channelId.toString())
-      .emit(ChatSocketEvent.LEAVE_CHANNEL, {
-        channelId: leaveChannelDto.channelId,
-      })
-  }
-
-  async handleConnection(socket: Socket) {
-    const user = await this.getUser(socket)
-    if (!user) {
-      socket.disconnect()
-      return
-    }
-    const usersChannels = await this.channelService.getMyChannels(user.id, {})
     socket.join(usersChannels.map((channel) => channel.id.toString()))
     usersChannels.forEach((channel) =>
       socket.emit(ChatSocketEvent.CONNECTED, {
         channelId: channel.id,
-        userId: user.id,
+        userId: socket.handshake.user.id,
       }),
     )
-    socket.emit(ChatSocketEvent.CONNECTED, { userId: user.id })
+    socket.emit(ChatSocketEvent.CONNECTED, { userId: socket.handshake.user.id })
   }
 
-  async handleDisconnect(socket: Socket) {
-    const user = await this.getUser(socket)
+  async handleDisconnect(socket: SocketWithUser) {
+    const user = {} as any
     if (!user) return
-    const usersChannels = await this.channelService.getMyChannels(user.id, {})
+    const usersChannels = await this.channelService.getMyChannels(
+      socket.handshake.user.id,
+      {},
+    )
 
     usersChannels.forEach((channel) => {
       const channelId = channel.id.toString()
-      socket
-        .to(channelId)
-        .emit(ChatSocketEvent.DISCONNECTED, { channelId, userId: user.id })
+      socket.to(channelId).emit(ChatSocketEvent.DISCONNECTED, {
+        channelId,
+        userId: socket.handshake.user.id,
+      })
       socket.leave(channelId)
     })
     this.logger.log(`Client disconnected: ${socket.id}`)
-  }
-
-  async getUser(socket: Socket) {
-    const jwtCookie = socket.handshake.headers.cookie
-    if (!jwtCookie) return null
-    const parsed = parse(jwtCookie)
-    if (!parsed.jwt) return null
-    try {
-      const jwt = await this.jwtAuthService.verify(parsed.jwt)
-      if (!jwt || !jwt.sub) return null
-      const user = await this.userService.find({ id: jwt.sub })
-      if (!user) return null
-      return user
-    } catch (e) {
-      throw new WsException('Invalid token')
-    }
   }
 }

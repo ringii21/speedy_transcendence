@@ -2,8 +2,7 @@ import clsx from 'clsx'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-import { IChannelMember } from '../../types/Chat'
-import { IChannelMessage } from '../../types/Message'
+import { IChannelMember, IChannelMessage } from '../../types/Chat'
 import { IUser } from '../../types/User'
 
 type ChatMessageProps = {

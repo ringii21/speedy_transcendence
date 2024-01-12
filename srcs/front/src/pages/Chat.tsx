@@ -3,7 +3,7 @@ import clsx from 'clsx'
 import React, { useEffect, useState } from 'react'
 import { FaArrowLeft, FaUser } from 'react-icons/fa'
 import { useMediaQuery } from 'react-responsive'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 
 import { ChatConversation, ChatSelection, ChatUsers } from '../components/Chat'
 import { CreateChannelModal } from '../components/Chat/CreateChannelModal'
@@ -13,17 +13,18 @@ import { useSelectedChannel } from '../hooks/Channel.hook'
 import { useAuth } from '../providers/AuthProvider'
 import { useChat } from '../providers/ChatProvider'
 import { useSocket } from '../providers/SocketProvider'
+import { IChannelMessage } from '../types/Chat'
 import { ChatSocketEvent } from '../types/Events'
-import { IChannelMessage } from '../types/Message'
 
 const Chat = () => {
   const [isCreateModalOpen, setCreateModalOpen] = useState(false)
   const [isJoinModalOpen, setJoinModalOpen] = useState(false)
   const { user } = useAuth()
   const { messages, setMessages } = useChat()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  const { channelData } = useSelectedChannel()
+  const { channelData, channelId } = useSelectedChannel()
 
   if (!user) return <Navigate to='/login' replace />
 
@@ -64,10 +65,24 @@ const Chat = () => {
       }))
     }
     socket.on('message', messageListener)
-    socket.on(ChatSocketEvent.JOIN_CHANNEL, () => {
+    socket.on(ChatSocketEvent.JOIN_CHANNEL, (data) => {
       queryClient.invalidateQueries({
         queryKey: ['channels'],
       })
+      queryClient.invalidateQueries({
+        queryKey: ['channels', data.channelId],
+      })
+    })
+    socket.on(ChatSocketEvent.LEAVE_CHANNEL, (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ['channels'],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['channels', data.channelId],
+      })
+      if (data.channelId === channelId && data.userId === user.id) {
+        navigate('/chat')
+      }
     })
   }, [])
 

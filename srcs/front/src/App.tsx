@@ -3,12 +3,9 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import React from 'react'
 import { Route, Routes } from 'react-router-dom'
 
-import { ContactOverlay } from './components/ContactOverlay'
 import { RequireAuth } from './components/RequireAuth'
 import { NotFound } from './pages/404'
 import { ChatWithNavbar } from './pages/Chat'
-import { Footer } from './pages/Footer'
-// import Navbar from "./components/Navbar";
 import { HomeWithNavbar } from './pages/Home'
 import Login from './pages/Login'
 import { ProfileWithNavbar } from './pages/Profile'
@@ -91,7 +88,6 @@ const App = () => {
             </Routes>
           </SocketProvider>
         </ChatProvider>
-        <ContactOverlay />
         {/* <Footer /> */}
       </AuthProvider>
       <ReactQueryDevtools initialIsOpen={false} />

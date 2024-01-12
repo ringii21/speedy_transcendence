@@ -1,8 +1,7 @@
 import { Exclude } from 'class-transformer'
-import { $Enums, ChannelAction as PrismaChannelAction } from '@prisma/client'
+import { ChannelAction as PrismaChannelAction } from '@prisma/client'
 
 export class ChannelActionEntity implements PrismaChannelAction {
-  actionType: $Enums.ActionType
   channelId: string
   userId: number
 

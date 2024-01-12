@@ -5,6 +5,7 @@ import React, { Fragment, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { useSocket } from '../../providers/SocketProvider'
+import { IChannelMember } from '../../types/Chat'
 import { ChatSocketEvent } from '../../types/Events'
 import { getNotJoinedVisibleChannels, joinChannel } from '../../utils/chatHttpRequests'
 
@@ -52,8 +53,6 @@ const JoinChannelModal = ({
 
   const onSubmit = (data: FormValues) => {
     joinChan.mutate(data.id)
-    socket?.emit(ChatSocketEvent.JOIN_CHANNEL, { channelId: data.id })
-    setIsOpen(false)
   }
 
   return (
