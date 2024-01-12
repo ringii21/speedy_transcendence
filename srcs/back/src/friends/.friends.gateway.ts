@@ -6,6 +6,8 @@ import { JwtAuthService } from '../auth/jwt/jwt-auth.service'
 import { FriendsService } from './friends.service'
 import { UsersService } from 'src/users/users.service'
 import { parse } from 'cookie'
+import { NotificationService } from '../notification/notification.service'
+// import { Prisma, Notification } from '@prisma/client'
 import {
   WebSocketGateway,
   ConnectedSocket,
@@ -35,6 +37,7 @@ export class FriendGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly jwtAuthService: JwtAuthService,
     private readonly userService: UsersService,
     private readonly friendsService: FriendsService,
+    private readonly notificationService: NotificationService,
   ) {}
   @SubscribeMessage(FriendSocketEvent.NOTIFICATION)
   @UseGuards(WsAuthGuard)
@@ -42,12 +45,14 @@ export class FriendGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() socket: Socket,
     @MessageBody(new ValidationPipe()) friendDto: FriendsRequestDto,
   ) {
-    const user = await this.getUser(socket)
+    const user = await this.getNotification(socket)
     if (!user) {
       socket.disconnect()
       return
     }
-    const friends = await this.friendsService.getNonConfirmedFriends(user.id)
+    const friends = await this.notificationService.getNonConfirmedFriends(
+      user.receivedId,
+    )
     if (!friends) return
     socket
       .to(friendDto.friendOfId.toString())
@@ -56,23 +61,24 @@ export class FriendGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   async handleConnection(socket: Socket) {
-    const user = await this.getUser(socket)
+    const user = await this.getNotification(socket)
     if (!user) {
       socket.disconnect()
       return
     }
-    const friendRequest = await this.friendsService.getMyFriends(user.id)
-    socket.join(friendRequest.map((friends) => friends.friend.id.toString()))
+    const friendRequest = await this.notificationService.getNonConfirmedFriends(
+      user.receivedId,
+    )
+    socket.join(friendRequest.map((friends) => friends.sender.id.toString()))
     socket
-      .to(friendRequest.map((friends) => friends.friend.id.toString()))
+      .to(friendRequest.map((friends) => friends.sender.id.toString()))
       .emit(FriendSocketEvent.ACCEPTED, {
-        username: user.username,
-        image: user.image,
+        id: user.receivedId,
       })
   }
 
   async handleDisconnect(socket: Socket) {
-    const user = await this.getUser(socket)
+    const user = await this.getNotification(socket)
     if (!user) return
     const friendRequest = await this.friendsService.getMyFriends(user.id)
     await Promise.all(
@@ -88,7 +94,7 @@ export class FriendGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`Client declined a friend request: ${socket.id}`)
   }
 
-  async getUser(socket: Socket) {
+  async getNotification(socket: Socket) {
     const jwtCookie = socket.handshake.headers.cookie
     if (!jwtCookie) return null
     const parsed = parse(jwtCookie)
@@ -96,7 +102,7 @@ export class FriendGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const jwt = await this.jwtAuthService.verify(parsed.jwt)
       if (!jwt || !jwt.sub) return null
-      const user = await this.userService.find({ id: jwt.sub })
+      const user = await this.notificationService.find({ senderId: jwt.sub })
       if (!user) return null
       return user
     } catch (e) {

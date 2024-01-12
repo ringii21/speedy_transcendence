@@ -67,10 +67,4 @@ export class FriendsControler {
       friendshipRemovalDto.friendOfId,
     )
   }
-
-  @Get('request')
-  async getNotification(@Req() req: RequestWithDbUser) {
-    const data = this.friendsService.getNonConfirmedFriends(req.user.id)
-    console.log(data)
-  }
 }

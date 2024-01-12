@@ -11,6 +11,8 @@ import { ChatModule } from './chat/chat.module'
 import { ChatController } from './chat/chat.controller'
 import { FriendsModule } from './friends/friends.module'
 import { FriendsControler } from './friends/friends.controler'
+import { NotificationModule } from './notification/notification.module'
+import { NotificationController } from './notification/notification.controller'
 
 @Module({
   imports: [
@@ -21,6 +23,7 @@ import { FriendsControler } from './friends/friends.controler'
     AuthModule,
     ChatModule,
     FriendsModule,
+    NotificationModule,
   ],
   providers: [Logger],
 })
@@ -48,5 +51,6 @@ export class AppModule implements NestModule {
     consumer.apply(LoggerMiddleware).forRoutes(UsersController)
     consumer.apply(LoggerMiddleware).forRoutes(ChatController)
     consumer.apply(LoggerMiddleware).forRoutes(FriendsControler)
+    consumer.apply(LoggerMiddleware).forRoutes(NotificationController)
   }
 }

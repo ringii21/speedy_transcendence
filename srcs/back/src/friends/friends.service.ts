@@ -84,38 +84,6 @@ export class FriendsService {
     return !!friend
   }
 
-  async getNonConfirmedFriends(userId: number) {
-    return this.prisma.friends.findMany({
-      where: {
-        OR: [
-          {
-            friendId: userId,
-          },
-          {
-            friendOfId: userId,
-          },
-        ],
-        confirmed: false,
-      },
-      include: {
-        friend: {
-          select: {
-            id: true,
-            image: true,
-            username: true,
-          },
-        },
-        friendOf: {
-          select: {
-            id: true,
-            image: true,
-            username: true,
-          },
-        },
-      },
-    })
-  }
-
   // async findFriendById(id: number) {
   //   const friend = await this.prisma.friends.findUnique({
   //     where: {
