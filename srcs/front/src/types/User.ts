@@ -5,7 +5,7 @@ export interface IUser {
   image: string
   twoFaEnabled: boolean
   friends?: IFriends[]
-  notifier?: INotify[]
+  notifier?: INotification[]
   expiresAt?: Date
   createdAt: Date
   updatedAt: Date
@@ -22,7 +22,7 @@ export type IFriends = {
   deletedAt?: Date
 }
 
-export type INotify = {
+export type INotification = {
   sender: IUser
   received: IUser
   senderId: number

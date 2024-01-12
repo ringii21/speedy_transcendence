@@ -1,9 +1,9 @@
 import { Menu, Transition } from '@headlessui/react'
-import React, { Dispatch, Fragment, SetStateAction } from 'react'
+import React, { Fragment } from 'react'
 
 import { IFriends, IUser } from '../types/User'
 
-type FriendsListModal = {
+type NotificationListModal = {
   openModal: boolean
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>
   friends?: IFriends[]
@@ -32,7 +32,12 @@ const line = (friend: IUser, index: number) => {
     </Menu.Item>
   )
 }
-const ModalFriendsList: React.FC<FriendsListModal> = ({ openModal, setOpenModal, friends, me }) => {
+const ModalFriendsList: React.FC<NotificationListModal> = ({
+  openModal,
+  setOpenModal,
+  friends,
+  me,
+}) => {
   return (
     <Menu as='div'>
       <Transition appear show={openModal} as={Fragment}>

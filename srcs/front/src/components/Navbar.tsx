@@ -1,19 +1,78 @@
 import './../styles/navbar.css'
 
-import React from 'react'
-import { Link } from 'react-router-dom'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import React, { useEffect, useRef, useState } from 'react'
+import { FaBell } from 'react-icons/fa'
+import { Link, Navigate, useParams } from 'react-router-dom'
 
 import { useAuth } from '../providers/AuthProvider'
+import { INotification } from '../types/User'
+import { getFriends } from '../utils/friendService'
+import { createNotification, getNotification } from '../utils/notificationService'
+import { getUser } from '../utils/userHttpRequests'
+import { NotificationModal } from './NotificationModal'
+
 const Navbar = () => {
   const { user, signout } = useAuth()
-
+  if (!user) return <Navigate to='/login' state={{ from: location }} replace />
+  const ref = useRef<HTMLDivElement>(null)
+  const { id } = useParams()
+  const [openModal, setOpenModal] = useState(false)
   const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()
     await signout()
   }
 
+  const queryConfig = {
+    queryKey: ['notification', id],
+    queryFn: getUser,
+  }
+
+  const {
+    data: notifier,
+    isError: isErrorNotifier,
+    isLoading: isLoadingNotifier,
+  } = useQuery({
+    queryKey: ['notification'],
+    queryFn: getNotification,
+  })
+
+  console.log(notifier)
+  const { data: notifyUser, isError } = useQuery(queryConfig)
+
+  useEffect(() => {
+    const isOpen = (e: MouseEvent) => {
+      const el = e.target as HTMLDivElement
+      if (ref.current && !ref.current.contains(el)) {
+        setOpenModal(false)
+      }
+    }
+    document.addEventListener('click', isOpen)
+    return () => {
+      document.removeEventListener('click', isOpen)
+    }
+  }, [])
+  const notificationLine = () => {
+    return (
+      <div ref={ref} className='right-0'>
+        <button
+          role='button'
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setOpenModal(!openModal)
+          }}
+          className='btn btn-ghost'
+        >
+          <FaBell tabIndex={0} size={20} />
+        </button>
+      </div>
+    )
+  }
+
   return (
     <div className='navbar nav relative bg-gray-900'>
+      {NotificationModal({ openModal, setOpenModal, notifier, me: user })}
       <div className='navbar-start'>
         <div className='dropdown'>
           <div tabIndex={0} role='button' className='btn btn-ghost lg:hidden'>
@@ -61,9 +120,11 @@ const Navbar = () => {
       </div>
       <div className='navbar-end'>
         <div className='dropdown dropdown-end'>
-          <div tabIndex={0} role='button' className='btn btn-ghost btn-circle avatar btn-avatar'>
-            <div className='w-10 rounded-full'>
-              <img alt='avatar' src={user?.image} />
+          <div className='flex flex-row'>
+            <div tabIndex={0} role='button' className='btn btn-ghost btn-circle avatar btn-avatar'>
+              <div className='w-10 rounded-full'>
+                <img alt='avatar' src={user?.image} />
+              </div>
             </div>
           </div>
           <ul
@@ -83,6 +144,7 @@ const Navbar = () => {
             </li>
           </ul>
         </div>
+        <div>{notificationLine()}</div>
       </div>
     </div>
   )

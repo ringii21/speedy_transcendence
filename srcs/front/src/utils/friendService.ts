@@ -19,9 +19,3 @@ export const getFriends = async () => {
   const { data } = await httpInstance().get<IFriends[]>(`/api/friends`)
   return data
 }
-
-export const getNotification = async ({ queryKey }: { queryKey: QueryKey }) => {
-  const [_, id] = queryKey
-  const { data } = await httpInstance().get<IFriends>(`/api/friends/request`)
-  return data
-}

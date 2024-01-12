@@ -5,12 +5,8 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { ModalFriendsList } from '../components/ModalFriendsList'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
-import {
-  createFriendRequest,
-  getFriends,
-  getNotification,
-  removeFriend,
-} from '../utils/friendService'
+import { createFriendRequest, getFriends, removeFriend } from '../utils/friendService'
+import { createNotification, getNotification } from '../utils/notificationService'
 import { fetchUser, getUser } from '../utils/userHttpRequests'
 
 const Profile = () => {
@@ -57,6 +53,20 @@ const Profile = () => {
     mutationFn: createFriendRequest,
   })
 
+  const notificationMutation = useMutation({
+    mutationKey: ['notification'],
+    mutationFn: createNotification,
+  })
+
+  const {
+    data: notifier,
+    isError: isErrorNotifier,
+    isLoading: isLoadingNotifier,
+  } = useQuery({
+    queryKey: ['notification'],
+    queryFn: getNotification,
+  })
+
   useEffect(() => {
     const isOpen = (e: MouseEvent) => {
       const el = e.target as HTMLDivElement
@@ -91,7 +101,7 @@ const Profile = () => {
       return (
         <div className='flex justify-evenly'>
           <button
-            onClick={() => friendMutation.mutate(profileUser.id)}
+            onClick={() => notificationMutation.mutate(profileUser.id)}
             className='btn btn-primary drop-shadow-xl rounded-lg'
           >
             {isFollow}
