@@ -12,18 +12,25 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
+
 import JwtTwoFaGuard from '../auth/jwt/jwt-2fa.guard'
 import { RequestWithDbUser } from 'src/types/Request'
 import { ChannelService } from 'src/channel/channel.service'
 import { ChannelEntity } from 'src/channel/entity/channel.entity'
 import { CreateChannelDto } from './dto/create-channel.dto'
 import { CreatePmDto } from './dto/create-pm.dto'
+import { UserActionDto } from './dto/user-action.dto'
+import { UserIsNotBanFromChannelGuard } from './guard/user-ban-from-channel.guard'
+import { ChatGateway } from './chat.gateway'
 
 @Controller('chat')
 @UseGuards(JwtTwoFaGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 export class ChatController {
-  constructor(private readonly channelService: ChannelService) {}
+  constructor(
+    private readonly channelService: ChannelService,
+    private readonly chatGateway: ChatGateway,
+  ) {}
 
   @Get('/channels')
   async getNotJoinedChannels(@Req() req: RequestWithDbUser) {
@@ -43,13 +50,8 @@ export class ChatController {
   }
 
   @Get('/channels/:id')
-  async getChannel(
-    @Req() req: RequestWithDbUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
-    if (!(await this.channelService.isUserInChannel(req.user.id, id)))
-      throw new BadRequestException('You are not in this channel')
-    const channel = await this.channelService.getChannel(id, req.user.id, {
+  async getChannel(@Param('id', ParseUUIDPipe) id: string) {
+    const channel = await this.channelService.getChannel(id, {
       withMembers: true,
       withMessages: true,
       withActions: true,
@@ -86,13 +88,19 @@ export class ChatController {
   }
 
   @Post('/channels/:id/join')
+  @UseGuards(UserIsNotBanFromChannelGuard)
   async joinChannel(
     @Req() req: RequestWithDbUser,
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id', ParseUUIDPipe) channelId: string,
     @Body('password') password?: string,
   ) {
-    await this.channelService.joinChannel(req.user.id, id, password)
-    return { success: true }
+    const channel = await this.channelService.joinChannel(
+      req.user.id,
+      channelId,
+      password,
+    )
+    this.chatGateway.emitUserJoinChannel(channelId, req.user.id)
+    return new ChannelEntity(channel)
   }
 
   @Post('/channels/:id/leave')
@@ -101,6 +109,35 @@ export class ChatController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     await this.channelService.leaveChannel(req.user.id, id)
-    return { success: true }
+    this.chatGateway.emitUserLeaveChannel(id, req.user.id)
+  }
+
+  @Post('/channels/:id/kick')
+  async kickUserFromChannel(
+    @Param('id', ParseUUIDPipe) channelId: string,
+    @Body() body: UserActionDto,
+  ) {
+    await this.channelService.leaveChannel(body.userId, channelId)
+    this.chatGateway.emitUserLeaveChannel(channelId, body.userId)
+  }
+
+  @Post('/channels/:id/ban')
+  async banUserFromChannel(
+    @Param('id', ParseUUIDPipe) channelId: string,
+    @Body() body: UserActionDto,
+  ) {
+    await this.channelService.applyBanAction(channelId, body.userId)
+    await this.channelService.leaveChannel(body.userId, channelId)
+    this.chatGateway.emitUserLeaveChannel(channelId, body.userId)
+  }
+
+  @Post('/channels/:id/mute')
+  async muteUserFromChannel(
+    @Param('id', ParseUUIDPipe) channelId: string,
+    @Body() body: UserActionDto,
+  ) {
+    const until = new Date()
+    until.setMinutes(until.getMinutes() + 5)
+    await this.channelService.applyBanAction(channelId, body.userId, until)
   }
 }

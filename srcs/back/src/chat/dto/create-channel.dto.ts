@@ -12,11 +12,10 @@ import {
 // @TODO - this doesnt work if password is ""
 // revoir les checks sur les password/names
 export class CreateChannelDto implements Partial<Channel> {
-  @IsOptional()
   @IsString()
   @MinLength(3)
   @MaxLength(10)
-  name: string | undefined
+  name: string
 
   @IsOptional()
   @IsString()

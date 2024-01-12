@@ -8,7 +8,8 @@ export const useSelectedChannel = () => {
   const { channelId } = useParams<{ channelId: string | undefined }>()
   const channelQuery = useQuery<IChannel>({
     queryKey: ['channels', channelId],
-    queryFn: getChannel,
+    queryFn: ({ queryKey }) => getChannel(queryKey[1] as string),
+    enabled: !!channelId,
   })
 
   return {

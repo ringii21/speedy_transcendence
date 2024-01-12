@@ -1,7 +1,15 @@
+import { parse } from 'cookie'
 import { Request } from 'express'
+import type { Handshake } from 'socket.io/dist/socket'
 
-export const extractJwtFromCookie = (req: Request) => {
-  let token = null
-  if (req && req.cookies) token = req.cookies['jwt']
-  return token
+const isHandshake = (data: Handshake | Request): data is Handshake => {
+  return 'xdomain' in data
+}
+
+export const extractJwtFromCookie = (req: Handshake | Request) => {
+  if (isHandshake(req)) {
+    return parse(req!.headers!.cookie!).jwt
+  }
+
+  return req.cookies['jwt']
 }

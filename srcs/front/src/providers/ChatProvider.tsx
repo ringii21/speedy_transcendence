@@ -5,12 +5,10 @@ import React, {
   ReactNode,
   SetStateAction,
   useContext,
-  useEffect,
   useState,
 } from 'react'
 
-import { IChannel } from '../types/Chat'
-import { IChannelMessage } from '../types/Message'
+import { IChannel, IChannelMessage } from '../types/Chat'
 import { getMyChannels } from '../utils/chatHttpRequests'
 
 interface ChatContextData {
@@ -32,17 +30,12 @@ export const ChatContext = createContext<ChatContextData>({
 
 export const ChatProvider = ({ children }: Props) => {
   const [messages, setMessages] = useState<Record<number, IChannelMessage[]>>({})
-  const [channels, setChannels] = useState<IChannel[]>([])
 
-  const { data } = useQuery<IChannel[]>({
+  const { data: channels } = useQuery<IChannel[]>({
     queryKey: ['channels'],
     queryFn: getMyChannels,
+    initialData: [],
   })
-
-  useEffect(() => {
-    if (!data) return
-    setChannels(data)
-  }, [data])
 
   const values = {
     messages,

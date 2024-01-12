@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 
-import { IChannel } from '../../types/Chat'
-import { IChannelMessage } from '../../types/Message'
+import { IChannel, IChannelMessage } from '../../types/Chat'
 import { IUser } from '../../types/User'
 import { ChatInput } from './ChatInput'
 import { ChatMessage } from './ChatMessage'

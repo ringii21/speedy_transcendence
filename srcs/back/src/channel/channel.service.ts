@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
 } from '@nestjs/common'
+
 import { ChannelType, Prisma } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { createHmac, randomBytes } from 'crypto'
@@ -32,16 +33,6 @@ export class ChannelService {
             userId,
           },
         },
-        OR: [
-          {
-            type: ChannelType.direct,
-            members: {
-              some: {
-                userId,
-              },
-            },
-          },
-        ],
       },
       include: {
         messages: withMessages,
@@ -75,7 +66,6 @@ export class ChannelService {
         present: true,
       },
     })
-
     return !!channelMember
   }
 
@@ -95,8 +85,6 @@ export class ChannelService {
       },
     })
     if (!channel) throw new BadRequestException('Channel not found')
-    if (channel.type === ChannelType.direct)
-      throw new BadRequestException('You cannot join a direct message')
     if (await this.isUserInChannel(userId, channelId))
       throw new BadRequestException('You are already in this channel')
     if (password) {
@@ -118,7 +106,7 @@ export class ChannelService {
         throw new ForbiddenException('Invalid password')
     }
     // Create a new channel member or update an existing one
-    await this.prismaService.channelMember.upsert({
+    return this.prismaService.channelMember.upsert({
       where: {
         userId_channelId: {
           channelId,
@@ -143,6 +131,12 @@ export class ChannelService {
    * @returns A promise that resolves to the number of channel members deleted.
    */
   async leaveChannel(userId: number, channelId: string) {
+    const channel = await this.prismaService.channel.findUnique({
+      where: {
+        id: channelId,
+      },
+    })
+    if (!channel) throw new BadRequestException('Channel not found')
     return this.prismaService.channelMember.update({
       where: {
         userId_channelId: {
@@ -158,7 +152,6 @@ export class ChannelService {
 
   async getChannel(
     id: string,
-    userId: number,
     {
       withMessages = false,
       withMembers = false,
@@ -172,13 +165,6 @@ export class ChannelService {
     return this.prismaService.channel.findUnique({
       where: {
         id,
-        AND: {
-          members: {
-            some: {
-              userId,
-            },
-          },
-        },
       },
       include: {
         actions: withActions,
@@ -213,14 +199,12 @@ export class ChannelService {
     type,
     userId,
   }: {
-    name?: string
+    name: string
     password?: string
     type: ChannelType
     userId: number
   }) {
-    if (type === ChannelType.direct) {
-      throw new BadRequestException('use createPm instead')
-    } else if (type === ChannelType.protected) {
+    if (type === ChannelType.protected) {
       if (!name) throw new BadRequestException('Channels must be named')
       if (!password)
         throw new BadRequestException('Protected channels must have passwords')
@@ -261,55 +245,62 @@ export class ChannelService {
     })
   }
 
+  /**
+   * @todo
+   * @param param0
+   * @returns
+   */
   async createPm({ userId, targetId }: { userId: number; targetId: number }) {
-    if (userId === targetId)
-      throw new BadRequestException('You cannot create a PM with yourself')
-    const existingChannel = await this.prismaService.channel.findFirst({
-      where: {
-        type: ChannelType.direct,
-        members: {
-          every: {
-            userId: {
-              in: [userId, targetId],
-            },
-          },
-        },
-      },
-    })
-    if (existingChannel) {
-      await this.prismaService.channelMember.update({
-        where: {
-          userId_channelId: {
-            channelId: existingChannel.id,
-            userId: userId,
-          },
-        },
-        data: {
-          present: true,
-        },
-      })
-      return existingChannel
-    }
-    return this.prismaService.channel.create({
-      include: {
-        members: true,
-      },
-      data: {
-        type: ChannelType.direct,
-        members: {
-          createMany: {
-            data: [
-              {
-                userId,
-              },
-              {
-                userId: targetId,
-              },
-            ],
-          },
-        },
-      },
-    })
+    console.log(userId, targetId)
+    return {}
+    // if (userId === targetId)
+    //   throw new BadRequestException('You cannot create a PM with yourself')
+    // const existingChannel = await this.prismaService.channel.findFirst({
+    //   where: {
+    //     type: ChannelType.direct,
+    //     members: {
+    //       every: {
+    //         userId: {
+    //           in: [userId, targetId],
+    //         },
+    //       },
+    //     },
+    //   },
+    // })
+    // if (existingChannel) {
+    //   await this.prismaService.channelMember.update({
+    //     where: {
+    //       userId_channelId: {
+    //         channelId: existingChannel.id,
+    //         userId: userId,
+    //       },
+    //     },
+    //     data: {
+    //       present: true,
+    //     },
+    //   })
+    //   return existingChannel
+    // }
+    // return this.prismaService.channel.create({
+    //   include: {
+    //     members: true,
+    //   },
+    //   data: {
+    //     type: ChannelType.direct,
+    //     members: {
+    //       createMany: {
+    //         data: [
+    //           {
+    //             userId,
+    //           },
+    //           {
+    //             userId: targetId,
+    //           },
+    //         ],
+    //       },
+    //     },
+    //   },
+    // })
   }
 
   /**
@@ -344,12 +335,48 @@ export class ChannelService {
         type: {
           in: [ChannelType.public, ChannelType.protected],
         },
-        members: {
-          every: {
-            NOT: {
-              userId,
-              present: true,
+        OR: [
+          {
+            members: {
+              none: {
+                userId,
+              },
             },
+          },
+          {
+            members: {
+              some: {
+                userId,
+                present: false,
+              },
+            },
+          },
+        ],
+      },
+    })
+  }
+
+  async applyBanAction(channelId: string, userId: number, time?: Date) {
+    await this.prismaService.channelAction.create({
+      data: {
+        channelId: channelId,
+        userId: userId,
+        deletedAt: time,
+      },
+    })
+  }
+
+  checkIfUserIsBan(channelId: string, userId: number) {
+    return this.prismaService.channelAction.findFirst({
+      where: {
+        userId: userId,
+        channelId: channelId,
+        deletedAt: {
+          not: null,
+        },
+        AND: {
+          deletedAt: {
+            gte: new Date().toISOString(),
           },
         },
       },

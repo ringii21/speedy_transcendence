@@ -4,7 +4,8 @@ import { MdSend } from 'react-icons/md'
 import { useAuth } from '../../providers/AuthProvider'
 import { useChat } from '../../providers/ChatProvider'
 import { useSocket } from '../../providers/SocketProvider'
-import { IChannel } from '../../types/Chat'
+import { IChannel, IChannelMessage } from '../../types/Chat'
+import { ChatSocketEvent } from '../../types/Events'
 
 type GetChannel = {
   channel: IChannel
@@ -21,12 +22,13 @@ const ChatInput: React.FC<GetChannel> = ({ channel }) => {
   const handleSendMessage = () => {
     if (!socket || !isConnected) return
     if (inputMessage.trim() !== '') {
-      const newMessage = {
+      const newMessage: IChannelMessage = {
         channelId: channel.id,
         content: inputMessage,
         senderId: user.id,
-      }
-      socket.emit('message', newMessage)
+      } as IChannelMessage
+
+      socket.emit(ChatSocketEvent.MESSAGE, newMessage)
       setMessages((prevMessages) => ({
         ...prevMessages,
         [channel.id]: [...(prevMessages[channel.id] ?? []), newMessage],

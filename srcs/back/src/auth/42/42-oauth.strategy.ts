@@ -12,7 +12,7 @@ import { HttpService } from '@nestjs/axios'
 import { catchError, firstValueFrom, map } from 'rxjs'
 import { IMe } from './42-oauth.types'
 import { AxiosError } from 'axios'
-import { UsersService } from 'src/users/users.service'
+import { UsersService } from '../../users/users.service'
 
 @Injectable()
 export class FortyTwoOAuthStrategy extends PassportStrategy(Strategy, '42') {

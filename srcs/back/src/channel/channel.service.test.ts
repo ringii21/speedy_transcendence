@@ -126,89 +126,11 @@ describe('ChannelService', () => {
       expect(result).toEqual(expectedChannel)
     })
 
-    it('should throw BadRequestException for named PMs', async () => {
-      // Arrange
-      const name = 'test'
-      const type = ChannelType.direct
-      const userId = 1
-
-      const createChannelDto = {
-        name,
-        type,
-        userId,
-      }
-
-      // Act & Assert
-      await expect(
-        channelService.createChannel(createChannelDto),
-      ).rejects.toThrow(BadRequestException)
-    })
-
-    it('should throw BadRequestException for PMs with passwords', async () => {
-      // Arrange
-      const name = undefined
-      const password = 'test'
-      const type = ChannelType.direct
-      const userId = 1
-
-      const createChannelDto = {
-        name,
-        password,
-        type,
-        userId,
-      }
-
-      // Act & Assert
-      await expect(
-        channelService.createChannel(createChannelDto),
-      ).rejects.toThrow(BadRequestException)
-    })
-
-    it('should throw BadRequestException for unnamed public channels', async () => {
-      // Arrange
-      const name = undefined
-      const password = undefined
-      const type = ChannelType.public
-      const userId = 1
-
-      const createChannelDto = {
-        name,
-        password,
-        type,
-        userId,
-      }
-
-      // Act & Assert
-      await expect(
-        channelService.createChannel(createChannelDto),
-      ).rejects.toThrow(BadRequestException)
-    })
-
     it('should throw BadRequestException for public channels with passwords', async () => {
       // Arrange
       const name = 'test'
       const password = 'test'
       const type = ChannelType.public
-      const userId = 1
-
-      const createChannelDto = {
-        name,
-        password,
-        type,
-        userId,
-      }
-
-      // Act & Assert
-      await expect(
-        channelService.createChannel(createChannelDto),
-      ).rejects.toThrow(BadRequestException)
-    })
-
-    it('should throw BadRequestException for unnamed private channels', async () => {
-      // Arrange
-      const name = undefined
-      const password = undefined
-      const type = ChannelType.private
       const userId = 1
 
       const createChannelDto = {
