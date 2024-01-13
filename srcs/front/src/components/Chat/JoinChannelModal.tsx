@@ -1,11 +1,14 @@
 import { Dialog, Transition } from '@headlessui/react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
 import clsx from 'clsx'
 import React, { Fragment, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 
+import { ChatQueryKey } from '../../providers/ChatProvider'
 import { useSocket } from '../../providers/SocketProvider'
 import { IChannelMember } from '../../types/Chat'
+import { IChannel } from '../../types/Chat'
 import { ChatSocketEvent } from '../../types/Events'
 import { getNotJoinedVisibleChannels, joinChannel } from '../../utils/chatHttpRequests'
 
@@ -16,6 +19,7 @@ type CreateChannelModalProps = {
 
 type FormValues = {
   id: string
+  password: string
 }
 
 const JoinChannelModal = ({
@@ -23,13 +27,17 @@ const JoinChannelModal = ({
   setJoinModalOpen: setIsOpen,
 }: CreateChannelModalProps) => {
   const { socket } = useSocket()
-  const queryClient = useQueryClient()
-  const { register, handleSubmit } = useForm<FormValues>({})
-
   const notJoinedChannels = useQuery({
-    queryKey: ['channels-not-joined'],
+    queryKey: [ChatQueryKey.CHANNEL_NOT_JOINED],
     queryFn: getNotJoinedVisibleChannels,
   })
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+    setError,
+  } = useForm<FormValues>({})
 
   useEffect(() => {
     if (!isOpen) return
@@ -37,22 +45,37 @@ const JoinChannelModal = ({
   }, [isOpen])
 
   const joinChan = useMutation({
-    mutationFn: joinChannel,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['channels'],
-      })
+    mutationFn: ({ id, password }: { id: string; password: string }) => joinChannel(id, password),
+    onSuccess: async (data: IChannelMember) => {
+      socket.emit(ChatSocketEvent.SUBSCRIBE_CHANNEL, { channelId: data.channelId })
       setIsOpen(false)
+    },
+    onError: (error) => {
+      if (error instanceof AxiosError) {
+        if (error.response?.status && error.response?.status >= 400) {
+          const msg: string = error.response.data.message
+          if (typeof msg === 'string') {
+            setError('password', {
+              message: msg,
+            })
+          }
+        }
+      }
     },
   })
 
+  const selectedChannelId = watch('id')
+  const selectedChannel = notJoinedChannels.data?.find(
+    (channel) => channel.id === selectedChannelId,
+  )
   const buttonStyle = clsx({
     ['btn']: true,
     ['btn-disabled']: notJoinedChannels.isPending,
   })
 
   const onSubmit = (data: FormValues) => {
-    joinChan.mutate(data.id)
+    console.error(data)
+    joinChan.mutate(data)
   }
 
   return (
@@ -94,7 +117,7 @@ const JoinChannelModal = ({
                         </label>
                         <select
                           id='id'
-                          {...register('id', { required: true })}
+                          {...register('id', { required: true, value: '' })}
                           className='select select-bordered w-full max-w-xs'
                         >
                           {notJoinedChannels.isPending && (
@@ -114,6 +137,39 @@ const JoinChannelModal = ({
                           ))}
                         </select>
                       </div>
+                      {selectedChannel?.type === 'protected' && (
+                        <div className='form-control'>
+                          <label className='label' htmlFor='password'>
+                            <span className='label-text'>Password</span>
+                          </label>
+                          <input
+                            type='password'
+                            id='password'
+                            placeholder='Enter the password'
+                            autoComplete='off'
+                            {...register('password', {
+                              minLength: {
+                                value: 3,
+                                message: 'Password must be at least 3 characters',
+                              },
+                              maxLength: {
+                                value: 10,
+                                message: 'Password must be less than 10 characters',
+                              },
+                              pattern: {
+                                value: /^[a-zA-Z0-9]{3,10}$/,
+                                message: 'Password must only contain alphanumeric characters',
+                              },
+                            })}
+                            className='input input-bordered w-full'
+                          ></input>
+                          {errors.password && (
+                            <span className='label-text-alt text-red-500'>
+                              {errors.password?.message}
+                            </span>
+                          )}
+                        </div>
+                      )}
                       <div className='flex justify-evenly mt-4'>
                         <button type='submit' className={`${buttonStyle} btn-success`}>
                           Join

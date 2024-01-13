@@ -20,13 +20,20 @@ export const SocketContext = createContext<SocketContextData>({
 export const SocketProvider = ({ children }: Props) => {
   const [isConnected, setIsConnected] = useState<boolean>(false)
   useEffect(() => {
-    socket.on('connect', () => setIsConnected(true))
-    socket.on('disconnect', () => setIsConnected(false))
+    socket.on('connect', () => {
+      console.log('connected')
+      setIsConnected(true)
+    })
+    socket.on('disconnect', () => {
+      console.log('disconnected')
+      setIsConnected(false)
+    })
     socket.on('connect_error', console.error)
 
     return () => {
-      socket.removeAllListeners()
-      socket.disconnect()
+      socket.off('connect')
+      socket.off('disconnect')
+      socket.off('connect_error')
     }
   }, [])
 

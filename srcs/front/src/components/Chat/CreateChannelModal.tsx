@@ -1,13 +1,12 @@
 import { Dialog, Transition } from '@headlessui/react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import clsx from 'clsx'
 import React, { Fragment } from 'react'
 import { useForm } from 'react-hook-form'
 
-import { useSocket } from '../../providers/SocketProvider'
+import { ChatQueryKey } from '../../providers/ChatProvider'
 import { ChannelType } from '../../types/Chat'
-import { ChatSocketEvent } from '../../types/Events'
 import { createChannel } from '../../utils/chatHttpRequests'
 
 type CreateChannelModalProps = {
@@ -22,8 +21,6 @@ type FormValues = {
 }
 
 const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateChannelModalProps) => {
-  const queryClient = useQueryClient()
-  const { socket } = useSocket()
   const {
     watch,
     register,
@@ -37,13 +34,19 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
     },
   })
 
-  const { mutateAsync, isPending } = useMutation({
-    mutationKey: ['channels'],
-    mutationFn: createChannel,
+  const { mutate, isPending } = useMutation({
+    mutationKey: [ChatQueryKey.MY_CHANNELS],
+    mutationFn: ({
+      name,
+      type,
+      password,
+    }: {
+      name: string
+      type: ChannelType
+      password?: string
+    }) => createChannel(name, type, password),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['channels'],
-      })
+      setCreateModalOpen(false)
     },
     onError: (error) => {
       if (error instanceof AxiosError) {
@@ -68,13 +71,7 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
       }
     },
   })
-  const onSubmit = async (data: FormValues) => {
-    try {
-      const { data: channel } = await mutateAsync(data)
-      setCreateModalOpen(false)
-      socket?.emit(ChatSocketEvent.JOIN_CHANNEL, { channelId: channel.id })
-    } catch (e) {}
-  }
+  const onSubmit = async (data: FormValues) => mutate(data)
 
   const type = watch('type')
 

@@ -1,5 +1,5 @@
 import { Dialog, Transition } from '@headlessui/react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import clsx from 'clsx'
 import React, { Fragment } from 'react'
 import { useForm } from 'react-hook-form'
@@ -23,17 +23,11 @@ const UserActionModal = ({
   channelId,
   userId,
 }: UserActionModalProps) => {
-  const queryClient = useQueryClient()
   const { register, handleSubmit } = useForm<FormValues>({})
 
   const { mutate, isPending } = useMutation({
-    mutationKey: ['channels', channelId],
+    mutationKey: [channelId],
     mutationFn: userAction,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['channels', channelId],
-      })
-    },
   })
 
   const onSubmit = (data: FormValues) => {

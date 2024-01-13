@@ -1,46 +1,83 @@
-import { useQuery } from '@tanstack/react-query'
-import React, {
-  createContext,
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useContext,
-  useState,
-} from 'react'
+import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
+import React, { createContext, ReactNode, useContext, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-import { IChannel, IChannelMessage } from '../types/Chat'
-import { getMyChannels } from '../utils/chatHttpRequests'
+import { IChannel, IChannelMember } from '../types/Chat'
+import { ChatSocketEvent } from '../types/Events'
+import { getChannel, getMyChannels } from '../utils/chatHttpRequests'
+import { useAuth } from './AuthProvider'
+import { useSocket } from './SocketProvider'
 
 interface ChatContextData {
-  channels: IChannel[]
-  messages: Record<string, IChannelMessage[]>
-  setMessages: Dispatch<SetStateAction<Record<string, IChannelMessage[]>>>
+  myChannels: Pick<IChannel, 'id'>[]
+  channelMap: IChannel[]
 }
 
 type Props = {
   children: ReactNode
 }
 
+export enum ChatQueryKey {
+  MY_CHANNELS = 'mine',
+  CHANNEL_NOT_JOINED = 'channels-not-joined',
+  CHANNEL = 'channels',
+}
+
 export const ChatContext = createContext<ChatContextData>({
-  channels: [],
-  messages: {},
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  setMessages: () => {},
+  myChannels: [],
+  channelMap: [],
 })
 
 export const ChatProvider = ({ children }: Props) => {
-  const [messages, setMessages] = useState<Record<number, IChannelMessage[]>>({})
+  const { socket } = useSocket()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
-  const { data: channels } = useQuery<IChannel[]>({
-    queryKey: ['channels'],
+  const myChannelQuery = useQuery({
+    queryKey: [ChatQueryKey.MY_CHANNELS],
     queryFn: getMyChannels,
     initialData: [],
   })
 
+  const channelMapQuery = useQueries({
+    queries: myChannelQuery.data.map((channel) => ({
+      queryKey: [channel.id],
+      queryFn: () => getChannel(channel.id),
+    })),
+  })
+
+  useEffect(() => {
+    socket.on(ChatSocketEvent.JOIN_CHANNEL, async (data: IChannelMember) => {
+      if (data.userId === user?.id) {
+        await myChannelQuery.refetch()
+        navigate(`/chat/${data.channelId}`)
+      } else {
+        await queryClient.invalidateQueries({
+          queryKey: [data.channelId],
+        })
+      }
+    })
+
+    socket.on(ChatSocketEvent.LEAVE_CHANNEL, async (data: IChannelMember) => {
+      if (data.userId === user?.id) {
+        await myChannelQuery.refetch()
+        navigate(`/chat`)
+      } else {
+        await queryClient.invalidateQueries({
+          queryKey: [data.channelId],
+        })
+      }
+    })
+    return () => {
+      socket.off(ChatSocketEvent.JOIN_CHANNEL)
+      socket.off(ChatSocketEvent.LEAVE_CHANNEL)
+    }
+  }, [user])
+
   const values = {
-    messages,
-    channels,
-    setMessages,
+    channelMap: channelMapQuery.map((channel) => channel.data).filter(Boolean) as IChannel[],
+    myChannels: myChannelQuery.data,
   }
 
   return <ChatContext.Provider value={values}>{children}</ChatContext.Provider>

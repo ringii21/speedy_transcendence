@@ -7,4 +7,6 @@ export enum ChatSocketEvent {
   LEAVE_CHANNEL = 'leave_channel',
   CONNECTED = 'connected',
   DISCONNECTED = 'disconnected',
+  SUBSCRIBE_CHANNEL = 'subscribe_channel',
+  UNSUBSCRIBE_CHANNEL = 'unsubscribe_channel',
 }
