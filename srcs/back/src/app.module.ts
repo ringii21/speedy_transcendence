@@ -1,19 +1,23 @@
-import { Logger, MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
+import { Logger, Module } from '@nestjs/common'
 import { UsersModule } from './users/users.module'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { AuthModule } from './auth/auth.module'
-import { LoggerMiddleware } from './logger/logger.middleware'
-import { AuthController } from './auth/auth.controller'
-import { FortyTwoOAuthController } from './auth/42/42-oauth.controller'
-import { UsersController } from './users/users.controller'
-import { TwoFaController } from './auth/2fa/2fa.controller'
 import { ChatModule } from './chat/chat.module'
-import { ChatController } from './chat/chat.controller'
-
+import { LoggerModule } from 'nestjs-pino'
+import { EventEmitterModule } from '@nestjs/event-emitter'
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    EventEmitterModule.forRoot(),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        transport: {
+          target: 'pino-pretty',
+          options: { colorize: true },
+        },
+      },
     }),
     UsersModule,
     AuthModule,
@@ -21,7 +25,7 @@ import { ChatController } from './chat/chat.controller'
   ],
   providers: [Logger],
 })
-export class AppModule implements NestModule {
+export class AppModule {
   constructor(configService: ConfigService) {
     const envs = [
       'DATABASE_URL',
@@ -37,12 +41,5 @@ export class AppModule implements NestModule {
       'BACKEND_URL',
     ]
     envs.forEach((env) => configService.getOrThrow(env))
-  }
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes(AuthController)
-    consumer.apply(LoggerMiddleware).forRoutes(FortyTwoOAuthController)
-    consumer.apply(LoggerMiddleware).forRoutes(TwoFaController)
-    consumer.apply(LoggerMiddleware).forRoutes(UsersController)
-    consumer.apply(LoggerMiddleware).forRoutes(ChatController)
   }
 }

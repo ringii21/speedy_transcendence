@@ -14,14 +14,23 @@ import {
 } from '@nestjs/common'
 
 import JwtTwoFaGuard from '../auth/jwt/jwt-2fa.guard'
-import { RequestWithDbUser } from 'src/types/Request'
-import { ChannelService } from 'src/channel/channel.service'
-import { ChannelEntity } from 'src/channel/entity/channel.entity'
+import { RequestWithDbUser } from '../types/Request'
+import { ChannelService } from '../channel/channel.service'
+import { ChannelEntity } from '../channel/entity/channel.entity'
 import { CreateChannelDto } from './dto/create-channel.dto'
 import { CreatePmDto } from './dto/create-pm.dto'
 import { UserActionDto } from './dto/user-action.dto'
 import { UserIsNotBanFromChannelGuard } from './guard/user-ban-from-channel.guard'
-import { ChatGateway } from './chat.gateway'
+import { EventEmitter2 } from '@nestjs/event-emitter'
+import {
+  ChannelBanEvent,
+  ChannelJoinedEvent,
+  ChannelKickEvent,
+  ChannelLeftEvent,
+  ChannelMutedEvent,
+} from './events/channel.event'
+import { UserIsAdminOrOwner } from './guard/user-admin-owner.guard'
+import { UserIsPresentGuard } from './guard/user-is-present.guard'
 
 @Controller('chat')
 @UseGuards(JwtTwoFaGuard)
@@ -29,7 +38,7 @@ import { ChatGateway } from './chat.gateway'
 export class ChatController {
   constructor(
     private readonly channelService: ChannelService,
-    private readonly chatGateway: ChatGateway,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   @Get('/channels')
@@ -43,13 +52,12 @@ export class ChatController {
 
   @Get('/channels/mine')
   async getChannels(@Req() req: RequestWithDbUser) {
-    const channels = await this.channelService.getMyChannels(req.user.id, {
-      withMembers: true,
-    })
+    const channels = await this.channelService.getMyChannels(req.user.id)
     return channels.map((channel) => new ChannelEntity(channel))
   }
 
   @Get('/channels/:id')
+  @UseGuards(UserIsNotBanFromChannelGuard, UserIsPresentGuard)
   async getChannel(@Param('id', ParseUUIDPipe) id: string) {
     const channel = await this.channelService.getChannel(id, {
       withMembers: true,
@@ -99,7 +107,10 @@ export class ChatController {
       channelId,
       password,
     )
-    this.chatGateway.emitUserJoinChannel(channelId, req.user.id)
+    this.eventEmitter.emit(
+      ChannelJoinedEvent.name,
+      new ChannelJoinedEvent(channel.channelId, req.user.id),
+    )
     return new ChannelEntity(channel)
   }
 
@@ -108,36 +119,62 @@ export class ChatController {
     @Req() req: RequestWithDbUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    await this.channelService.leaveChannel(req.user.id, id)
-    this.chatGateway.emitUserLeaveChannel(id, req.user.id)
+    const channel = await this.channelService.leaveChannel(req.user.id, id)
+    this.eventEmitter.emit(
+      ChannelLeftEvent.name,
+      new ChannelLeftEvent(id, req.user.id),
+    )
+    return new ChannelEntity(channel)
   }
 
   @Post('/channels/:id/kick')
+  @UseGuards(UserIsNotBanFromChannelGuard, UserIsAdminOrOwner)
   async kickUserFromChannel(
+    @Req() req: RequestWithDbUser,
     @Param('id', ParseUUIDPipe) channelId: string,
     @Body() body: UserActionDto,
   ) {
+    if (req.user.id === body.userId)
+      throw new BadRequestException('You cannot kick yourself')
     await this.channelService.leaveChannel(body.userId, channelId)
-    this.chatGateway.emitUserLeaveChannel(channelId, body.userId)
+    this.eventEmitter.emit(
+      ChannelKickEvent.name,
+      new ChannelKickEvent(channelId, body.userId),
+    )
   }
 
   @Post('/channels/:id/ban')
+  @UseGuards(UserIsNotBanFromChannelGuard, UserIsAdminOrOwner)
   async banUserFromChannel(
+    @Req() req: RequestWithDbUser,
     @Param('id', ParseUUIDPipe) channelId: string,
     @Body() body: UserActionDto,
   ) {
+    if (req.user.id === body.userId)
+      throw new BadRequestException('You cannot ban yourself')
     await this.channelService.applyBanAction(channelId, body.userId)
     await this.channelService.leaveChannel(body.userId, channelId)
-    this.chatGateway.emitUserLeaveChannel(channelId, body.userId)
+    this.eventEmitter.emit(
+      ChannelBanEvent.name,
+      new ChannelBanEvent(channelId, body.userId),
+    )
   }
 
   @Post('/channels/:id/mute')
+  @UseGuards(UserIsNotBanFromChannelGuard, UserIsAdminOrOwner)
   async muteUserFromChannel(
+    @Req() req: RequestWithDbUser,
     @Param('id', ParseUUIDPipe) channelId: string,
     @Body() body: UserActionDto,
   ) {
+    if (req.user.id === body.userId)
+      throw new BadRequestException('You cannot mute yourself')
     const until = new Date()
     until.setMinutes(until.getMinutes() + 5)
     await this.channelService.applyBanAction(channelId, body.userId, until)
+    this.eventEmitter.emit(
+      ChannelMutedEvent.name,
+      new ChannelMutedEvent(channelId, body.userId),
+    )
   }
 }

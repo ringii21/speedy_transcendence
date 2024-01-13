@@ -2,37 +2,34 @@ import React, { useState } from 'react'
 import { MdSend } from 'react-icons/md'
 
 import { useAuth } from '../../providers/AuthProvider'
-import { useChat } from '../../providers/ChatProvider'
 import { useSocket } from '../../providers/SocketProvider'
-import { IChannel, IChannelMessage } from '../../types/Chat'
+import { IChannelMessage } from '../../types/Chat'
 import { ChatSocketEvent } from '../../types/Events'
 
-type GetChannel = {
-  channel: IChannel
-}
-
-const ChatInput: React.FC<GetChannel> = ({ channel }) => {
+const ChatInput = ({
+  channelId,
+  setMessage,
+}: {
+  channelId: string
+  setMessage: React.Dispatch<React.SetStateAction<IChannelMessage[]>>
+}) => {
   const { socket, isConnected } = useSocket()
-  const { setMessages } = useChat()
   const { user } = useAuth()
-
-  if (!user) return <></>
   const [inputMessage, setInputMessage] = useState<string>('')
 
+  if (!user) return <></>
   const handleSendMessage = () => {
-    if (!socket || !isConnected) return
+    console.log('isConnected', isConnected)
+    if (!isConnected) return
     if (inputMessage.trim() !== '') {
       const newMessage: IChannelMessage = {
-        channelId: channel.id,
+        channelId,
         content: inputMessage,
         senderId: user.id,
       } as IChannelMessage
 
       socket.emit(ChatSocketEvent.MESSAGE, newMessage)
-      setMessages((prevMessages) => ({
-        ...prevMessages,
-        [channel.id]: [...(prevMessages[channel.id] ?? []), newMessage],
-      }))
+      setMessage((messages) => [...messages, newMessage])
       setInputMessage('')
     }
   }

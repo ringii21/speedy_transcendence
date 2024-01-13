@@ -17,33 +17,33 @@ export class UserIsNotBanFromChannelGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     switch (context.getType()) {
       case 'ws':
-        return this.canActivateWs(context)
+        return await this.canActivateWs(context)
       case 'http':
-        return this.canActivateHttp(context)
+        return await this.canActivateHttp(context)
       default:
         return false
     }
   }
 
   async canActivateWs(context: ExecutionContext) {
-    const request: RequestWithDbUser = context.switchToWs().getClient()
-
-    const isUserIsBan = await this.channelService.checkIfUserIsBan(
-      request.body.channelId,
-      request.user.id,
+    const data: {
+      channelId: string
+    } = context.switchToWs().getData()
+    const userId = context.switchToWs().getClient().handshake.user.id
+    const banned = await this.channelService.isUserBanFromChannel(
+      data.channelId,
+      userId,
     )
-
-    return !isUserIsBan
+    return !banned
   }
 
   async canActivateHttp(context: ExecutionContext) {
     const request: RequestWithDbUser = context.switchToHttp().getRequest()
-
-    const isUserIsBan = await this.channelService.checkIfUserIsBan(
-      request.body.channelId,
+    const banned = await this.channelService.isUserBanFromChannel(
+      request.params.id,
       request.user.id,
     )
 
-    return !isUserIsBan
+    return !banned
   }
 }
