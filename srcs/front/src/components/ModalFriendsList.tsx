@@ -16,6 +16,7 @@ const getCorrectFriend = (friend: IFriends, me: IUser) => {
 }
 
 const line = (friend: IUser, index: number) => {
+  if (!friend) return <></>
   return (
     <Menu.Item key={index}>
       <a
@@ -73,7 +74,9 @@ const ModalFriendsList: React.FC<NotificationListModal> = ({
             </div>
             <div className='p-4 md:p-5'>
               <div className='my-4 space-y-3'>
-                {friends && friends.map((f, i) => line(getCorrectFriend(f, me), i))}
+                {friends &&
+                  friends.length > 0 &&
+                  friends.map((f, i) => line(getCorrectFriend(f, me), i))}
               </div>
             </div>
           </div>

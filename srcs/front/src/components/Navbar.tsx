@@ -23,11 +23,6 @@ const Navbar = () => {
     await signout()
   }
 
-  const queryConfig = {
-    queryKey: ['notification', id],
-    queryFn: getUser,
-  }
-
   const {
     data: notifier,
     isError: isErrorNotifier,
@@ -36,9 +31,6 @@ const Navbar = () => {
     queryKey: ['notification'],
     queryFn: getNotification,
   })
-
-  console.log(notifier)
-  const { data: notifyUser, isError } = useQuery(queryConfig)
 
   useEffect(() => {
     const isOpen = (e: MouseEvent) => {
@@ -52,6 +44,7 @@ const Navbar = () => {
       document.removeEventListener('click', isOpen)
     }
   }, [])
+
   const notificationLine = () => {
     return (
       <div ref={ref} className='right-0'>
@@ -72,7 +65,7 @@ const Navbar = () => {
 
   return (
     <div className='navbar nav relative bg-gray-900'>
-      {NotificationModal({ openModal, setOpenModal, notifier, me: user })}
+      <NotificationModal openModal={openModal} setOpenModal={setOpenModal} notifier={notifier} me={user} />
       <div className='navbar-start'>
         <div className='dropdown'>
           <div tabIndex={0} role='button' className='btn btn-ghost lg:hidden'>

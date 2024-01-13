@@ -6,7 +6,11 @@ import { ModalFriendsList } from '../components/ModalFriendsList'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
 import { createFriendRequest, getFriends, removeFriend } from '../utils/friendService'
-import { createNotification, getNotification } from '../utils/notificationService'
+import {
+  createNotification,
+  deleteNotification,
+  getNotification,
+} from '../utils/notificationService'
 import { fetchUser, getUser } from '../utils/userHttpRequests'
 
 const Profile = () => {
@@ -19,7 +23,7 @@ const Profile = () => {
     return <></>
   }
 
-  const [isFollow, setIsFollow] = useState('follow')
+  const [isFollow, setIsFollow] = useState('Follow')
   const [openModal, setOpenModal] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -48,21 +52,12 @@ const Profile = () => {
 
   const { data: profileUser, isError } = useQuery(queryConfig)
 
-  const friendMutation = useMutation({
-    mutationKey: ['friends'],
-    mutationFn: createFriendRequest,
-  })
-
   const notificationMutation = useMutation({
     mutationKey: ['notification'],
     mutationFn: createNotification,
   })
 
-  const {
-    data: notifier,
-    isError: isErrorNotifier,
-    isLoading: isLoadingNotifier,
-  } = useQuery({
+  const getNotificationQuery = useQuery({
     queryKey: ['notification'],
     queryFn: getNotification,
   })
@@ -85,15 +80,21 @@ const Profile = () => {
     await signout()
   }
 
-  // const notification = useQuery({
-  //   queryKey: ['notification'],
-  //   queryFn: getNotification,
-  // })
+  const deleteNotificationMutation = useMutation({
+    mutationKey: ['friends'],
+    mutationFn: deleteNotification,
+  })
 
-  // console.log(notification)
-  // const friendRequest = () => {
-
-  // }
+  useEffect(() => {
+    if (!(friends && friends.forEach)) return undefined
+    friends.forEach((friend) => {
+      if (friend.confirmed === true) setIsFollow('Unfollow')
+    })
+    if (!(getNotificationQuery && getNotificationQuery.data)) return undefined
+    getNotificationQuery.data.map((not) => {
+      if (not.senderId && not.receivedId) setIsFollow('Discard')
+    })
+  }, [setIsFollow, friends])
 
   const isUserId = () => {
     if (!profileUser) return <></>
@@ -101,7 +102,10 @@ const Profile = () => {
       return (
         <div className='flex justify-evenly'>
           <button
-            onClick={() => notificationMutation.mutate(profileUser.id)}
+            onClick={() => {
+              if (isFollow === 'Discard') deleteNotificationMutation.mutate(profileUser.id)
+              else if (isFollow === 'Follow') notificationMutation.mutate(profileUser.id)
+            }}
             className='btn btn-primary drop-shadow-xl rounded-lg'
           >
             {isFollow}

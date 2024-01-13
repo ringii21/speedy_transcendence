@@ -17,6 +17,7 @@ export type IFriends = {
   friendOf: IUser
   friendId: number
   friendOfId: number
+  confirmed: boolean
   createdAt: Date
   updatedAt: Date
   deletedAt?: Date

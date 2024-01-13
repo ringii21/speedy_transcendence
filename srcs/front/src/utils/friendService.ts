@@ -9,6 +9,13 @@ export const createFriendRequest = async (friendOfId: number) => {
   })
 }
 
+export const acceptFriendRequest = async (friendOfId: number) => {
+  const response = await httpInstance().post<IFriends>(`/api/friends/add`, {
+    friendOfId,
+  })
+  return response.data
+}
+
 export const removeFriend = async ({ queryKey }: { queryKey: QueryKey }) => {
   const [_, id] = queryKey
   const { data } = await httpInstance().get<IFriends>(`/api/friends/${id}`)
