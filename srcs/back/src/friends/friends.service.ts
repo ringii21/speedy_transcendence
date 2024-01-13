@@ -57,13 +57,20 @@ export class FriendsService {
     })
   }
 
-  async addFriends(friendId: number, friendOfId: number) {
-    await this.prisma.friends.update({
+  async addFriends(userId: number, friendOfId: number) {
+    await this.prisma.friends.updateMany({
       where: {
-        friendId_friendOfId: {
-          friendId,
-          friendOfId,
-        },
+        OR: [
+          {
+            friendId: userId,
+            friendOfId: friendOfId,
+          },
+          {
+            friendId: friendOfId,
+            friendOfId: userId,
+          },
+        ],
+        confirmed: false,
       },
       data: {
         confirmed: true,
@@ -71,14 +78,20 @@ export class FriendsService {
     })
   }
 
-  //faux
   async delete(friendId: number, friendOfId: number): Promise<boolean> {
-    const friend = await this.prisma.friends.delete({
+    const friend = await this.prisma.friends.deleteMany({
       where: {
-        friendId_friendOfId: {
-          friendId,
-          friendOfId,
-        },
+        OR: [
+          {
+            friendId: friendId,
+            friendOfId: friendOfId,
+          },
+          {
+            friendId: friendOfId,
+            friendOfId: friendId,
+          },
+        ],
+        confirmed: true,
       },
     })
     return !!friend

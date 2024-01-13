@@ -4,16 +4,20 @@ import { RequestWithDbUser } from 'src/types/Request'
 import { NotificationEntity } from './entity/notification.entity'
 import { NotificationDto } from './dto/notification.dto'
 import { FriendsService } from 'src/friends/friends.service'
+import { DeleteNotificationDto } from './dto/deleteNotification.dto'
+import { RequestWithDbNotification } from '../types/Request'
 import {
   Body,
   Controller,
   Req,
   Get,
   Post,
+  Delete,
   UseGuards,
   UseInterceptors,
   ClassSerializerInterceptor,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common'
 
 @Controller('notification')
@@ -52,14 +56,28 @@ export class NotificationController {
     try {
       const notifications =
         await this.notificationService.getNonConfirmedFriends(req.user.id)
-      console.log('Notification:', notifications)
       const mappedNotification = notifications.map(
         (notification) => new NotificationEntity(notification),
       )
-      console.log('mappedNotification: ', mappedNotification)
       return mappedNotification
     } catch (e) {
       console.error('Error in getNotification: ', e)
+      throw e
+    }
+  }
+
+  @Delete()
+  async deleteNotification(
+    @Req() req: RequestWithDbNotification,
+    @Body() notificationDto: DeleteNotificationDto,
+  ) {
+    try {
+      return this.notificationService.deleteRequest(
+        req.user.receivedId,
+        notificationDto.receivedId,
+      )
+    } catch (e) {
+      console.error('Error deleting notification: ', e)
       throw e
     }
   }

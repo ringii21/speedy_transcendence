@@ -39,7 +39,7 @@ export class FriendsControler {
   // }
 
   @Post()
-  async addNewFriend(
+  async createFriendRequest(
     @Req() req: RequestWithDbUser,
     @Body() friendsRequestDto: FriendsRequestDto,
   ) {
@@ -57,7 +57,20 @@ export class FriendsControler {
     return this.friendsService.create(req.user.id, friendsRequestDto.friendOfId)
   }
 
-  @Get(':id')
+  @Post('add')
+  async addNewFriend(
+    @Req() req: RequestWithDbUser,
+    @Body() friendsRequestDto: FriendsRequestDto,
+  ) {
+    if (req.user.id === friendsRequestDto.friendOfId)
+      throw new BadRequestException('You cannot be friend with yourself')
+    return this.friendsService.addFriends(
+      req.user.id,
+      friendsRequestDto.friendOfId,
+    )
+  }
+
+  @Get('add/:id')
   async removeFriend(
     @Req() req: RequestWithDbUser,
     @Body() friendshipRemovalDto: FriendshipRemovalDto,

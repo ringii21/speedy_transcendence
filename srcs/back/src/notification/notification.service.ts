@@ -53,4 +53,52 @@ export class NotificationService {
       },
     })
   }
+
+  async deleteRequest(senderId: number, receivedId: number) {
+    const sender = await this.prisma.notification.deleteMany({
+      where: {
+        AND: [
+          {
+            receivedId: senderId,
+          },
+          {
+            senderId: receivedId,
+          },
+        ],
+      },
+    })
+    console.log(senderId)
+    return !!sender
+  }
+
+  async getConfirmedFriends(userId: number) {
+    return this.prisma.notification.findMany({
+      where: {
+        OR: [
+          {
+            senderId: userId,
+          },
+          {
+            receivedId: userId,
+          },
+        ],
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            image: true,
+            username: true,
+          },
+        },
+        received: {
+          select: {
+            id: true,
+            image: true,
+            username: true,
+          },
+        },
+      },
+    })
+  }
 }

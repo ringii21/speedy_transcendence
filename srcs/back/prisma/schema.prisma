@@ -47,7 +47,7 @@ model Notification {
   received    User      @relation("received", fields: [receivedId], references: [id])
   senderId    Int       @map("sender_id")
   receivedId  Int       @map("received_id")
-  createdAt   DateTime    @default(now()) @map("created_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
 
   @@id([senderId, receivedId])
   @@map("notification")
