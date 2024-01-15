@@ -19,6 +19,7 @@ export class NotificationService {
       data: {
         senderId,
         receivedId,
+        state: true,
       },
     })
   }
@@ -34,6 +35,7 @@ export class NotificationService {
             receivedId: userId,
           },
         ],
+        state: true,
       },
       include: {
         sender: {
@@ -57,18 +59,20 @@ export class NotificationService {
   async deleteRequest(senderId: number, receivedId: number) {
     const sender = await this.prisma.notification.deleteMany({
       where: {
-        AND: [
+        OR: [
           {
-            receivedId: senderId,
+            receivedId: receivedId,
+            senderId: senderId,
           },
           {
             senderId: receivedId,
+            receivedId: senderId,
           },
         ],
+        state: true,
       },
     })
-    console.log(senderId)
-    return !!sender
+    return sender.count > 0
   }
 
   async getConfirmedFriends(userId: number) {
@@ -82,6 +86,7 @@ export class NotificationService {
             receivedId: userId,
           },
         ],
+        state: false,
       },
       include: {
         sender: {

@@ -32,7 +32,7 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
   @Get()
   async getUsers(@Query() queryUsersDto: QueryUsersDto) {
@@ -49,8 +49,7 @@ export class UsersController {
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const user = await this.usersService.findUserById(id)
-    if (!user)
-      return new NotFoundException('user not found')
+    if (!user) return new NotFoundException('user not found')
     return new UserEntity(user)
   }
 

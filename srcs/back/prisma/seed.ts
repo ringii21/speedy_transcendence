@@ -27,7 +27,6 @@ const createChannelMessages = (): Partial<ChannelMessage> => {
 const createChannels = (): Partial<Channel> => {
   return {
     name: faker.lorem.word(),
-
   }
 }
 

@@ -8,6 +8,7 @@ import {
   ClassSerializerInterceptor,
   BadRequestException,
   Post,
+  Delete,
 } from '@nestjs/common'
 import { FriendsService } from './friends.service'
 import { FriendshipRemovalDto } from './dto/friend-removal.dto'
@@ -29,14 +30,6 @@ export class FriendsControler {
 
     return friends.map((friend) => new FriendEntity(friend))
   }
-
-  // afficher les demandes d'ami
-  // confirmer les demandes d'ami
-
-  // @Post()
-  // addNewFriend(@Body() friendsRequestDto: FriendsRequestDto) {
-  //   console.log('Received data from: ', friendsRequestDto)
-  // }
 
   @Post()
   async createFriendRequest(
@@ -70,14 +63,19 @@ export class FriendsControler {
     )
   }
 
-  @Get('add/:id')
+  @Delete('add')
   async removeFriend(
     @Req() req: RequestWithDbUser,
     @Body() friendshipRemovalDto: FriendshipRemovalDto,
   ) {
-    return this.friendsService.delete(
-      req.user.id,
-      friendshipRemovalDto.friendOfId,
-    )
+    try {
+      return this.friendsService.deleteFriend(
+        req.user.id,
+        friendshipRemovalDto.friendOfId,
+      )
+    } catch (e) {
+      console.error('Error deleting friend :', e)
+      throw e
+    }
   }
 }

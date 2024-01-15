@@ -4,7 +4,7 @@ import { Notification as NotificationPrisma } from '@prisma/client'
 export class NotificationEntity implements NotificationPrisma {
   senderId: number
   receivedId: number
-  states: boolean
+  state: boolean
 
   @Exclude()
   createdAt: Date

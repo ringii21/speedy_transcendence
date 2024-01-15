@@ -78,7 +78,7 @@ export class FriendsService {
     })
   }
 
-  async delete(friendId: number, friendOfId: number): Promise<boolean> {
+  async deleteFriend(friendId: number, friendOfId: number): Promise<boolean> {
     const friend = await this.prisma.friends.deleteMany({
       where: {
         OR: [
@@ -96,16 +96,6 @@ export class FriendsService {
     })
     return !!friend
   }
-
-  // async findFriendById(id: number) {
-  //   const friend = await this.prisma.friends.findUnique({
-  //     where: {
-  //       id: id,
-  //     }
-  //   })
-  //   if (!friend) throw new NotFoundException('Friend is not found')
-  //   return friend
-  // }
 
   async findManyFriends(params: {
     skip?: number

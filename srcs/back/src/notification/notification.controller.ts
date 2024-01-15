@@ -17,7 +17,6 @@ import {
   UseInterceptors,
   ClassSerializerInterceptor,
   BadRequestException,
-  InternalServerErrorException,
 } from '@nestjs/common'
 
 @Controller('notification')
