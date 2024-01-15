@@ -111,16 +111,18 @@ import {
         return 
       }
 
-      if (data.gameState.p1 < 11 && data.gameState.p2 < 11) {
-        if (user.id == data.gameState.p1.id) {
-          client.emit('lose', 'you won');
-          /* game.p2socket.emit('win', 'you lost');
-          this.emitGameEnd('end'); */
-        }/*  else {
+      if (data.gameState.ball.p1Score < 11 && data.gameState.ball.p2Score < 11) {
+        /* if (user.id == data.gameState.p1.id) {
+          client.emit('finish');
+          game.p2socket.emit('win', 'you lost');
+          this.emitGameEnd('end');
+        } else {
           this.p1socket.emit('win', 'you won');
           this.p2socket.emit('lose', 'you lost');
           this.emitGameEnd('end');
         } */
+        console.log('JE passe bien dans le if')
+        this.server.to(data.gameid).emit('finish')
       }
     }
 

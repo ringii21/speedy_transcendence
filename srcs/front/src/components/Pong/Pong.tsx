@@ -75,6 +75,10 @@ export const Game = () => {
     /* const img = new Image()
     img.src = '../../assets/balle-pong.png'
     img.onload = () => setImage(img) */
+    socket?.on('finish', () => {
+      console.log('Je quitte')
+      leave()
+    })
     socket?.on('level', (l: number) => {
       setLevel(l)
     })
