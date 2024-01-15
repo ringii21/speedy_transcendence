@@ -12,7 +12,13 @@ const Game = () => {
 
   if (!user) return <Navigate to='/login' replace />
   const { socket, isConnected } = useGameSocket()
-  if (!isConnected) socket?.connect()
+
+  if (!isConnected) {
+    console.log('Je ne suis pas connecter')
+    socket?.connect()
+  } else {
+    console.log('JE suis connecte')
+  }
 
   return (
     <div>

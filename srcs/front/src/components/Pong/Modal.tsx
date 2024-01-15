@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
+import { useAuth } from '../../providers/AuthProvider'
 import { useGameSocket } from '../../providers/GameSocketProvider'
 import { useGameState } from './States/GameState'
 export const Modal = () => {
@@ -11,14 +12,24 @@ export const Modal = () => {
   const [status, setStatus] = useState<undefined | string>(undefined)
   const [timer, setTimer] = useState<undefined | number>(undefined)
   const [gameid, setGameId] = useState<undefined | string>(undefined)
-  const socket = useGameSocket()
+  const [gameName, setGameName] = useState<undefined | string>(undefined)
+  const { socket, isConnected } = useGameSocket()
   const navigate = useNavigate()
+  const location = useLocation()
   useEffect(() => {
-    if (socket.socket !== null) {
-      socket.socket?.on('game.launched', (GameId: any) => {
+    if (!location.pathname.startsWith('/Game')) {
+      socket?.emit('game.stop', { gameid: gameName, gameState: gameState })
+    }
+    console.log('Dans le useEffect MODAL:', location.pathname)
+  }, [location])
+  useEffect(() => {
+    /* const { user } = useAuth() */
+    if (socket !== null) {
+      socket?.on('game.launched', (GameId: any) => {
+        setGameName(GameId)
         setGameId(GameId.slice(5))
       })
-      socket.socket?.on('timer', (msg: any) => {
+      socket?.on('timer', (msg: any) => {
         msg !== 0 && setOpacity('opacity-100')
         msg === 0 && setOpacity('opacity-0')
         setTimer(msg / 1000)
@@ -26,12 +37,12 @@ export const Modal = () => {
           navigate(`/Game/${gameid}`)
         }
       })
-      socket.socket?.on('players', (players: any) => {
+      socket?.on('players', (players: any) => {
         console.log(players)
         gameState.setP1(players[0])
         gameState.setP2(players[1])
       })
-      socket.socket?.on('win', (msg: string) => {
+      socket?.on('win', (msg: string) => {
         setResutl(msg)
         setStatus('win')
         setResOpacity('opacity-100')
@@ -47,7 +58,7 @@ export const Modal = () => {
           }
         }, 1000)
       })
-      socket.socket?.on('lose', (msg: string) => {
+      socket?.on('lose', (msg: string) => {
         setResutl(msg)
         setStatus('lose')
         setResOpacity('opacity-100')
@@ -65,11 +76,12 @@ export const Modal = () => {
       })
     }
     return () => {
-      socket.socket?.off('lose')
-      socket.socket?.off('win')
-      socket.socket?.off('timer')
-      socket.socket?.off('game.launched')
-      socket.socket?.off('players')
+      /* socket?.emit('game.stop', { gameid: gameid , user: user  }) */
+      socket?.off('lose')
+      socket?.off('win')
+      socket?.off('timer')
+      socket?.off('game.launched')
+      socket?.off('players')
     }
     // eslint-disable-next-line
   }, [timer]);

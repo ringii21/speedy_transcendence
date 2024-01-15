@@ -4,6 +4,7 @@ import { Circle, Image, Layer, Line, Rect, Stage } from 'react-konva'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 import { WithNavbar } from '../../hoc/WithNavbar'
+import { useAuth } from '../../providers/AuthProvider'
 import { useGameSocket } from '../../providers/GameSocketProvider'
 import { useGameState } from './States/GameState'
 
@@ -37,6 +38,7 @@ function throttlify(callback: any) {
 }
 
 export const Game = () => {
+  const { user } = useAuth()
   const [ballImage, setBallImage] = useState<HTMLImageElement | null>(null)
   const gameState = useGameState()
   const { socket, isConnected } = useGameSocket()
@@ -116,7 +118,6 @@ export const Game = () => {
       socket?.off('level')
       socket?.off('t')
       socket?.off('game.end')
-
       window.removeEventListener('keydown', () => {
         return
       })
