@@ -3,6 +3,11 @@ import './../styles/home.css'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
+/* import abonard from '../assets/abonard.jpg'
+import ebouvier from '../assets/ebouvier.jpg'
+import sasha from '../assets/nlorion.jpg' */
+import logo1 from '../assets/1.png'
+import logo2 from '../assets/2.png'
 import WordFlick from '../components/Pong/PongRuleFlick'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useSocket } from '../providers/SocketProvider'
@@ -12,11 +17,13 @@ const Home = () => {
   socket?.connect()
   return (
     <div className='w-screen'>
+      <b></b>
       <h1 className='text-center text-4xl uppercase welcome md:text-7xl'>FT_TRANSCENDENCE</h1>
       <div className='pongRule'>
         <WordFlick />
       </div>
-      <div className='flex justify-center items-center py-10'>
+      <div className='flex justify-center items-center'>
+        <img className='one' src={logo1} alt='logo' />
         <Link to='/play'>
           <button
             data-modal-target='static-modal'
@@ -28,6 +35,7 @@ const Home = () => {
             </span>
           </button>
         </Link>
+        <img className='two' src={logo2} alt='paddle2' />
       </div>
     </div>
   )

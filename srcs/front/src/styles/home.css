@@ -52,6 +52,7 @@
 }
 .pongRule
 {
+    height: 300px;
     color: white;
     font-weight: bolder;
     font-family: 'Space Grotesk', sans-serif;
@@ -60,6 +61,53 @@
     text-align: center;
 }
 
+b {
+    display: block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: white;
+    position: absolute;
+    -webkit-animation: moveX 3.4s linear 0s infinite alternate, moveY 3s linear 0s infinite alternate;
+    -moz-animation: moveX 3.4s linear 0s infinite alternate, moveY 3s linear 0s infinite alternate;
+    -o-animation: moveX 3.4s linear 0s infinite alternate, moveY 3s linear 0s infinite alternate;
+    animation: moveX 3.4s linear 0s infinite alternate, moveY 3s linear 0s infinite alternate;
+}
+@-webkit-keyframes moveX {
+    from { left: 0; } to { left: 100%; }
+  }
+  @-moz-keyframes moveX {
+    from { left: 0; } to { left: 100%; }
+  }
+  @-o-keyframes moveX {
+    from { left: 0; } to { left: 100%; }
+  }
+  @keyframes moveX {
+    from { left: 0; } to { left: 100%; }
+  }
+
+
+  @-webkit-keyframes moveY {
+    from { top: 0; } to { top: 100%; }
+  }
+  @-moz-keyframes moveY {
+    from { top: 0; } to { top: 100%; }
+  }
+  @-o-keyframes moveY {
+    from { top: 0; } to { top: 100%; }
+  }
+  @keyframes moveY {
+    from { top: 0; } to { top: 100%; }
+  }
+
+.one{
+    height: 150px;
+    width: auto;
+}
+.two{
+    height: 150px;
+    width: auto;
+}
 /* LAUNCH GAME BUTTON */
 
 #launchGameBtn {
@@ -131,51 +179,5 @@ button {
   }
   100% {
     letter-spacing: 0.8rem;
-  }
-}
-
-.btnImg {
-  transform: scale(1);
-  transition: transform 1s ease-in-out;
-}
-
-.btnImg:hover {
-  transform: scale(1);
-  transition: transform 1s ease-out;
-  animation: textMovBackward 1s ease-in-out;
-  animation-iteration-count: unset;
-  animation-fill-mode: forwards;
-}
-
-.btnImg img {
-  transform: scale(1);
-  transition: transform 1s ease-in;
-}
-
-.btnImg:hover img {
-  animation: textMovForward 1s ease-in-out;
-  animation-iteration-count: unset;
-  animation-fill-mode: forwards;
-}
-
-@keyframes textMovForward {
-  0% {
-    transform: scale(1, 1);
-    padding-bottom: 1rem;
-  }
-  100% {
-    transform: scale(1.3, 1.3);
-    padding-bottom: 7rem;
-  }
-}
-
-@keyframes textMovBackward {
-  100% {
-    padding-top: 6rem;
-    transform: scale(1.3, 1.3);
-  }
-  0% {
-    transform: scale(1, 1);
-    padding-top: 0rem;
   }
 }

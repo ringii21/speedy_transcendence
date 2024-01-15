@@ -11,8 +11,8 @@ const WordFlick: React.FC = () => {
   const [skipCount, setSkipCount] = useState<number>(0)
 
   const len: number = words.length
-  const skipDelay = 15
-  const speed = 70
+  const skipDelay = 40
+  const speed = 20
 
   useEffect(() => {
     const interval = setInterval(() => {
