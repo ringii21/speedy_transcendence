@@ -1,9 +1,9 @@
 import { io, Socket } from 'socket.io-client'
 
 import { IChannel } from '../types/Chat'
-import { ChatSocketEvent } from '../types/Events'
+import { ChatSocketEvent, NotificationSocketEvent } from '../types/Events'
 import { IChannelMessage } from '../types/Message'
-import { IUser } from '../types/User'
+import { INotification, IUser } from '../types/User'
 
 const URL = process.env.REACT_APP_API_URL ?? 'http://localhost:3000'
 
@@ -49,4 +49,34 @@ export const sendMessage = (socket: Socket) => (message: IChannelMessage) => {
 
 export const sendPrivateMessage = (socket: Socket) => (message: IChannelMessage) => {
   socket.emit(ChatSocketEvent.SENT_PRIVATE_MESSAGE, message)
+}
+
+export const receivedNotification = (socket: Socket) => (sender: INotification, user: IUser) => {
+  const socketMessage = {
+    sender: {
+      senderId: sender.senderId,
+    },
+    user,
+  }
+  socket.emit(NotificationSocketEvent.RECEIVED, socketMessage)
+}
+
+export const notificationAccepted = (socket: Socket) => (sender: INotification, user: IUser) => {
+  const socketMessage = {
+    sender: {
+      senderId: sender.senderId,
+    },
+    user,
+  }
+  socket.emit(NotificationSocketEvent.ACCEPTED, socketMessage)
+}
+
+export const notificationDeclined = (socket: Socket) => (sender: INotification, user: IUser) => {
+  const socketMessage = {
+    sender: {
+      senderId: sender.senderId,
+    },
+    user,
+  }
+  socket.emit(NotificationSocketEvent.DECLINED, socketMessage)
 }

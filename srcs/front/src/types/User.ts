@@ -28,5 +28,6 @@ export type INotification = {
   received: IUser
   senderId: number
   receivedId: number
+  state: boolean
   createdAt: Date
 }

@@ -1,8 +1,9 @@
 import { Menu, Transition } from '@headlessui/react'
 import { useMutation } from '@tanstack/react-query'
-import React, { Fragment, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import { RxCheckCircled, RxCrossCircled } from 'react-icons/rx'
 
+import { useSocket } from '../providers/SocketProvider'
 import { IFriends, INotification, IUser } from '../types/User'
 import { acceptFriendRequest, createFriendRequest } from '../utils/friendService'
 import { deleteNotification } from '../utils/notificationService'
@@ -20,6 +21,7 @@ const NotificationModal: React.FC<FriendsListModal> = ({
   notifier,
   me,
 }) => {
+  const { notificationSocket, isNotificationConnected } = useSocket()
   const getCorrectFriend = (notifier: INotification, me: IUser | undefined) => {
     if (!notifier || !me) return undefined
     if (me.id === notifier.senderId) return
@@ -43,10 +45,10 @@ const NotificationModal: React.FC<FriendsListModal> = ({
     mutationFn: acceptFriendRequest,
     onSuccess: (data: IFriends) => {
       setIsFriend((prevFriends: any) => [...prevFriends, data.confirmed])
-      console.log('Friend request accepted succesfully!: ', data)
+      console.log('Friend request accepted succesfully!', data)
     },
     onError: (error) => {
-      console.error('Error accepting friend request: ', error)
+      console.error('Error accepting friend request', error)
     },
   })
 

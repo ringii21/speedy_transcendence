@@ -1,7 +1,7 @@
 import './../styles/navbar.css'
 
 import { useMutation, useQuery } from '@tanstack/react-query'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { FaBell } from 'react-icons/fa'
 import { Link, Navigate, useParams } from 'react-router-dom'
 
@@ -14,6 +14,7 @@ import { NotificationModal } from './NotificationModal'
 
 const Navbar = () => {
   const { user, signout } = useAuth()
+  const [isColor, setIsColor] = useState<{ [key: string]: string }>({})
   if (!user) return <Navigate to='/login' state={{ from: location }} replace />
   const ref = useRef<HTMLDivElement>(null)
   const { id } = useParams()
@@ -32,7 +33,22 @@ const Navbar = () => {
     queryFn: getNotification,
   })
 
+  const getNotificationQuery = useQuery({
+    queryKey: ['notification'],
+    queryFn: getNotification,
+  })
+
+  const getNotificationData = useMemo(() => getNotificationQuery.data, [getNotificationQuery.data])
+
   useEffect(() => {
+    if (!getNotificationData) return undefined
+    const updatedUserColors = { ...isColor }
+    getNotificationData.forEach((not) => {
+      if (not.state === true && not.receivedId) {
+        updatedUserColors[not.receivedId.toString()] = 'text-blue-500'
+      }
+    })
+    setIsColor(updatedUserColors)
     const isOpen = (e: MouseEvent) => {
       const el = e.target as HTMLDivElement
       if (ref.current && !ref.current.contains(el)) {
@@ -43,9 +59,14 @@ const Navbar = () => {
     return () => {
       document.removeEventListener('click', isOpen)
     }
-  }, [])
+  }, [getNotificationData])
+
+  // const changeBellColor = (bool: boolean) => {
+  //   if (bool === true) setIsColor('btn-secondary')
+  // }
 
   const notificationLine = () => {
+    const userColor = isColor[user.id?.toString()] || 'btn-ghost'
     return (
       <div ref={ref} className='right-0'>
         <button
@@ -55,9 +76,9 @@ const Navbar = () => {
             e.stopPropagation()
             setOpenModal(!openModal)
           }}
-          className='btn btn-ghost'
+          className={`btn btn-ghost changeBellColor`}
         >
-          <FaBell tabIndex={0} size={20} />
+          <FaBell tabIndex={0} size={20} className={`${userColor}`} />
         </button>
       </div>
     )
@@ -65,7 +86,12 @@ const Navbar = () => {
 
   return (
     <div className='navbar nav relative bg-gray-900'>
-      <NotificationModal openModal={openModal} setOpenModal={setOpenModal} notifier={notifier} me={user} />
+      <NotificationModal
+        openModal={openModal}
+        setOpenModal={setOpenModal}
+        notifier={notifier}
+        me={user}
+      />
       <div className='navbar-start'>
         <div className='dropdown'>
           <div tabIndex={0} role='button' className='btn btn-ghost lg:hidden'>

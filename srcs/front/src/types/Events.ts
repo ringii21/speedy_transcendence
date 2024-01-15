@@ -9,3 +9,9 @@ export enum FriendsSocketEvent {
   ADD_FRIEND = 'add_friend',
   REMOVE_FRIEND = 'remove_channel',
 }
+
+export enum NotificationSocketEvent {
+  RECEIVED = 'notification_received',
+  ACCEPTED = 'notication_accepted',
+  DECLINED = 'notification_declined',
+}

@@ -1,7 +1,10 @@
 import { Menu, Transition } from '@headlessui/react'
+import { useMutation } from '@tanstack/react-query'
 import React, { Fragment } from 'react'
+import { RxCheckCircled, RxCrossCircled } from 'react-icons/rx'
 
 import { IFriends, IUser } from '../types/User'
+import { removeFriend } from '../utils/friendService'
 
 type NotificationListModal = {
   openModal: boolean
@@ -10,35 +13,48 @@ type NotificationListModal = {
   me: IUser
 }
 
-const getCorrectFriend = (friend: IFriends, me: IUser) => {
-  if (me.id === friend.friendId) return friend.friendOf
-  return friend.friend
-}
-
-const line = (friend: IUser, index: number) => {
-  if (!friend) return <></>
-  return (
-    <Menu.Item key={index}>
-      <a
-        href='#'
-        className='flex items-center p-3 text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white'
-      >
-        <div className='avatar'>
-          <div className='w-12 rounded-full'>
-            <img className='img' src={friend.image} alt='img' />
-          </div>
-        </div>
-        <span className='flex-1 ms-3 whitespace-nowrap'>{friend.username}</span>
-      </a>
-    </Menu.Item>
-  )
-}
 const ModalFriendsList: React.FC<NotificationListModal> = ({
   openModal,
   setOpenModal,
   friends,
   me,
 }) => {
+  const getCorrectFriend = (friend: IFriends, me: IUser) => {
+    if (me.id === friend.friendId) return friend.friendOf
+    return friend.friend
+  }
+  const deleteFriendMutation = useMutation({
+    mutationKey: ['friends'],
+    mutationFn: removeFriend,
+  })
+
+  const line = (friend: IUser, index: number) => {
+    if (!friend) return <></>
+    return (
+      <Menu.Item key={index}>
+        <a
+          href='#'
+          className='flex items-center p-3 gap-3 text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white'
+        >
+          <div className='avatar'>
+            <div className='w-12 rounded-full'>
+              <img className='img' src={friend.image} alt='img' />
+            </div>
+          </div>
+          <span className='flex-1 ms-3 whitespace-nowrap'>{friend.username}</span>
+          <RxCrossCircled
+            role='button'
+            onClick={() => {
+              deleteFriendMutation.mutate(friend.id)
+            }}
+            size={20}
+            className='text-red-500 hover:w-6 hover:h-6'
+          />
+        </a>
+      </Menu.Item>
+    )
+  }
+
   return (
     <Menu as='div'>
       <Transition appear show={openModal} as={Fragment}>

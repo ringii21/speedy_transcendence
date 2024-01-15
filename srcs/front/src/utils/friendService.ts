@@ -16,10 +16,12 @@ export const acceptFriendRequest = async (friendOfId: number) => {
   return response.data
 }
 
-export const removeFriend = async ({ queryKey }: { queryKey: QueryKey }) => {
-  const [_, id] = queryKey
-  const { data } = await httpInstance().get<IFriends>(`/api/friends/${id}`)
-  return data
+export const removeFriend = async (friendOfId: number) => {
+  await httpInstance().delete<IFriends>(`/api/friends/add`, {
+    data: {
+      friendOfId,
+    },
+  })
 }
 
 export const getFriends = async () => {

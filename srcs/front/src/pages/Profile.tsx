@@ -1,10 +1,12 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import React, { useEffect, useRef, useState } from 'react'
+import { FaMinus, FaPaperPlane, FaPlus } from 'react-icons/fa'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 
 import { ModalFriendsList } from '../components/ModalFriendsList'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
+import { INotification } from '../types/User'
 import { createFriendRequest, getFriends, removeFriend } from '../utils/friendService'
 import {
   createNotification,
@@ -25,6 +27,8 @@ const Profile = () => {
 
   const [isFollow, setIsFollow] = useState('Follow')
   const [openModal, setOpenModal] = useState(false)
+  const [isColor, setIsColor] = useState('btn-primary')
+  const [isNotification, setIsNotification] = useState<INotification>()
   const ref = useRef<HTMLDivElement>(null)
 
   let queryConfig
@@ -75,6 +79,18 @@ const Profile = () => {
     }
   }, [])
 
+  // Socket to handle and change notification state
+  // useEffect(() => {
+  //   const receivedNotification = (notification: INotification) => {
+  //     setIsNotification((prevNotification) => ({
+  //       ...prevNotification,
+  //       [notification.senderId]: [...(prevNotification[notification.senderId] ?? [])],
+  //     }))
+  //   }
+
+  //   notificationSocket?.on(RECEIVED, receivedNotification)
+  // }, [])
+
   const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()
     await signout()
@@ -85,32 +101,71 @@ const Profile = () => {
     mutationFn: deleteNotification,
   })
 
+  const deleteFriendMutation = useMutation({
+    mutationKey: ['friends'],
+    mutationFn: removeFriend,
+  })
+
+  const followColorButton = () => {
+    if (isFollow == 'Unfollow') setIsColor('btn-warning')
+    else if (isFollow === 'Discard') setIsColor('btn-warning')
+    else setIsColor('btn-primary')
+  }
+
+  const changeFriendStatus = (id: number) => {
+    try {
+      if (isFollow === 'Discard') {
+        deleteNotificationMutation.mutate(id)
+        console.log('1st step')
+        return
+      } else if (isFollow === 'Unfollow') {
+        deleteFriendMutation.mutate(id)
+        return
+      } else {
+        notificationMutation.mutate(id)
+        return
+      }
+    } catch (e) {
+      console.error('Error during mutations: ', e)
+    }
+  }
+
   useEffect(() => {
-    if (!(friends && friends.forEach)) return undefined
-    friends.forEach((friend) => {
-      if (friend.confirmed === true) setIsFollow('Unfollow')
-    })
-    if (!(getNotificationQuery && getNotificationQuery.data)) return undefined
-    getNotificationQuery.data.map((not) => {
-      if (not.senderId && not.receivedId) setIsFollow('Discard')
-    })
-  }, [setIsFollow, friends])
+    const fetchData = async () => {
+      if (!(friends && friends.forEach)) return undefined
+      friends.forEach((friend) => {
+        if (friend.confirmed === true) {
+          setIsFollow('Unfollow')
+          followColorButton()
+        }
+      })
+      if (!(getNotificationQuery && getNotificationQuery.data)) return undefined
+      getNotificationQuery.data.map((not) => {
+        if (not.state === true) {
+          setIsFollow('Discard')
+          followColorButton()
+        }
+      })
+    }
+    fetchData()
+  }, [setIsFollow, isFollow, friends])
 
   const isUserId = () => {
     if (!profileUser) return <></>
     if (!(profileUser?.id === user?.id)) {
       return (
-        <div className='flex justify-evenly'>
+        <div className={`flex justify-evenly`}>
           <button
-            onClick={() => {
-              if (isFollow === 'Discard') deleteNotificationMutation.mutate(profileUser.id)
-              else if (isFollow === 'Follow') notificationMutation.mutate(profileUser.id)
-            }}
-            className='btn btn-primary drop-shadow-xl rounded-lg'
+            onClick={() => changeFriendStatus(profileUser?.id)}
+            className={`btn ${isColor} followColorButton drop-shadow-xl rounded-lg flex flex-row`}
           >
+            {isFollow === 'Follow' ? <FaPlus className='mb-0.5' /> : <FaMinus className='mb-0.5' />}
             {isFollow}
           </button>
-          <button className='btn btn-secondary drop-shadow-xl rounded-lg'>Message</button>
+          <button className='btn drop-shadow-xl rounded-lg'>
+            <FaPaperPlane className='mb-1' />
+            Message
+          </button>
         </div>
       )
     } else {
