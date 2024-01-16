@@ -17,7 +17,7 @@ export const Modal = () => {
   const navigate = useNavigate()
   const location = useLocation()
   useEffect(() => {
-    if (!location.pathname.startsWith('/Game')) {
+    if (!location.pathname.startsWith('/game')) {
       socket?.emit('game.stop', { gameid: gameName, gameState: gameState })
     }
   }, [location])

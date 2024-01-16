@@ -3,11 +3,12 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import React from 'react'
 import { Route, Routes } from 'react-router-dom'
 
+import { Modal } from './components/Pong/Modal'
+import { GameWithNavbar } from './components/Pong/Pong'
 import { RequireAuth } from './components/RequireAuth'
 import { NotFound } from './pages/404'
 import { ChatWithNavbar } from './pages/Chat'
 import { HomeWithNavbar } from './pages/Home'
-import { GameWithNavbar } from './components/Pong/Pong'
 import Login from './pages/Login'
 import { PlayWithNavbar } from './pages/Pong'
 import { ProfileWithNavbar } from './pages/Profile'
@@ -27,6 +28,7 @@ const App = () => {
         <ChatProvider>
           <SocketProvider>
             <GameSocketProvider>
+              <Modal />
               <Routes>
                 {/* authenticated */}
                 <Route
@@ -51,8 +53,8 @@ const App = () => {
                     <RequireAuth>
                       <GameWithNavbar />
                     </RequireAuth>
-                  }>
-                </Route>
+                  }
+                ></Route>
                 <Route
                   path='/settings'
                   element={

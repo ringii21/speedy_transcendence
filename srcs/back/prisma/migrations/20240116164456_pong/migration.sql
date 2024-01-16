@@ -1,11 +1,8 @@
 -- CreateEnum
-CREATE TYPE "ChannelType" AS ENUM ('public', 'private', 'protected', 'direct');
+CREATE TYPE "ChannelType" AS ENUM ('public', 'private', 'protected');
 
 -- CreateEnum
 CREATE TYPE "Role" AS ENUM ('owner', 'user', 'admin');
-
--- CreateEnum
-CREATE TYPE "ActionType" AS ENUM ('kick', 'ban', 'mute');
 
 -- CreateTable
 CREATE TABLE "users" (
@@ -30,7 +27,7 @@ CREATE TABLE "channel_messages" (
     "id" SERIAL NOT NULL,
     "content" TEXT NOT NULL,
     "sender_id" INTEGER NOT NULL,
-    "channel_id" INTEGER NOT NULL,
+    "channel_id" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "deleted_at" TIMESTAMP(3),
@@ -40,10 +37,10 @@ CREATE TABLE "channel_messages" (
 
 -- CreateTable
 CREATE TABLE "channels" (
-    "id" SERIAL NOT NULL,
-    "name" TEXT,
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
     "password" TEXT,
-    "channelType" "ChannelType" NOT NULL DEFAULT 'public',
+    "type" "ChannelType" NOT NULL DEFAULT 'public',
     "owner_id" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -54,28 +51,26 @@ CREATE TABLE "channels" (
 
 -- CreateTable
 CREATE TABLE "channel_members" (
-    "id" SERIAL NOT NULL,
     "user_id" INTEGER NOT NULL,
-    "channel_id" INTEGER NOT NULL,
+    "channel_id" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "deleted_at" TIMESTAMP(3),
+    "present" BOOLEAN NOT NULL DEFAULT true,
     "role" "Role" NOT NULL DEFAULT 'user',
 
-    CONSTRAINT "channel_members_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "channel_members_pkey" PRIMARY KEY ("user_id","channel_id")
 );
 
 -- CreateTable
 CREATE TABLE "channel_actions" (
-    "id" SERIAL NOT NULL,
     "user_id" INTEGER NOT NULL,
-    "channel_id" INTEGER NOT NULL,
-    "action_type" "ActionType" NOT NULL,
+    "channel_id" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "deleted_at" TIMESTAMP(3),
 
-    CONSTRAINT "channel_actions_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "channel_actions_pkey" PRIMARY KEY ("channel_id","user_id")
 );
 
 -- CreateTable
@@ -116,22 +111,16 @@ CREATE UNIQUE INDEX "channels_name_key" ON "channels"("name");
 CREATE INDEX "channels_name_owner_id_idx" ON "channels"("name", "owner_id");
 
 -- CreateIndex
-CREATE INDEX "channel_members_user_id_channel_id_idx" ON "channel_members"("user_id", "channel_id");
-
--- CreateIndex
-CREATE INDEX "channel_actions_user_id_channel_id_idx" ON "channel_actions"("user_id", "channel_id");
-
--- CreateIndex
 CREATE UNIQUE INDEX "_friends_AB_unique" ON "_friends"("A", "B");
 
 -- CreateIndex
 CREATE INDEX "_friends_B_index" ON "_friends"("B");
 
 -- AddForeignKey
-ALTER TABLE "channel_messages" ADD CONSTRAINT "channel_messages_sender_id_fkey" FOREIGN KEY ("sender_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "channel_messages" ADD CONSTRAINT "channel_messages_sender_id_fkey" FOREIGN KEY ("sender_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "channel_messages" ADD CONSTRAINT "channel_messages_channel_id_fkey" FOREIGN KEY ("channel_id") REFERENCES "channels"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "channel_messages" ADD CONSTRAINT "channel_messages_channel_id_fkey" FOREIGN KEY ("channel_id") REFERENCES "channels"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "channels" ADD CONSTRAINT "channels_owner_id_fkey" FOREIGN KEY ("owner_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
