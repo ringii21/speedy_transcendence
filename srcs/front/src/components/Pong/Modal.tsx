@@ -33,7 +33,7 @@ export const Modal = () => {
         msg === 0 && setOpacity('opacity-0')
         setTimer(msg / 1000)
         if (timer === 5) {
-          navigate(`/Game/${gameid}`)
+          navigate(`/game/${gameid}`)
         }
       })
       socket?.on('players', (players: any) => {

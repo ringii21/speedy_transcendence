@@ -3,10 +3,10 @@ import { $Enums, ChannelMember as PrismaChannelMember } from '@prisma/client'
 import { UserEntity } from 'src/users/entity/user.entity'
 
 export class ChannelMemberEntity implements PrismaChannelMember {
-  id: number
   userId: number
   role: $Enums.Role
-  channelId: number
+  channelId: string
+  present: boolean
   @Type(() => ChannelMemberEntity)
   user: UserEntity
 

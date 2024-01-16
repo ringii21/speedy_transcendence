@@ -5,9 +5,9 @@ import { ChannelActionEntity } from './action.entity'
 import { ChannelMessageEntity } from '../../message/entity/message.entity'
 
 export class ChannelEntity implements PrismaChannel {
-  id: number
-  name: string | null
-  channelType: $Enums.ChannelType
+  id: string
+  name: string
+  type: $Enums.ChannelType
   ownerId: number
   isPrivate: boolean
 
@@ -20,14 +20,12 @@ export class ChannelEntity implements PrismaChannel {
   @Type(() => ChannelEntity)
   messages: ChannelMessageEntity[]
 
+  createdAt: Date
+  deletedAt: Date | null
+  updatedAt: Date
+
   @Exclude()
   password: string | null
-  @Exclude()
-  createdAt: Date
-  @Exclude()
-  deletedAt: Date | null
-  @Exclude()
-  updatedAt: Date
 
   constructor(partial: Partial<ChannelEntity>) {
     Object.assign(this, partial)

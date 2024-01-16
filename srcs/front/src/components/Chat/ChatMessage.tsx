@@ -2,18 +2,16 @@ import clsx from 'clsx'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-import { useAuth } from '../../providers/AuthProvider'
-import { IChannelMember } from '../../types/Chat'
-import { IChannelMessage } from '../../types/Message'
+import { IChannelMember, IChannelMessage } from '../../types/Chat'
 import { IUser } from '../../types/User'
 
-type ChatBubbleProps = {
+type ChatMessageProps = {
   user: IUser
   message: IChannelMessage
   members: IChannelMember[]
 }
 
-const ChatBubble = ({ user, message, members }: ChatBubbleProps) => {
+const ChatMessage = ({ user, message, members }: ChatMessageProps) => {
   const sender = members.find((member) => member.userId === message.senderId)
   if (!sender) return <span>Error</span>
 
@@ -46,14 +44,11 @@ const ChatBubble = ({ user, message, members }: ChatBubbleProps) => {
           <span className={messageStyle}>{message.content}</span>
         </div>
       </div>
-      <Link
-        to={message.senderId === user?.id ? '/profile/me' : '/profile/${member.userId}'}
-        placeholder={'${members.userId}'}
-      >
+      <Link to={message.senderId === user?.id ? '/profile/me' : `/profile/${sender.userId}`}>
         <img src={sender.user.image} alt='My profile' className={imageStyle} />
       </Link>
     </div>
   )
 }
 
-export { ChatBubble }
+export { ChatMessage }

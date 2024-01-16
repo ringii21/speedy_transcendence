@@ -42,10 +42,10 @@ model User {
 model ChannelMessage {
   id        Int       @id @default(autoincrement())
   content   String
-  sender    User      @relation(fields: [senderId], references: [id])
+  sender    User      @relation(fields: [senderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   senderId  Int       @map("sender_id")
-  channel   Channel   @relation(fields: [channelId], references: [id])
-  channelId Int       @map("channel_id")
+  channel   Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  channelId String    @map("channel_id")
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
@@ -55,50 +55,48 @@ model ChannelMessage {
 }
 
 model Channel {
-  id          Int              @id @default(autoincrement())
-  name        String?          @unique
-  password    String?
-  channelType ChannelType      @default(public)
-  owner       User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId     Int              @map("owner_id")
-  createdAt   DateTime         @default(now()) @map("created_at")
-  updatedAt   DateTime         @updatedAt @map("updated_at")
-  deletedAt   DateTime?        @map("deleted_at")
-  members     ChannelMember[]
-  actions     ChannelAction[]
-  messages    ChannelMessage[]
+  id        String           @id @default(uuid())
+  name      String           @unique
+  password  String?
+  type      ChannelType      @default(public)
+  owner     User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId   Int              @map("owner_id")
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
+  deletedAt DateTime?        @map("deleted_at")
+  members   ChannelMember[]
+  actions   ChannelAction[]
+  messages  ChannelMessage[]
 
   @@index([name, ownerId])
   @@map("channels")
 }
 
 model ChannelMember {
-  id        Int       @id @default(autoincrement())
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId    Int       @map("user_id")
-  channel   Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  channelId Int       @map("channel_id")
+  channel   Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  channelId String    @map("channel_id")
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
+  present   Boolean   @default(true)
   role      Role      @default(user)
 
-  @@index([userId, channelId])
+  @@id([userId, channelId])
   @@map("channel_members")
 }
 
 model ChannelAction {
-  id         Int        @id @default(autoincrement())
-  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId     Int        @map("user_id")
-  channel    Channel    @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  channelId  Int        @map("channel_id")
-  actionType ActionType @map("action_type")
-  createdAt  DateTime   @default(now()) @map("created_at")
-  updatedAt  DateTime   @updatedAt @map("updated_at")
-  deletedAt  DateTime?  @map("deleted_at")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    Int       @map("user_id")
+  channel   Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  channelId String    @map("channel_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
-  @@index([userId, channelId])
+  @@id([channelId, userId])
   @@map("channel_actions")
 }
 
@@ -124,17 +122,10 @@ enum ChannelType {
   public
   private
   protected
-  direct
 }
 
 enum Role {
   owner
   user
   admin
-}
-
-enum ActionType {
-  kick
-  ban
-  mute
 }

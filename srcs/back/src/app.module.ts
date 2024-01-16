@@ -1,4 +1,4 @@
-import { Logger, MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
+import { Logger, Module } from '@nestjs/common'
 import { UsersModule } from './users/users.module'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { AuthModule } from './auth/auth.module'
@@ -12,6 +12,7 @@ import { TwoFaController } from './auth/2fa/2fa.controller'
 import { ChatModule } from './chat/chat.module'
 import { ChatController } from './chat/chat.controller'
 import { EventEmitterModule } from '@nestjs/event-emitter'
+import { LoggerModule } from 'nestjs-pino'
 
 @Module({
   imports: [
@@ -19,6 +20,14 @@ import { EventEmitterModule } from '@nestjs/event-emitter'
       isGlobal: true,
     }),
     EventEmitterModule.forRoot(),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        transport: {
+          target: 'pino-pretty',
+          options: { colorize: true },
+        },
+      },
+    }),
     UsersModule,
     AuthModule,
     ChatModule,
@@ -26,7 +35,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter'
   ],
   providers: [Logger],
 })
-export class AppModule implements NestModule {
+export class AppModule {
   constructor(configService: ConfigService) {
     const envs = [
       'DATABASE_URL',

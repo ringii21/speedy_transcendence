@@ -1,75 +1,62 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { MdSend } from 'react-icons/md'
 
 import { useAuth } from '../../providers/AuthProvider'
-import { useChat } from '../../providers/ChatProvider'
 import { useSocket } from '../../providers/SocketProvider'
-import { IChannel } from '../../types/Chat'
-import { IChannelMessage } from '../../types/Message'
+import { IChannelMessage } from '../../types/Chat'
+import { ChatSocketEvent } from '../../types/Events'
 
-type GetChannel = {
-  channel: IChannel
-}
-
-const ChatInput: React.FC<GetChannel> = ({ channel }) => {
+const ChatInput = ({
+  channelId,
+  setMessage,
+}: {
+  channelId: string
+  setMessage: React.Dispatch<React.SetStateAction<IChannelMessage[]>>
+}) => {
   const { socket, isConnected } = useSocket()
-  const { setMessages } = useChat()
   const { user } = useAuth()
-
-  if (!user) return <></>
   const [inputMessage, setInputMessage] = useState<string>('')
 
+  if (!user) return <></>
   const handleSendMessage = () => {
+    console.log('isConnected', isConnected)
+    if (!isConnected) return
     if (inputMessage.trim() !== '') {
-      const newMessage = {
-        channelId: channel.id,
+      const newMessage: IChannelMessage = {
+        channelId,
         content: inputMessage,
         senderId: user.id,
-      }
-      socket?.emit('message', newMessage)
-      setMessages((prevMessages) => ({
-        ...prevMessages,
-        [channel.id]: [...(prevMessages[channel.id] ?? []), newMessage],
-      }))
+      } as IChannelMessage
+
+      socket.emit(ChatSocketEvent.MESSAGE, newMessage)
+      setMessage((messages) => [...messages, newMessage])
       setInputMessage('')
     }
   }
-
-  useEffect(() => {
-    const messageListener = (message: IChannelMessage) => {
-      setMessages((prevMessages) => ({
-        ...prevMessages,
-        [message.channelId]: [...(prevMessages[message.channelId] ?? []), message],
-      }))
-    }
-
-    socket?.on('message', messageListener)
-  }, [socket])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleSendMessage()
   }
 
-  if (!isConnected) return <></>
   return (
-    <div className='relative mx-4 mb-20 border-t inline-flex'>
+    <div className='relative flex'>
       <input
         type='text'
         value={inputMessage}
         onKeyDown={handleKeyDown}
         onChange={(e) => setInputMessage(e.target.value)}
         placeholder='Message'
-        className='block ps-4 text-gray-600 pl-4 bg-gray-200 rounded-lg py-3 mt-4 w-full'
+        className='input input-bordered input-primary w-full'
       />
-      <div>
+      <div className='absolute right-0 items-center inset-y-0 flex'>
         <button
           type='button'
           onClick={handleSendMessage}
-          className='btn absolute btn-primary end-0 bottom-0'
+          className='btn btn-primary'
           disabled={!inputMessage.trim()}
         >
-          <span className='font-bold text-white '>Send</span>
-          <MdSend className='text-lg' />
+          <span className='font-bold text-base-content'>Send</span>
+          <MdSend className='text-base-content text-lg' />
         </button>
       </div>
     </div>

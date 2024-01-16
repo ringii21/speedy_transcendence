@@ -1,71 +1,86 @@
-import { useQuery, UseQueryResult } from '@tanstack/react-query'
-import React, {
-  createContext,
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
+import React, { createContext, ReactNode, useContext, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-import { IChannel } from '../types/Chat'
-import { IChannelMessage } from '../types/Message'
-import { getChannel } from '../utils/chatHttpRequests'
+import { IChannel, IChannelMember } from '../types/Chat'
+import { ChatSocketEvent } from '../types/Events'
+import { getChannel, getMyChannels } from '../utils/chatHttpRequests'
+import { useAuth } from './AuthProvider'
+import { useSocket } from './SocketProvider'
 
 interface ChatContextData {
-  channel?: UseQueryResult<IChannel, Error>
-  selectedChannel: number | null
-  setSelectedChannel: Dispatch<SetStateAction<number | null>>
-  messages: Record<number, IChannelMessage[]>
-  setMessages: Dispatch<SetStateAction<Record<number, IChannelMessage[]>>>
+  myChannels: Pick<IChannel, 'id'>[]
+  channelMap: IChannel[]
 }
 
 type Props = {
   children: ReactNode
 }
 
+export enum ChatQueryKey {
+  MY_CHANNELS = 'mine',
+  CHANNEL_NOT_JOINED = 'channels-not-joined',
+  CHANNEL = 'channels',
+}
+
 export const ChatContext = createContext<ChatContextData>({
-  channel: undefined,
-  selectedChannel: null,
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  setSelectedChannel: () => {},
-  messages: {},
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  setMessages: () => {},
+  myChannels: [],
+  channelMap: [],
 })
 
 export const ChatProvider = ({ children }: Props) => {
-  const [selectedChannel, setSelectedChannel] = useState<number | null>(null)
-  const [messages, setMessages] = useState<Record<number, IChannelMessage[]>>({})
+  const { socket } = useSocket()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
-  const channel = useQuery<IChannel>({
-    queryKey: ['channels', selectedChannel],
-    queryFn: getChannel,
+  const myChannelQuery = useQuery({
+    queryKey: [ChatQueryKey.MY_CHANNELS],
+    queryFn: getMyChannels,
+    initialData: [],
+  })
+
+  const channelMapQuery = useQueries({
+    queries: myChannelQuery.data.map((channel) => ({
+      queryKey: [channel.id],
+      queryFn: () => getChannel(channel.id),
+    })),
   })
 
   useEffect(() => {
-    if (channel.isSuccess && channel.data) {
-      setMessages((prevMessages) => ({
-        ...prevMessages,
-        [channel.data.id]: channel.data.messages,
-      }))
+    socket.on(ChatSocketEvent.JOIN_CHANNEL, async (data: IChannelMember) => {
+      if (data.userId === user?.id) {
+        await myChannelQuery.refetch()
+        navigate(`/chat/${data.channelId}`)
+      } else {
+        await queryClient.invalidateQueries({
+          queryKey: [data.channelId],
+        })
+      }
+    })
+
+    socket.on(ChatSocketEvent.LEAVE_CHANNEL, async (data: IChannelMember) => {
+      if (data.userId === user?.id) {
+        await myChannelQuery.refetch()
+        navigate(`/chat`)
+      } else {
+        await queryClient.invalidateQueries({
+          queryKey: [data.channelId],
+        })
+      }
+    })
+    return () => {
+      socket.off(ChatSocketEvent.JOIN_CHANNEL)
+      socket.off(ChatSocketEvent.LEAVE_CHANNEL)
     }
-  }, [channel.isSuccess, channel.data])
+  }, [user])
 
-  const memoedValue = useMemo<ChatContextData>(
-    () => ({
-      channel,
-      selectedChannel,
-      setSelectedChannel,
-      messages,
-      setMessages,
-    }),
-    [selectedChannel, messages, channel],
-  )
+  const values = {
+    channelMap: channelMapQuery.map((channel) => channel.data).filter(Boolean) as IChannel[],
+    myChannels: myChannelQuery.data,
+  }
 
-  return <ChatContext.Provider value={memoedValue}>{children}</ChatContext.Provider>
+  return <ChatContext.Provider value={values}>{children}</ChatContext.Provider>
 }
 
 export const useChat = () => useContext(ChatContext)

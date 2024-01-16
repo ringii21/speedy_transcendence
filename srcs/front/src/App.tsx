@@ -3,14 +3,11 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import React from 'react'
 import { Route, Routes } from 'react-router-dom'
 
-import { ContactOverlay } from './components/ContactOverlay'
-import { Modal } from './components/Pong/Modal'
-import { GameWithNavbar } from './components/Pong/Pong'
 import { RequireAuth } from './components/RequireAuth'
 import { NotFound } from './pages/404'
 import { ChatWithNavbar } from './pages/Chat'
-import { Footer } from './pages/Footer'
 import { HomeWithNavbar } from './pages/Home'
+import { GameWithNavbar } from './components/Pong/Pong'
 import Login from './pages/Login'
 import { PlayWithNavbar } from './pages/Pong'
 import { ProfileWithNavbar } from './pages/Profile'
@@ -30,7 +27,6 @@ const App = () => {
         <ChatProvider>
           <SocketProvider>
             <GameSocketProvider>
-              <Modal />
               <Routes>
                 {/* authenticated */}
                 <Route
@@ -55,8 +51,8 @@ const App = () => {
                     <RequireAuth>
                       <GameWithNavbar />
                     </RequireAuth>
-                  }
-                />
+                  }>
+                </Route>
                 <Route
                   path='/settings'
                   element={
@@ -74,7 +70,7 @@ const App = () => {
                   }
                 />
                 <Route
-                  path='/chat'
+                  path='/chat/:channelId?'
                   element={
                     <RequireAuth>
                       <ChatWithNavbar />
@@ -105,7 +101,7 @@ const App = () => {
             </GameSocketProvider>
           </SocketProvider>
         </ChatProvider>
-        <ContactOverlay />
+        {/* <Footer /> */}
       </AuthProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

@@ -1,16 +1,15 @@
-import { IChannelMessage } from './Message'
 import { IUser } from './User'
 
-export type ChannelType = 'public' | 'private' | 'protected' | 'direct'
+export type ChannelType = 'public' | 'private' | 'protected'
 
 export type IChannel = {
-  id: number
-  name: string | null
-  channelType: ChannelType
+  id: string
+  name: string
+  type: ChannelType
   ownerId: number
-  createdAt: Date
-  updatedAt: Date
-  deletedAt: Date | null
+  createdAt: string
+  updatedAt: string
+  deletedAt: string | null
   members: IChannelMember[]
   messages: IChannelMessage[]
   actions: unknown[]
@@ -18,9 +17,19 @@ export type IChannel = {
 
 export type IChannelMember = {
   role: 'admin' | 'user' | 'owner'
-  id: number
   userId: number
-  channelId: number
+  channelId: string
   channel: IChannel
+  present: boolean
   user: IUser
+}
+
+export type IChannelMessage = {
+  id: number
+  content: string
+  senderId: number
+  channelId: string
+  createdAt: string
+  updatedAt: string
+  deletedAt: string | null
 }

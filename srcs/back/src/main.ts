@@ -7,9 +7,12 @@ import { ValidationPipe } from '@nestjs/common'
 import { PrismaClientExceptionFilter } from './prisma-client-exception/prisma-client-exception.filter'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import { join } from 'path'
+import { Logger } from 'nestjs-pino'
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule)
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+  })
   const { httpAdapter } = app.get(HttpAdapterHost)
 
   app.use(
@@ -25,6 +28,7 @@ async function bootstrap() {
   })
   app.use(cookieParser())
   app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter))
+  app.useLogger(app.get(Logger))
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,

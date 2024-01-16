@@ -1,138 +1,90 @@
-import React, { useState } from 'react'
-import {
-  BrowserView,
-  isBrowser,
-  isDesktop,
-  isMobile,
-  isTablet,
-  MobileOnlyView,
-  MobileView,
-  TabletView,
-} from 'react-device-detect'
-import { RxHamburgerMenu } from 'react-icons/rx'
-import { Link, Navigate } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { Navigate, useParams } from 'react-router-dom'
 
-import { ChatConv, ChatSelection, ChatUsers } from '../components/Chat'
+import { ChatConversation, ChatSelection, ChatUsers } from '../components/Chat'
+import { CreateChannelModal } from '../components/Chat/CreateChannelModal'
+import { JoinChannelModal } from '../components/Chat/JoinChannelModal'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
 import { useChat } from '../providers/ChatProvider'
-import { useSocket } from '../providers/SocketProvider'
+import { IChannel } from '../types/Chat'
 
 const Chat = () => {
+  const { channelId } = useParams<{ channelId: string | undefined }>()
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false)
+  const [isJoinModalOpen, setJoinModalOpen] = useState(false)
   const { user } = useAuth()
-  const [channelList, setChannelList] = useState(true)
-  const [conv, setConv] = useState(false)
-  const [userChannelList, setUserChannelList] = useState(false)
+  const { channelMap } = useChat()
+
+  const [currentChannel, setCurrentChannel] = useState<IChannel | undefined>(undefined)
   if (!user) return <Navigate to='/login' replace />
+  useEffect(() => {
+    const currChannel = channelMap.find((channel) => channel.id === channelId)
+    setCurrentChannel(currChannel)
+  }, [channelId, channelMap])
 
-  const { socket, isConnected } = useSocket()
-  if (!isConnected) socket?.connect()
-  const { channel } = useChat()
-
-  const handleChatSelectionOpen = () => {
-    setConv(true)
-    setChannelList(false)
-    setUserChannelList(false)
-  }
-
-  const handleChatSelectionClose = () => {
-    setChannelList(true)
-    setConv(false)
-    setUserChannelList(false)
-  }
-
-  const handleUserChannelList = () => {
-    setConv(false)
-    setUserChannelList(true)
-    setChannelList(false)
-  }
-
-  const showUsersChannel = (): React.ReactNode => {
-    let content: React.ReactNode = null
-    if (channel?.data) {
-      content = (
-        <div className='bg-gray-100 md:flex hidden'>
-          <ChatUsers members={channel.data.members ?? []} onClickConv={null} />
-        </div>
-      )
-    } else content = <div></div>
-    return content
-  }
-
-  const showUsersList = (): React.ReactNode => {
-    let content: React.ReactNode = null
-    if (channel?.data) {
-      content = (
-        <div className='h-screen relative md:w-2/4 w-screen'>
-          <ChatConv me={user} onClickChannelList={null} onClickUserChannelList={null} />
-        </div>
-      )
-    } else {
-      content = (
-        <div className='md:flex flex-col items-center mt-4 hidden'>
-          <span className='text-xl'>Select a channel</span>
-        </div>
-      )
-    }
-    return content
-  }
-
-  const showUsersMobile = (): React.ReactNode => {
-    let content: React.ReactNode = null
-    if (channel?.data?.id) {
-      if (conv && !channelList && !userChannelList) {
-        content = (
-          <div className='h-screen w-screen relative'>
-            <ChatConv
-              me={user}
-              onClickChannelList={handleChatSelectionClose}
-              onClickUserChannelList={handleUserChannelList}
-            />
-          </div>
-        )
-      } else if (!conv && !channelList && userChannelList) {
-        content = (
-          <div className='h-screen w-screen bg-gray-200'>
-            <ChatUsers members={channel.data.members ?? []} onClickConv={handleChatSelectionOpen} />
-          </div>
-        )
-      } else {
-        content = (
-          <div className='bg-gray-100 relative sm:flex'>
-            <ChatSelection onClick={() => handleChatSelectionOpen()} />
-          </div>
-        )
+  const getChannelName = () => {
+    if (currentChannel) {
+      if (['public', 'private', 'protected'].includes(currentChannel.type)) {
+        if (currentChannel.type === 'public') return `#${currentChannel.name}`
+        if (currentChannel.type === 'private') return `🔒${currentChannel.name}`
+        if (currentChannel.type === 'protected') return `🔒${currentChannel.name}`
       }
-    } else {
-      content = (
-        <div className='bg-gray-100 relative sm:flex'>
-          <ChatSelection onClick={() => handleChatSelectionOpen()} />
-        </div>
-      )
     }
-    return content
   }
 
-  const changeWinFormat = () => {
-    if (isMobile) {
-      return (
-        <MobileView>
-          <div className='flex justify-between w-screen h-screen'>{showUsersMobile()}</div>
-        </MobileView>
-      )
-    } else if (isDesktop || isTablet) {
-      return (
-        <div className='flex h-screen w-screen justify-between'>
-          <div className='bg-gray-100 md:flex hidden'>
-            <ChatSelection onClick={null} />
-          </div>
-          {showUsersList()}
-          {showUsersChannel()}
+  return (
+    <div className='container mx-auto'>
+      {CreateChannelModal({ isCreateModalOpen, setCreateModalOpen })}
+      {JoinChannelModal({ isJoinModalOpen, setJoinModalOpen })}
+      <div className='flex justify-between gap-6 mt-4 border-b pb-4'>
+        <div className='flex justify-center align-middle items-center w-full h-5'>
+          {getChannelName()}
         </div>
-      )
-    }
-  }
-  return <div>{changeWinFormat()}</div>
+      </div>
+      <div className='flex flex-row'>
+        <div className='w-3/12'>
+          <div className='flex flex-col gap-2 border-b p-4'>
+            <button
+              onClick={(e) => {
+                e.preventDefault()
+                setCreateModalOpen(!isCreateModalOpen)
+              }}
+              className='btn btn-primary'
+            >
+              Add Channel
+            </button>
+            <button
+              onClick={(e) => {
+                e.preventDefault()
+                setJoinModalOpen(!isJoinModalOpen)
+              }}
+              className='btn btn-secondary'
+            >
+              Join Channel
+            </button>
+          </div>
+          <div className='flex flex-col gap-2 p-4'>
+            <ChatSelection channelId={channelId} />
+          </div>
+        </div>
+        {!currentChannel ? (
+          <div className='w-9/12 items-center text-center'>
+            <h1 className='text-2xl mt-32'>Select a channel</h1>
+          </div>
+        ) : (
+          <>
+            <div className='w-6/12'>
+              <ChatConversation currentChannel={currentChannel} me={user} />
+            </div>
+            <div className='w-3/12'>
+              <ChatUsers channel={currentChannel} />
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
 }
 
 const ChatWithNavbar = WithNavbar(Chat)
