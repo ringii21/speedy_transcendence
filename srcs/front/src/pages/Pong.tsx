@@ -14,10 +14,7 @@ const Game = () => {
   const { socket, isConnected } = useGameSocket()
 
   if (!isConnected) {
-    console.log('Je ne suis pas connecter')
     socket?.connect()
-  } else {
-    console.log('JE suis connecte')
   }
 
   return (

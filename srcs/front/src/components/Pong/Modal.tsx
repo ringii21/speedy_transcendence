@@ -20,7 +20,6 @@ export const Modal = () => {
     if (!location.pathname.startsWith('/Game')) {
       socket?.emit('game.stop', { gameid: gameName, gameState: gameState })
     }
-    console.log('Dans le useEffect MODAL:', location.pathname)
   }, [location])
   useEffect(() => {
     /* const { user } = useAuth() */
@@ -38,7 +37,6 @@ export const Modal = () => {
         }
       })
       socket?.on('players', (players: any) => {
-        console.log(players)
         gameState.setP1(players[0])
         gameState.setP2(players[1])
       })

@@ -80,17 +80,16 @@ CREATE TABLE "channel_actions" (
 
 -- CreateTable
 CREATE TABLE "games" (
-    "id" TEXT NOT NULL,
-    "score_p1" INTEGER NOT NULL,
-    "score_p2" INTEGER NOT NULL,
-    "player1_id" INTEGER NOT NULL,
-    "player2_id" INTEGER NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "id" SERIAL NOT NULL,
+    "participant1Id" INTEGER NOT NULL,
+    "participant2Id" INTEGER NOT NULL,
+    "winner_id" INTEGER,
+    "scoreP1" INTEGER,
+    "scoreP2" INTEGER,
+    "gametype" TEXT,
     "exchange_count" INTEGER NOT NULL DEFAULT 0,
-    "started_at" TIMESTAMP(3),
-    "ended_at" TIMESTAMP(3),
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-    "deleted_at" TIMESTAMP(3),
 
     CONSTRAINT "games_pkey" PRIMARY KEY ("id")
 );
@@ -123,9 +122,6 @@ CREATE INDEX "channel_members_user_id_channel_id_idx" ON "channel_members"("user
 CREATE INDEX "channel_actions_user_id_channel_id_idx" ON "channel_actions"("user_id", "channel_id");
 
 -- CreateIndex
-CREATE INDEX "games_player1_id_player2_id_idx" ON "games"("player1_id", "player2_id");
-
--- CreateIndex
 CREATE UNIQUE INDEX "_friends_AB_unique" ON "_friends"("A", "B");
 
 -- CreateIndex
@@ -153,10 +149,10 @@ ALTER TABLE "channel_actions" ADD CONSTRAINT "channel_actions_user_id_fkey" FORE
 ALTER TABLE "channel_actions" ADD CONSTRAINT "channel_actions_channel_id_fkey" FOREIGN KEY ("channel_id") REFERENCES "channels"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "games" ADD CONSTRAINT "games_player1_id_fkey" FOREIGN KEY ("player1_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "games" ADD CONSTRAINT "games_participant1Id_fkey" FOREIGN KEY ("participant1Id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "games" ADD CONSTRAINT "games_player2_id_fkey" FOREIGN KEY ("player2_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "games" ADD CONSTRAINT "games_participant2Id_fkey" FOREIGN KEY ("participant2Id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_friends" ADD CONSTRAINT "_friends_A_fkey" FOREIGN KEY ("A") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

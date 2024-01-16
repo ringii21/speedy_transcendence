@@ -53,9 +53,6 @@ export const Game = () => {
     // eslint-disable-next-line
   }, []);
 
-  /* useEffect(() => {
-    return leave()
-  }, [leave]) */
   const handleMove = throttlify((e: any) => {
     socket?.emit('mouse', e.evt.layerY)
   })
@@ -69,14 +66,7 @@ export const Game = () => {
   }
 
   useEffect(() => {
-    /* const img = new window.Image()
-    img.src = '../../assets/balle-pong.png'
-    img.onload = () => setBallImage(img) */
-    /* const img = new Image()
-    img.src = '../../assets/balle-pong.png'
-    img.onload = () => setImage(img) */
     socket?.on('finish', () => {
-      console.log('Je quitte')
       leave()
     })
     socket?.on('level', (l: number) => {
