@@ -44,7 +44,7 @@ const ChatMessage = ({ user, message, members }: ChatMessageProps) => {
           <span className={messageStyle}>{message.content}</span>
         </div>
       </div>
-      <Link to={message.senderId === user?.id ? '/profile/me' : `/profile/${sender.userId}`}>
+      <Link to={`/profile/${sender.userId}`}>
         <img src={sender.user.image} alt='My profile' className={imageStyle} />
       </Link>
     </div>

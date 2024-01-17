@@ -1,4 +1,4 @@
-import { ChannelType, IChannel, IChannelMember } from '../types/Chat'
+import { IChannel, IChannelMember, TChannelType } from '../types/Chat'
 import { IUser } from '../types/User'
 import httpInstance from './httpClient'
 
@@ -29,7 +29,7 @@ export const leaveChannel = async (channelId: string): Promise<IChannelMember> =
   return data
 }
 
-export const createChannel = async (name: string, type: ChannelType, password?: string) => {
+export const createChannel = async (name: string, type: TChannelType, password?: string) => {
   const { data } = await httpInstance().post<IChannel>('/api/chat/channels', {
     name,
     type,
@@ -41,7 +41,7 @@ export const createChannel = async (name: string, type: ChannelType, password?: 
 export const editChannel = async (
   id: string,
   name: string,
-  type: ChannelType,
+  type: TChannelType,
   password?: string,
 ) => {
   const { data } = await httpInstance().patch<IChannel>('/api/chat/channels', {

@@ -1,11 +1,12 @@
 import { IUser } from './User'
 
-export type ChannelType = 'public' | 'private' | 'protected'
+export type TChannelType = 'public' | 'private' | 'protected'
+export type TRole = 'admin' | 'user' | 'owner'
 
 export type IChannel = {
   id: string
   name: string
-  type: ChannelType
+  type: TChannelType
   ownerId: number
   createdAt: string
   updatedAt: string
@@ -16,7 +17,7 @@ export type IChannel = {
 }
 
 export type IChannelMember = {
-  role: 'admin' | 'user' | 'owner'
+  role: TRole
   userId: number
   channelId: string
   channel: IChannel

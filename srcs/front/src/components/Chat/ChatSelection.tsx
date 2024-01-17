@@ -7,8 +7,10 @@ import { HiDotsVertical } from 'react-icons/hi'
 import { IoCloseSharp } from 'react-icons/io5'
 import { Link } from 'react-router-dom'
 
+import { useAuth } from '../../providers/AuthProvider'
 import { useChat } from '../../providers/ChatProvider'
 import { IChannel, IChannelMember } from '../../types/Chat'
+import { IUser } from '../../types/User'
 import { leaveChannel } from '../../utils/chatHttpRequests'
 import { EditChannelModal } from './Modals/EditChannelModal'
 import { InviteChannelModal } from './Modals/InviteChannelModal'
@@ -17,9 +19,12 @@ type ChannelProps = {
   channel: IChannel
   selectedChannel?: string
   mutate: UseMutateFunction<IChannelMember, Error, string, unknown>
+  user: IUser
 }
 
-const Channel = ({ channel, selectedChannel, mutate }: ChannelProps) => {
+const Channel = ({ channel, selectedChannel, mutate, user }: ChannelProps) => {
+  const me = channel.members.find((m) => m.user.id === user?.id)
+  console.log(me)
   const [isInviteModalOpen, setInviteModalOpen] = React.useState(false)
   const [isEditChannelModalOpen, setEditChannelModalOpen] = React.useState(false)
   const queryClient = useQueryClient()
@@ -29,6 +34,7 @@ const Channel = ({ channel, selectedChannel, mutate }: ChannelProps) => {
     ['bg-base-300']: channel.id === selectedChannel,
   })
 
+  if (!me) return <></>
   return (
     <div className={wrapperClass}>
       {EditChannelModal({ isEditChannelModalOpen, setEditChannelModalOpen, channel })}
@@ -42,24 +48,29 @@ const Channel = ({ channel, selectedChannel, mutate }: ChannelProps) => {
         >
           <IoCloseSharp />
         </button>
-        <button
-          onClick={(e) => {
-            e.preventDefault()
-            setEditChannelModalOpen(true)
-          }}
-          className='btn btn-ghost btn-sm'
-        >
-          <HiDotsVertical />
-        </button>
-        <button
-          onClick={(e) => {
-            e.preventDefault()
-            setInviteModalOpen(true)
-          }}
-          className='btn btn-ghost btn-sm'
-        >
-          <FaPlus />
-        </button>
+        {(me.role === 'admin' || me.role === 'owner') && (
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              setEditChannelModalOpen(true)
+            }}
+            className='btn btn-ghost btn-sm'
+          >
+            <HiDotsVertical />
+          </button>
+        )}
+
+        {(me.role === 'admin' || me.role === 'owner') && (
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              setInviteModalOpen(true)
+            }}
+            className='btn btn-ghost btn-sm'
+          >
+            <FaPlus />
+          </button>
+        )}
       </div>
       <Link
         to={`/chat/${channel.id}`}
@@ -88,9 +99,12 @@ type ChatSelectionProps = {
 
 const ChatSelection = ({ channelId }: ChatSelectionProps) => {
   const { allChannels } = useChat()
+  const { user } = useAuth()
   const { mutate } = useMutation({
     mutationFn: (channelId: string) => leaveChannel(channelId),
   })
+
+  if (!user) return <></>
 
   return (
     <div className='items-center gap-12'>
@@ -103,6 +117,7 @@ const ChatSelection = ({ channelId }: ChatSelectionProps) => {
               key={channel.id}
               selectedChannel={channelId}
               mutate={mutate}
+              user={user}
             />
           ))}
         </div>
