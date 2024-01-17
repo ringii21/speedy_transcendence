@@ -7,10 +7,14 @@ import {
 import { ChannelType, Prisma } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { createHmac } from 'crypto'
+import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 export class ChannelService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly configService: ConfigService,
+  ) {}
 
   /**
    * Retrieves the channels associated with a given user.
@@ -165,7 +169,10 @@ export class ChannelService {
   }
 
   verifyPassword(password: string, hashedPassword: string) {
-    const hpassword = createHmac('sha256', '9103413f8dd9df9db599eca5b6458754')
+    const hpassword = createHmac(
+      'sha256',
+      this.configService.getOrThrow('SALT'),
+    )
       .update(password)
       .digest('hex')
     console.log(hpassword)
@@ -208,7 +215,7 @@ export class ChannelService {
         )
     }
     if (password) {
-      password = createHmac('sha256', '9103413f8dd9df9db599eca5b6458754')
+      password = createHmac('sha256', this.configService.getOrThrow('SALT'))
         .update(password)
         .digest('hex')
     }
@@ -230,6 +237,50 @@ export class ChannelService {
     }
     return this.prismaService.channel.create({
       data,
+    })
+  }
+
+  async editChannel({
+    id,
+    name,
+    password,
+    type,
+  }: {
+    id: string
+    name: string
+    password?: string
+    type: ChannelType
+  }) {
+    if (type === ChannelType.protected) {
+      if (!name) throw new BadRequestException('Channels must be named')
+      if (!password)
+        throw new BadRequestException('Protected channels must have passwords')
+    } else if (type === ChannelType.public) {
+      if (!name) throw new BadRequestException('Channels must be named')
+      if (password)
+        throw new BadRequestException('Public channels cannot have passwords')
+    } else if (type === ChannelType.private) {
+      if (!name) throw new BadRequestException('Channels must be named')
+      if (password)
+        throw new BadRequestException(
+          'Private channels must not have passwords',
+        )
+    }
+    if (password) {
+      password = createHmac('sha256', this.configService.getOrThrow('SALT'))
+        .update(password)
+        .digest('hex')
+    }
+
+    return this.prismaService.channel.update({
+      where: {
+        id: id,
+      },
+      data: {
+        name,
+        type,
+        password: password ?? undefined,
+      },
     })
   }
 
@@ -422,5 +473,23 @@ export class ChannelService {
       },
     })
     return !!channel
+  }
+
+  async getUsersNotInChannel(channelId: string) {
+    return this.prismaService.user.findMany({
+      where: {
+        members: {
+          none: {
+            channelId: channelId,
+            present: true,
+          },
+        },
+        channels: {
+          none: {
+            id: channelId,
+          },
+        },
+      },
+    })
   }
 }

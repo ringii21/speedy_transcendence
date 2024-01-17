@@ -8,6 +8,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Patch,
   Req,
   UseGuards,
   UseInterceptors,
@@ -18,6 +19,7 @@ import { RequestWithDbUser } from '../types/Request'
 import { ChannelService } from '../channel/channel.service'
 import { ChannelEntity } from '../channel/entity/channel.entity'
 import { CreateChannelDto } from './dto/create-channel.dto'
+import { EditChannelDto } from './dto/edit-channel.dto'
 import { CreatePmDto } from './dto/create-pm.dto'
 import { UserActionDto } from './dto/user-action.dto'
 import { UserIsNotBanFromChannelGuard } from './guard/user-ban-from-channel.guard'
@@ -28,9 +30,12 @@ import {
   ChannelKickEvent,
   ChannelLeftEvent,
   ChannelMutedEvent,
+  ChannelEditEvent,
 } from './events/channel.event'
 import { UserIsAdminOrOwner } from './guard/user-admin-owner.guard'
 import { UserIsPresentGuard } from './guard/user-is-present.guard'
+import { Role } from '@prisma/client'
+import { UserEntity } from 'src/users/entity/user.entity'
 
 @Controller('chat')
 @UseGuards(JwtTwoFaGuard)
@@ -79,6 +84,38 @@ export class ChatController {
       userId: req.user.id,
       password: createChannel.password,
     })
+    this.eventEmitter.emit(
+      ChannelJoinedEvent.name,
+      new ChannelJoinedEvent(channel.id, req.user.id),
+    )
+    return new ChannelEntity(channel)
+  }
+
+  @Patch('/channels')
+  async editChannel(
+    @Req() req: RequestWithDbUser,
+    @Body() editedChannel: EditChannelDto,
+  ) {
+    const currentChannelState = await this.channelService.getChannel(
+      editedChannel.id,
+      {},
+    )
+    const userRole = currentChannelState?.members.find(
+      (member) => member.userId === req.user.id,
+    )?.role
+    if (userRole === Role.user) {
+      throw new BadRequestException()
+    }
+    const channel = await this.channelService.editChannel({
+      id: editedChannel.id,
+      name: editedChannel.name,
+      type: editedChannel.type,
+      password: editedChannel.password,
+    })
+    this.eventEmitter.emit(
+      ChannelEditEvent.name,
+      new ChannelEditEvent(channel.id),
+    )
     return new ChannelEntity(channel)
   }
 
@@ -176,5 +213,15 @@ export class ChatController {
       ChannelMutedEvent.name,
       new ChannelMutedEvent(channelId, body.userId),
     )
+  }
+  @Get('/channels/:id/users')
+  @UseGuards(UserIsNotBanFromChannelGuard)
+  async userNotJoined(@Param('id', ParseUUIDPipe) channelId: string) {
+    const users = await this.channelService.getUsersNotInChannel(channelId)
+    // this.eventEmitter.emit(
+    //   ChannelJoinedEvent.name,
+    //   new ChannelJoinedEvent(channel.channelId, req.user.id),
+    // )
+    return users.map((user) => new UserEntity(user))
   }
 }

@@ -10,7 +10,7 @@ import { useSocket } from './SocketProvider'
 
 interface ChatContextData {
   myChannels: Pick<IChannel, 'id'>[]
-  channelMap: IChannel[]
+  allChannels: IChannel[]
 }
 
 type Props = {
@@ -21,11 +21,12 @@ export enum ChatQueryKey {
   MY_CHANNELS = 'mine',
   CHANNEL_NOT_JOINED = 'channels-not-joined',
   CHANNEL = 'channels',
+  USER_LIST = 'user-list',
 }
 
 export const ChatContext = createContext<ChatContextData>({
   myChannels: [],
-  channelMap: [],
+  allChannels: [],
 })
 
 export const ChatProvider = ({ children }: Props) => {
@@ -38,9 +39,10 @@ export const ChatProvider = ({ children }: Props) => {
     queryKey: [ChatQueryKey.MY_CHANNELS],
     queryFn: getMyChannels,
     initialData: [],
+    enabled: !!user,
   })
 
-  const channelMapQuery = useQueries({
+  const channelsQuery = useQueries({
     queries: myChannelQuery.data.map((channel) => ({
       queryKey: [channel.id],
       queryFn: () => getChannel(channel.id),
@@ -48,6 +50,12 @@ export const ChatProvider = ({ children }: Props) => {
   })
 
   useEffect(() => {
+    socket.on(ChatSocketEvent.EDIT_CHANNEL, async (data: IChannelMember) => {
+      await queryClient.invalidateQueries({
+        queryKey: [data.channelId],
+      })
+    })
+
     socket.on(ChatSocketEvent.JOIN_CHANNEL, async (data: IChannelMember) => {
       if (data.userId === user?.id) {
         await myChannelQuery.refetch()
@@ -70,13 +78,16 @@ export const ChatProvider = ({ children }: Props) => {
       }
     })
     return () => {
+      socket.off(ChatSocketEvent.EDIT_CHANNEL)
       socket.off(ChatSocketEvent.JOIN_CHANNEL)
       socket.off(ChatSocketEvent.LEAVE_CHANNEL)
     }
   }, [user])
 
   const values = {
-    channelMap: channelMapQuery.map((channel) => channel.data).filter(Boolean) as IChannel[],
+    allChannels: channelsQuery
+      .map((channel) => channel.data)
+      .filter((channel): channel is IChannel => channel !== undefined),
     myChannels: myChannelQuery.data,
   }
 

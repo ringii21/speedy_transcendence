@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../../providers/AuthProvider'
 import { IChannel, IChannelMember } from '../../types/Chat'
 import { IUser } from '../../types/User'
-import { UserActionModal } from './UserActionModal'
+import { UserActionModal } from './Modals/UserActionModal'
 
 type UserProps = HTMLAttributes<HTMLDivElement> & {
   member: IChannelMember

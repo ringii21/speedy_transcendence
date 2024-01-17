@@ -2,12 +2,12 @@ import { Dialog, Transition } from '@headlessui/react'
 import { useMutation } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import clsx from 'clsx'
-import React, { Fragment } from 'react'
+import React, { Fragment, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 
-import { ChatQueryKey } from '../../providers/ChatProvider'
-import { ChannelType } from '../../types/Chat'
-import { createChannel } from '../../utils/chatHttpRequests'
+import { ChatQueryKey } from '../../../providers/ChatProvider'
+import { ChannelType } from '../../../types/Chat'
+import { createChannel } from '../../../utils/chatHttpRequests'
 
 type CreateChannelModalProps = {
   isCreateModalOpen: boolean
@@ -28,6 +28,7 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
     formState: { errors },
     setError,
     reset,
+    unregister,
   } = useForm<FormValues>({
     defaultValues: {
       type: 'public',
@@ -74,6 +75,9 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
   const onSubmit = async (data: FormValues) => mutate(data)
 
   const type = watch('type')
+  useEffect(() => {
+    type !== 'protected' && unregister('password')
+  }, [type])
 
   const buttonStyle = clsx({
     ['btn']: true,

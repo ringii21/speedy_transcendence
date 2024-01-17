@@ -22,10 +22,12 @@ export const SocketProvider = ({ children }: Props) => {
   useEffect(() => {
     socket.on('connect', () => {
       console.log('connected')
+      socket.emit('SUB_ALL')
       setIsConnected(true)
     })
     socket.on('disconnect', () => {
       console.log('disconnected')
+      socket.emit('UNSUB_ALL')
       setIsConnected(false)
     })
     socket.on('connect_error', console.error)
