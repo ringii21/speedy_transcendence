@@ -74,8 +74,6 @@ export class ChannelService {
       },
     })
     if (!channel) throw new BadRequestException('Channel not found')
-    if (await this.isUserInChannel(userId, channelId))
-      throw new BadRequestException('You are already in this channel')
     if (channel.type === ChannelType.public && password)
       throw new BadRequestException('Public channels cannot have passwords')
     if (channel.type === ChannelType.private && password)
@@ -93,13 +91,13 @@ export class ChannelService {
     return this.prismaService.channelMember.upsert({
       where: {
         userId_channelId: {
-          channelId,
+          channelId: channel.id,
           userId,
         },
       },
       create: {
         userId,
-        channelId,
+        channelId: channel.id,
         present: true,
       },
       update: {
@@ -308,62 +306,61 @@ export class ChannelService {
     })
   }
 
-  /**
-   * @todo
-   * @param param0
-   * @returns
-   */
-  async createPm({ userId, targetId }: { userId: number; targetId: number }) {
-    console.log(userId, targetId)
-    return {}
-    // if (userId === targetId)
-    //   throw new BadRequestException('You cannot create a PM with yourself')
-    // const existingChannel = await this.prismaService.channel.findFirst({
-    //   where: {
-    //     type: ChannelType.direct,
-    //     members: {
-    //       every: {
-    //         userId: {
-    //           in: [userId, targetId],
-    //         },
-    //       },
-    //     },
-    //   },
-    // })
-    // if (existingChannel) {
-    //   await this.prismaService.channelMember.update({
-    //     where: {
-    //       userId_channelId: {
-    //         channelId: existingChannel.id,
-    //         userId: userId,
-    //       },
-    //     },
-    //     data: {
-    //       present: true,
-    //     },
-    //   })
-    //   return existingChannel
-    // }
-    // return this.prismaService.channel.create({
-    //   include: {
-    //     members: true,
-    //   },
-    //   data: {
-    //     type: ChannelType.direct,
-    //     members: {
-    //       createMany: {
-    //         data: [
-    //           {
-    //             userId,
-    //           },
-    //           {
-    //             userId: targetId,
-    //           },
-    //         ],
-    //       },
-    //     },
-    //   },
-    // })
+  async createDirectMessageChannel({
+    userId,
+    targetId,
+  }: {
+    userId: number
+    targetId: number
+  }) {
+    if (userId === targetId)
+      throw new BadRequestException('You cannot create a PM with yourself')
+    const channel = await this.prismaService.channel.findFirst({
+      where: {
+        type: ChannelType.direct,
+        members: {
+          every: {
+            userId: {
+              in: [userId, targetId],
+            },
+          },
+        },
+      },
+    })
+    if (channel) {
+      await this.prismaService.channelMember.update({
+        where: {
+          userId_channelId: {
+            channelId: channel.id,
+            userId: userId,
+          },
+        },
+        data: {
+          present: true,
+        },
+      })
+      return channel
+    }
+    return this.prismaService.channel.create({
+      include: {
+        members: true,
+      },
+      data: {
+        type: ChannelType.direct,
+        members: {
+          createMany: {
+            data: [
+              {
+                userId,
+              },
+              {
+                userId: targetId,
+              },
+            ],
+          },
+        },
+      },
+    })
   }
 
   /**

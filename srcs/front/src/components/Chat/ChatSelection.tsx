@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom'
 
 import { useAuth } from '../../providers/AuthProvider'
 import { useChat } from '../../providers/ChatProvider'
-import { IChannel, IChannelMember } from '../../types/Chat'
+import { EChannelType, IChannel, IChannelMember } from '../../types/Chat'
 import { IUser } from '../../types/User'
 import { leaveChannel } from '../../utils/chatHttpRequests'
 import { EditChannelModal } from './Modals/EditChannelModal'
@@ -20,6 +20,44 @@ type ChannelProps = {
   selectedChannel?: string
   mutate: UseMutateFunction<IChannelMember, Error, string, unknown>
   user: IUser
+}
+
+const DirectMessageChannel = ({ channel, selectedChannel, mutate, user }: ChannelProps) => {
+  const notMe = channel.members.find((m) => m.user.id !== user?.id)
+  const queryClient = useQueryClient()
+  const wrapperClass = clsx({
+    ['flex hover:bg-base-300 items-center justify-between p-1 rounded']: true,
+    ['bg-base-300']: channel.id === selectedChannel,
+  })
+
+  if (!notMe) return <></>
+  return (
+    <div className={wrapperClass}>
+      <div>
+        <button
+          onClick={() => {
+            mutate(channel.id)
+          }}
+          className='btn btn-ghost btn-sm'
+        >
+          <IoCloseSharp />
+        </button>
+      </div>
+      <Link
+        to={`/chat/${channel.id}`}
+        className='flex cursor-pointer'
+        onClick={async () => {
+          await queryClient.invalidateQueries({
+            queryKey: [channel.id],
+          })
+        }}
+      >
+        <div className='flex items-center mr-4'>
+          <span className='ml-2 font-normal overflow-ellipsis'>{notMe.user.username}</span>
+        </div>
+      </Link>
+    </div>
+  )
 }
 
 const Channel = ({ channel, selectedChannel, mutate, user }: ChannelProps) => {
@@ -104,21 +142,36 @@ const ChatSelection = ({ channelId }: ChatSelectionProps) => {
 
   if (!user) return <></>
 
+  const renderChannels = (channels: IChannel[]) => {
+    return channels.map((channel) => {
+      if (channel.type === EChannelType.direct) {
+        return (
+          <DirectMessageChannel
+            channel={channel}
+            key={channel.id}
+            selectedChannel={channelId}
+            mutate={mutate}
+            user={user}
+          />
+        )
+      }
+      return (
+        <Channel
+          channel={channel}
+          key={channel.id}
+          selectedChannel={channelId}
+          mutate={mutate}
+          user={user}
+        />
+      )
+    })
+  }
+
   return (
     <div className='items-center gap-12'>
       <div className='p-2'>
         <h2 className='text-center text-base-content text-lg'>Channels</h2>
-        <div className='m-2 overflow-y-auto max-h-screen'>
-          {allChannels.map((channel) => (
-            <Channel
-              channel={channel}
-              key={channel.id}
-              selectedChannel={channelId}
-              mutate={mutate}
-              user={user}
-            />
-          ))}
-        </div>
+        <div className='m-2 overflow-y-auto max-h-screen'>{renderChannels(allChannels)}</div>
       </div>
     </div>
   )

@@ -62,6 +62,13 @@ const Chat = () => {
           </div>
         )
       }
+      if (currentChannel.type === 'direct') {
+        return (
+          <div className='flex items-center'>
+            {currentChannel.members.find((member) => member.userId !== user.id)?.user.username}
+          </div>
+        )
+      }
     }
   }
 

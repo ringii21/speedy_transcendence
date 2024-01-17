@@ -1,12 +1,20 @@
 import { IUser } from './User'
 
-export type TChannelType = 'public' | 'private' | 'protected'
 export type TRole = 'admin' | 'user' | 'owner'
+
+export type FrontEndMessage = Omit<IChannelMessage, 'createdAt' | 'updatedAt' | 'deletedAt' | 'id'>
+
+export enum EChannelType {
+  public = 'public',
+  private = 'private',
+  protected = 'protected',
+  direct = 'direct',
+}
 
 export type IChannel = {
   id: string
   name: string
-  type: TChannelType
+  type: EChannelType
   ownerId: number
   createdAt: string
   updatedAt: string
@@ -29,6 +37,7 @@ export type IChannelMessage = {
   id: number
   content: string
   senderId: number
+  gameInvite: boolean
   channelId: string
   createdAt: string
   updatedAt: string

@@ -1,13 +1,13 @@
 import { FileInterceptor } from '@nestjs/platform-express'
 import { NotAcceptableException, UseInterceptors } from '@nestjs/common'
 import { diskStorage } from 'multer'
-import { extname } from 'path'
+import { extname, join } from 'path'
 import { randomUUID } from 'crypto'
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface'
 
 const multerOptions: MulterOptions = {
   storage: diskStorage({
-    destination: './uploads',
+    destination: join(__dirname, '..', '..', '..', 'uploads'),
     filename: (req, file, cb) => {
       const uniqueSuffix = randomUUID()
       const fileExtension = extname(file.originalname)

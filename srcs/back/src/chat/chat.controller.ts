@@ -126,11 +126,15 @@ export class ChatController {
     @Req() req: RequestWithDbUser,
     @Body() createPm: CreatePmDto,
   ) {
-    const channel = await this.channelService.createPm({
+    const channel = await this.channelService.createDirectMessageChannel({
       userId: req.user.id,
       targetId: createPm.targetId,
     })
     if (!channel) throw new BadRequestException('Invalid target ID')
+    this.eventEmitter.emit(
+      ChannelJoinedEvent.name,
+      new ChannelJoinedEvent(channel.id, req.user.id),
+    )
     return new ChannelEntity(channel)
   }
 
@@ -141,16 +145,16 @@ export class ChatController {
     @Param('id', ParseUUIDPipe) channelId: string,
     @Body('password') password?: string,
   ) {
-    const channel = await this.channelService.joinChannel(
+    const channelMembers = await this.channelService.joinChannel(
       req.user.id,
       channelId,
       password,
     )
     this.eventEmitter.emit(
       ChannelJoinedEvent.name,
-      new ChannelJoinedEvent(channel.channelId, req.user.id),
+      new ChannelJoinedEvent(channelMembers.channelId, req.user.id),
     )
-    return new ChannelEntity(channel)
+    return new ChannelEntity(channelMembers)
   }
 
   @Post('/channels/:id/leave')

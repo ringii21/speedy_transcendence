@@ -56,27 +56,35 @@ export const ChatProvider = ({ children }: Props) => {
       })
     })
 
-    socket.on(ChatSocketEvent.JOIN_CHANNEL, async (data: IChannelMember) => {
-      if (data.userId === user?.id) {
-        await myChannelQuery.refetch()
-        navigate(`/chat/${data.channelId}`)
-      } else {
-        await queryClient.invalidateQueries({
-          queryKey: [data.channelId],
-        })
-      }
-    })
+    socket.on(
+      ChatSocketEvent.JOIN_CHANNEL,
+      async (data: { channelId: string; userId: number; background: boolean }) => {
+        if (data.userId === user?.id) {
+          await myChannelQuery.refetch()
+          if (!data.background) {
+            navigate(`/chat/${data.channelId}`)
+          }
+        } else {
+          await queryClient.invalidateQueries({
+            queryKey: [data.channelId],
+          })
+        }
+      },
+    )
 
-    socket.on(ChatSocketEvent.LEAVE_CHANNEL, async (data: IChannelMember) => {
-      if (data.userId === user?.id) {
-        await myChannelQuery.refetch()
-        navigate(`/chat`)
-      } else {
-        await queryClient.invalidateQueries({
-          queryKey: [data.channelId],
-        })
-      }
-    })
+    socket.on(
+      ChatSocketEvent.LEAVE_CHANNEL,
+      async (data: { channelId: string; userId: number }) => {
+        if (data.userId === user?.id) {
+          await myChannelQuery.refetch()
+          navigate(`/chat`)
+        } else {
+          await queryClient.invalidateQueries({
+            queryKey: [data.channelId],
+          })
+        }
+      },
+    )
 
     return () => {
       socket.off(ChatSocketEvent.EDIT_CHANNEL)

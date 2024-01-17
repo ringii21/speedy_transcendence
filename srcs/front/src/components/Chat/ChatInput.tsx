@@ -4,7 +4,7 @@ import { MdSend } from 'react-icons/md'
 
 import { useAuth } from '../../providers/AuthProvider'
 import { useSocket } from '../../providers/SocketProvider'
-import { IChannelMessage } from '../../types/Chat'
+import { FrontEndMessage } from '../../types/Chat'
 import { ChatSocketEvent } from '../../types/Events'
 
 const ChatInput = ({
@@ -12,30 +12,35 @@ const ChatInput = ({
   setMessage,
 }: {
   channelId: string
-  setMessage: React.Dispatch<React.SetStateAction<IChannelMessage[]>>
+  setMessage: React.Dispatch<React.SetStateAction<FrontEndMessage[]>>
 }) => {
   const { socket, isConnected } = useSocket()
   const { user } = useAuth()
   const [inputMessage, setInputMessage] = useState<string>('')
 
   if (!user) return <></>
-  const handleSendMessage = () => {
-    if (!isConnected) return
-    if (inputMessage.trim() !== '') {
-      const newMessage: IChannelMessage = {
-        channelId,
-        content: inputMessage,
-        senderId: user.id,
-      } as IChannelMessage
 
-      socket.emit(ChatSocketEvent.MESSAGE, newMessage)
-      setMessage((messages) => [...messages, newMessage])
-      setInputMessage('')
-    }
+  const sendMessage = (message: FrontEndMessage) => {
+    if (!isConnected) return
+    socket.emit(ChatSocketEvent.MESSAGE, message)
+    setMessage((messages) => [...messages, message])
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleSendMessage()
+  }
+
+  const handleSendMessage = () => {
+    if (inputMessage.trim() !== '') {
+      const newMessage: FrontEndMessage = {
+        channelId,
+        content: inputMessage,
+        senderId: user.id,
+        gameInvite: false,
+      }
+      sendMessage(newMessage)
+      setInputMessage('')
+    }
   }
 
   return (
@@ -52,7 +57,12 @@ const ChatInput = ({
         <button
           type='button'
           onClick={() => {
-            console.log('play')
+            sendMessage({
+              channelId,
+              content: 'lobbyId',
+              gameInvite: true,
+              senderId: user.id,
+            })
           }}
           className='btn btn-error'
         >
