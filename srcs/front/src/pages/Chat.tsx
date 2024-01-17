@@ -23,9 +23,9 @@ const Chat = () => {
   const [currentChannel, setCurrentChannel] = useState<IChannel | undefined>(undefined)
 
   if (!user) return <Navigate to='/login' replace />
+
   useEffect(() => {
     const currChannel = allChannels.find((channel) => channel.id === channelId)
-
     setCurrentChannel(currChannel)
   }, [channelId, allChannels])
 

@@ -12,6 +12,7 @@ import {
   Req,
   UseGuards,
   UseInterceptors,
+  ForbiddenException,
 } from '@nestjs/common'
 
 import JwtTwoFaGuard from '../auth/jwt/jwt-2fa.guard'
@@ -104,8 +105,8 @@ export class ChatController {
     const userRole = currentChannelState?.members.find(
       (member) => member.userId === req.user.id,
     )?.role
-    if (userRole === Role.user) {
-      throw new BadRequestException()
+    if (userRole !== Role.owner) {
+      throw new ForbiddenException('You are not owner of this channel')
     }
     const channel = await this.channelService.editChannel({
       id: editedChannel.id,
