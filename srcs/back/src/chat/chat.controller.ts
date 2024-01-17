@@ -36,6 +36,7 @@ import { UserIsAdminOrOwner } from './guard/user-admin-owner.guard'
 import { UserIsPresentGuard } from './guard/user-is-present.guard'
 import { Role } from '@prisma/client'
 import { UserEntity } from 'src/users/entity/user.entity'
+import { InviteUserDto } from './dto/invite-user.dto'
 
 @Controller('chat')
 @UseGuards(JwtTwoFaGuard)
@@ -214,14 +215,43 @@ export class ChatController {
       new ChannelMutedEvent(channelId, body.userId),
     )
   }
+
+  @Post('/channels/:id/admin')
+  @UseGuards(UserIsNotBanFromChannelGuard, UserIsAdminOrOwner)
+  async setUserAdmin(
+    @Req() req: RequestWithDbUser,
+    @Param('id', ParseUUIDPipe) channelId: string,
+    @Body() body: UserActionDto,
+  ) {
+    if (req.user.id === body.userId)
+      throw new BadRequestException('You cannot admin yourself')
+    await this.channelService.toggleUserAdmin(channelId, body.userId)
+    this.eventEmitter.emit(
+      ChannelEditEvent.name,
+      new ChannelEditEvent(channelId),
+    )
+  }
+
+  @Post('/channels/:id/invite')
+  @UseGuards(UserIsNotBanFromChannelGuard, UserIsAdminOrOwner)
+  async inviteUserToChannel(
+    @Req() req: RequestWithDbUser,
+    @Param('id', ParseUUIDPipe) channelId: string,
+    @Body() body: InviteUserDto,
+  ) {
+    if (req.user.id === body.userId)
+      throw new BadRequestException('You cannot invite yourself')
+    await this.channelService.inviteUserToChannel(channelId, body.userId)
+    this.eventEmitter.emit(
+      ChannelJoinedEvent.name,
+      new ChannelJoinedEvent(channelId, body.userId),
+    )
+  }
+
   @Get('/channels/:id/users')
   @UseGuards(UserIsNotBanFromChannelGuard)
   async userNotJoined(@Param('id', ParseUUIDPipe) channelId: string) {
     const users = await this.channelService.getUsersNotInChannel(channelId)
-    // this.eventEmitter.emit(
-    //   ChannelJoinedEvent.name,
-    //   new ChannelJoinedEvent(channel.channelId, req.user.id),
-    // )
     return users.map((user) => new UserEntity(user))
   }
 }

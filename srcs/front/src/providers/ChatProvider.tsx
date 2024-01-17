@@ -77,6 +77,7 @@ export const ChatProvider = ({ children }: Props) => {
         })
       }
     })
+
     return () => {
       socket.off(ChatSocketEvent.EDIT_CHANNEL)
       socket.off(ChatSocketEvent.JOIN_CHANNEL)

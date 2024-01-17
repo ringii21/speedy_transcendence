@@ -52,9 +52,7 @@ const InviteChannelModal = ({
     onSuccess: () => setIsOpen(false),
   })
 
-  const onSubmit = (data: FormValues) => {
-    mutate(data)
-  }
+  const onSubmit = (data: FormValues) => mutate(data)
 
   const buttonStyle = clsx({
     ['btn']: true,

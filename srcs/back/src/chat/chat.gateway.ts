@@ -74,10 +74,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @OnEvent(ChannelJoinedEvent.name)
   emitUserJoinChannel({ channelId, userId }: ChannelJoinedEvent) {
-    console.log('TOTO')
     this.getSocketByUserId(userId)?.join(channelId)
-    console.log('emitUserJoinChannel', channelId, userId)
-    console.log(this.userSockets)
     this.socket.to(channelId).emit(ChatSocketEvent.JOIN_CHANNEL, {
       channelId,
       userId,
@@ -109,7 +106,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     })
   }
 
-  @SubscribeMessage('SUB_ALL')
+  @SubscribeMessage(ChatSocketEvent.SUBSCRIBE)
   async subAll(@ConnectedSocket() socket: SocketWithUser) {
     const user = await this.getUser(socket)
     if (!user) return
@@ -125,7 +122,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.addSocketToUser(user.id, socket)
   }
 
-  @SubscribeMessage('UNSUB_ALL')
+  @SubscribeMessage(ChatSocketEvent.UNSUBSCRIBE)
   async unsubAll(@ConnectedSocket() socket: SocketWithUser) {
     const user = await this.getUser(socket)
     if (!user) return

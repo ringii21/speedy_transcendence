@@ -4,7 +4,7 @@ import {
   Injectable,
 } from '@nestjs/common'
 
-import { ChannelType, Prisma } from '@prisma/client'
+import { ChannelType, Prisma, Role } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { createHmac } from 'crypto'
 import { ConfigService } from '@nestjs/config'
@@ -433,6 +433,39 @@ export class ChannelService {
     })
   }
 
+  async toggleUserAdmin(channelId: string, userId: number) {
+    const isOwner = await this.isUserOwnerOfChannel(channelId, userId)
+    console.log('isOwner', isOwner)
+    if (isOwner) throw new BadRequestException('User is owner of channel')
+    const isAdmin = await this.isUserOwnerOrAdminOfChannel(channelId, userId)
+    console.log('isAdmin', isAdmin)
+    const data = await this.prismaService.channelMember.update({
+      where: {
+        userId_channelId: {
+          channelId,
+          userId,
+        },
+      },
+      data: {
+        role: isAdmin ? Role.user : Role.admin,
+      },
+    })
+    console.log('data', data)
+  }
+
+  async isUserOwnerOfChannel(channelId: string, userId: number) {
+    const user = await this.prismaService.channelMember.findUnique({
+      where: {
+        userId_channelId: {
+          channelId,
+          userId,
+        },
+        role: 'owner',
+      },
+    })
+    return !!user
+  }
+
   /**
    * Checks if a user is the owner or admin of a channel.
    * @param channelId - The ID of the channel.
@@ -440,22 +473,18 @@ export class ChannelService {
    * @returns A boolean indicating whether the user is the owner or admin of the channel.
    */
   async isUserOwnerOrAdminOfChannel(channelId: string, userId: number) {
-    const channel = await this.prismaService.channel.findUnique({
+    const user = await this.prismaService.channelMember.findUnique({
       where: {
-        id: channelId,
-      },
-      include: {
-        members: {
-          where: {
-            userId,
-            role: {
-              in: ['owner', 'admin'],
-            },
-          },
+        userId_channelId: {
+          channelId,
+          userId,
+        },
+        role: {
+          in: [Role.admin, Role.owner],
         },
       },
     })
-    return !!channel
+    return !!user
   }
 
   /**
@@ -488,6 +517,25 @@ export class ChannelService {
           none: {
             id: channelId,
           },
+        },
+      },
+    })
+  }
+
+  async inviteUserToChannel(channelId: string, userId: number) {
+    return this.prismaService.channelMember.upsert({
+      create: {
+        userId,
+        channelId,
+        present: true,
+      },
+      update: {
+        present: true,
+      },
+      where: {
+        userId_channelId: {
+          channelId,
+          userId,
         },
       },
     })

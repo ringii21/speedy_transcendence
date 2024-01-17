@@ -16,7 +16,6 @@ const ChatConversation = ({ currentChannel, me }: ChatChannelProps) => {
   const currentRef = useRef<HTMLDivElement>(null)
   const { socket } = useSocket()
   const [messages, setMessages] = useState<IChannelMessage[]>([])
-
   useEffect(() => setMessages(currentChannel.messages), [currentChannel])
   useEffect(() => {
     if (currentRef.current) {

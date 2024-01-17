@@ -84,13 +84,14 @@ const UserActionModal = ({
                         >
                           <option value=''>Select an action</option>
                           <option value='kick'>Kick</option>
+                          <option value='admin'>Admin</option>
                           <option value='ban'>Ban</option>
                           <option value='mute'>Mute 5min</option>
                         </select>
                       </div>
                       <div className='flex justify-evenly mt-4'>
                         <button type='submit' className={`${buttonStyle} btn-success`}>
-                          Send
+                          Ok
                         </button>
                         <button
                           onClick={() => setIsOpen(false)}

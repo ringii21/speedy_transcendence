@@ -1,4 +1,5 @@
 import { UseMutateFunction, useMutation } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import clsx from 'clsx'
 import React from 'react'
 import { FaEyeSlash, FaHashtag, FaLock, FaPlus } from 'react-icons/fa'
@@ -6,7 +7,6 @@ import { HiDotsVertical } from 'react-icons/hi'
 import { IoCloseSharp } from 'react-icons/io5'
 import { Link } from 'react-router-dom'
 
-import { useAuth } from '../../providers/AuthProvider'
 import { useChat } from '../../providers/ChatProvider'
 import { IChannel, IChannelMember } from '../../types/Chat'
 import { leaveChannel } from '../../utils/chatHttpRequests'
@@ -22,6 +22,7 @@ type ChannelProps = {
 const Channel = ({ channel, selectedChannel, mutate }: ChannelProps) => {
   const [isInviteModalOpen, setInviteModalOpen] = React.useState(false)
   const [isEditChannelModalOpen, setEditChannelModalOpen] = React.useState(false)
+  const queryClient = useQueryClient()
 
   const wrapperClass = clsx({
     ['flex hover:bg-base-300 items-center justify-between p-1 rounded']: true,
@@ -60,7 +61,15 @@ const Channel = ({ channel, selectedChannel, mutate }: ChannelProps) => {
           <FaPlus />
         </button>
       </div>
-      <Link to={`/chat/${channel.id}`} className='flex cursor-pointer'>
+      <Link
+        to={`/chat/${channel.id}`}
+        className='flex cursor-pointer'
+        onClick={async () => {
+          await queryClient.invalidateQueries({
+            queryKey: [channel.id],
+          })
+        }}
+      >
         <div className='flex items-center mr-4'>
           {channel.type === 'private' && <FaEyeSlash size={12} className='text-base-content' />}
           {channel.type === 'protected' && <FaLock size={12} className='text-base-content' />}
