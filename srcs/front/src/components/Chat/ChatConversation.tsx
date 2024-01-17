@@ -28,12 +28,19 @@ const ChatConversation = ({ currentChannel, me }: ChatChannelProps) => {
   }, [messages])
 
   useEffect(() => {
-    socket.on(ChatSocketEvent.MESSAGE, (newMessage: IChannelMessage) => {
+    const messageListener = (newMessage: IChannelMessage) => {
       if (newMessage.channelId === currentChannel.id) {
         setMessages((messages) => [...messages, newMessage])
       }
-    })
-  }, [])
+    }
+
+    socket.on(ChatSocketEvent.MESSAGE, messageListener)
+
+    // Fonction de nettoyage pour supprimer l'écouteur lors du démontage
+    return () => {
+      socket.off(ChatSocketEvent.MESSAGE, messageListener)
+    }
+  }, [currentChannel.id, socket])
 
   return (
     <main

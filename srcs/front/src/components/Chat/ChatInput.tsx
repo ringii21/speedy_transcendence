@@ -29,6 +29,7 @@ const ChatInput = ({
       } as IChannelMessage
 
       socket.emit(ChatSocketEvent.MESSAGE, newMessage)
+      console.log(socket.id)
       setMessage((messages) => [...messages, newMessage])
       setInputMessage('')
     }
