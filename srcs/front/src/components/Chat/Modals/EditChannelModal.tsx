@@ -6,7 +6,7 @@ import React, { Fragment, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { ChatQueryKey } from '../../../providers/ChatProvider'
-import { IChannel, TChannelType } from '../../../types/Chat'
+import { EChannelType, IChannel } from '../../../types/Chat'
 import { editChannel } from '../../../utils/chatHttpRequests'
 
 type EditChannelModalProps = {
@@ -17,7 +17,7 @@ type EditChannelModalProps = {
 
 type FormValues = {
   name: string
-  type: TChannelType
+  type: EChannelType
   password?: string
 }
 
@@ -49,7 +49,7 @@ const EditChannelModal = ({
       password,
     }: {
       name: string
-      type: TChannelType
+      type: EChannelType
       password?: string
     }) => editChannel(channel.id, name, type, password),
     onSuccess: () => {

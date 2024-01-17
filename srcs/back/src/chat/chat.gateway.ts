@@ -18,7 +18,7 @@ import { Server } from 'socket.io'
 import { ChatSocketEvent } from './types/ChatEvent'
 import { UserIsNotBanFromChannelGuard } from './guard/user-ban-from-channel.guard'
 import JwtTwoFaGuard from 'src/auth/jwt/jwt-2fa.guard'
-import { User } from '@prisma/client'
+import { ChannelType, User } from '@prisma/client'
 import { parse } from 'cookie'
 import { JwtAuthService } from 'src/auth/jwt/jwt-auth.service'
 import { UsersService } from 'src/users/users.service'
@@ -66,18 +66,40 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       socket.handshake.user.id,
       messageDto.channelId,
       messageDto.content,
+      messageDto.gameInvite,
     )
     if (!msg) return
+    const channel = await this.channelService.getChannel(
+      messageDto.channelId,
+      {},
+    )
+    if (channel?.type === ChannelType.direct) {
+      await Promise.all(
+        channel?.members
+          .filter((member) => member.present === false)
+          .map((member) => {
+            this.emitUserJoinChannel(
+              new ChannelJoinedEvent(messageDto.channelId, member.userId, true),
+            )
+            return this.channelService.joinChannel(
+              member.userId,
+              messageDto.channelId,
+            )
+          }),
+      )
+    }
+
     socket.to(messageDto.channelId).emit(ChatSocketEvent.MESSAGE, msg)
     this.logger.log(`Client sent message: ${socket.id}`)
   }
 
   @OnEvent(ChannelJoinedEvent.name)
-  emitUserJoinChannel({ channelId, userId }: ChannelJoinedEvent) {
+  emitUserJoinChannel({ channelId, userId, background }: ChannelJoinedEvent) {
     this.getSocketByUserId(userId)?.join(channelId)
     this.socket.to(channelId).emit(ChatSocketEvent.JOIN_CHANNEL, {
       channelId,
       userId,
+      background,
     })
   }
 
@@ -145,7 +167,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
    * @returns Promise<void>
    */
   async handleConnection(socket: Socket) {
-    console.log('handleConnection', socket)
     this.logger.log(`Client connected: ${socket.id}`)
   }
 

@@ -2,12 +2,12 @@ import clsx from 'clsx'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-import { IChannelMember, IChannelMessage } from '../../types/Chat'
+import { FrontEndMessage, IChannelMember } from '../../types/Chat'
 import { IUser } from '../../types/User'
 
 type ChatMessageProps = {
   user: IUser
-  message: IChannelMessage
+  message: FrontEndMessage
   members: IChannelMember[]
 }
 
@@ -26,13 +26,15 @@ const ChatMessage = ({ user, message, members }: ChatMessageProps) => {
     ['justify-end mr-6']: message.senderId === user.id,
     ['justify-start ml-6']: message.senderId !== user.id,
   })
+
   const messageStyle = clsx({
     ['px-4 py-2 rounded-lg inline-block']: true,
     ['bg-primary text-primary-content']: message.senderId === user.id,
     ['bg-gray-300 text-gray-600']: message.senderId !== user.id,
   })
+
   const imageStyle = clsx({
-    ['w-6 h-6 rounded-full']: true,
+    ['w-6 rounded-full']: true,
     ['order-2']: message.senderId === user.id,
     ['order-1']: message.senderId !== user.id,
   })
@@ -41,7 +43,12 @@ const ChatMessage = ({ user, message, members }: ChatMessageProps) => {
     <div className={messageJustify}>
       <div className={messagePosition}>
         <div>
-          <span className={messageStyle}>{message.content}</span>
+          {message.gameInvite && (
+            <Link className='link link-success' to={`/game/${message.content}`}>
+              Play with me!
+            </Link>
+          )}
+          {!message.gameInvite && <span className={messageStyle}>{message.content}</span>}
         </div>
       </div>
       <Link to={`/profile/${sender.userId}`}>

@@ -6,7 +6,7 @@ import React, { Fragment, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { ChatQueryKey } from '../../../providers/ChatProvider'
-import { TChannelType } from '../../../types/Chat'
+import { EChannelType } from '../../../types/Chat'
 import { createChannel } from '../../../utils/chatHttpRequests'
 
 type CreateChannelModalProps = {
@@ -16,7 +16,7 @@ type CreateChannelModalProps = {
 
 type FormValues = {
   name: string
-  type: TChannelType
+  type: EChannelType
   password?: string
 }
 
@@ -31,7 +31,7 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
     unregister,
   } = useForm<FormValues>({
     defaultValues: {
-      type: 'public',
+      type: EChannelType.public,
     },
   })
 
@@ -43,7 +43,7 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
       password,
     }: {
       name: string
-      type: TChannelType
+      type: EChannelType
       password?: string
     }) => createChannel(name, type, password),
     onSuccess: () => {

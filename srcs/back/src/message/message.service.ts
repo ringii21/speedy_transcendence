@@ -16,10 +16,12 @@ export class MessageService {
     senderId: number,
     channelId: string,
     content: string,
+    gameInvite: boolean,
   ) {
     return this.prisma.channelMessage.create({
       data: {
         content,
+        gameInvite,
         channel: {
           connect: {
             id: channelId,

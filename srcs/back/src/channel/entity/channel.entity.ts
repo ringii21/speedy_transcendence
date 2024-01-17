@@ -6,9 +6,9 @@ import { ChannelMessageEntity } from '../../message/entity/message.entity'
 
 export class ChannelEntity implements PrismaChannel {
   id: string
-  name: string
+  name: string | null
   type: $Enums.ChannelType
-  ownerId: number
+  ownerId: number | null
   isPrivate: boolean
 
   @Type(() => ChannelEntity)
