@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
-import { useAuth } from '../../providers/AuthProvider'
 import { useGameSocket } from '../../providers/GameSocketProvider'
 import { useGameState } from './States/GameState'
 export const Modal = () => {
@@ -22,7 +21,6 @@ export const Modal = () => {
     }
   }, [location])
   useEffect(() => {
-    /* const { user } = useAuth() */
     if (socket !== null) {
       socket?.on('game.launched', (GameId: any) => {
         setGameName(GameId)
@@ -74,7 +72,6 @@ export const Modal = () => {
       })
     }
     return () => {
-      /* socket?.emit('game.stop', { gameid: gameid , user: user  }) */
       socket?.off('lose')
       socket?.off('win')
       socket?.off('timer')
