@@ -11,20 +11,24 @@ import { useAuth } from '../providers/AuthProvider'
 import { useChat } from '../providers/ChatProvider'
 import { useSocket } from '../providers/SocketProvider'
 import { IChannel } from '../types/Chat'
+
 const Chat = () => {
   const { channelId } = useParams<{ channelId: string | undefined }>()
-  const [isCreateModalOpen, setCreateModalOpen] = useState(false)
-  const [isJoinModalOpen, setJoinModalOpen] = useState(false)
   const { user } = useAuth()
   const { allChannels } = useChat()
   const { socket } = useSocket()
 
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false)
+  const [isJoinModalOpen, setJoinModalOpen] = useState(false)
   const [currentChannel, setCurrentChannel] = useState<IChannel | undefined>(undefined)
+
   if (!user) return <Navigate to='/login' replace />
   useEffect(() => {
     const currChannel = allChannels.find((channel) => channel.id === channelId)
+
     setCurrentChannel(currChannel)
   }, [channelId, allChannels])
+
   useEffect(() => {
     socket.connect()
     return () => {

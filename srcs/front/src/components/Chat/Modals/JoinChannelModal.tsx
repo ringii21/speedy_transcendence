@@ -6,9 +6,7 @@ import React, { Fragment, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { ChatQueryKey } from '../../../providers/ChatProvider'
-import { useSocket } from '../../../providers/SocketProvider'
-import { IChannel, IChannelMember } from '../../../types/Chat'
-import { ChatSocketEvent } from '../../../types/Events'
+import { IChannel } from '../../../types/Chat'
 import { getNotJoinedVisibleChannels, joinChannel } from '../../../utils/chatHttpRequests'
 
 type CreateChannelModalProps = {
@@ -25,7 +23,6 @@ const JoinChannelModal = ({
   isJoinModalOpen: isOpen,
   setJoinModalOpen: setIsOpen,
 }: CreateChannelModalProps) => {
-  const { socket } = useSocket()
   const notJoinedChannels = useQuery({
     queryKey: [ChatQueryKey.CHANNEL_NOT_JOINED],
     queryFn: getNotJoinedVisibleChannels,
@@ -47,10 +44,7 @@ const JoinChannelModal = ({
 
   const joinChan = useMutation({
     mutationFn: ({ id, password }: { id: string; password: string }) => joinChannel(id, password),
-    onSuccess: async (data: IChannelMember) => {
-      socket.emit(ChatSocketEvent.SUBSCRIBE_CHANNEL, { channelId: data.channelId })
-      setIsOpen(false)
-    },
+    onSuccess: async () => setIsOpen(false),
     onError: (error) => {
       if (error instanceof AxiosError) {
         if (error.response?.status && error.response?.status >= 400) {
