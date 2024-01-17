@@ -119,9 +119,12 @@ export class ChannelService {
       where: {
         id: channelId,
       },
+      include: {
+        members: true,
+      },
     })
     if (!channel) throw new BadRequestException('Channel not found')
-    return this.prismaService.channelMember.update({
+    const result = await this.prismaService.channelMember.update({
       where: {
         userId_channelId: {
           channelId: channelId,
@@ -130,6 +133,28 @@ export class ChannelService {
       },
       data: {
         present: false,
+        role: Role.user,
+      },
+    })
+    const member = channel.members.find((m) => m.userId === userId)
+    if (member?.role !== Role.owner) {
+      return result
+    }
+    const nextOwner = channel.members.find((member) => {
+      return member.present === true && member.userId !== userId
+    })
+    if (!nextOwner) {
+      return result
+    }
+    return this.prismaService.channelMember.update({
+      where: {
+        userId_channelId: {
+          channelId: channelId,
+          userId: nextOwner.userId,
+        },
+      },
+      data: {
+        role: Role.owner,
       },
     })
   }
@@ -175,7 +200,6 @@ export class ChannelService {
     )
       .update(password)
       .digest('hex')
-    console.log(hpassword)
     return hpassword === hashedPassword
   }
 
@@ -435,11 +459,9 @@ export class ChannelService {
 
   async toggleUserAdmin(channelId: string, userId: number) {
     const isOwner = await this.isUserOwnerOfChannel(channelId, userId)
-    console.log('isOwner', isOwner)
     if (isOwner) throw new BadRequestException('User is owner of channel')
     const isAdmin = await this.isUserOwnerOrAdminOfChannel(channelId, userId)
-    console.log('isAdmin', isAdmin)
-    const data = await this.prismaService.channelMember.update({
+    await this.prismaService.channelMember.update({
       where: {
         userId_channelId: {
           channelId,
@@ -450,7 +472,6 @@ export class ChannelService {
         role: isAdmin ? Role.user : Role.admin,
       },
     })
-    console.log('data', data)
   }
 
   async isUserOwnerOfChannel(channelId: string, userId: number) {
@@ -511,11 +532,6 @@ export class ChannelService {
           none: {
             channelId: channelId,
             present: true,
-          },
-        },
-        channels: {
-          none: {
-            id: channelId,
           },
         },
       },

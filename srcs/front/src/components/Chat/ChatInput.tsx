@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { FaRocket } from 'react-icons/fa'
 import { MdSend } from 'react-icons/md'
 
 import { useAuth } from '../../providers/AuthProvider'
@@ -19,7 +20,6 @@ const ChatInput = ({
 
   if (!user) return <></>
   const handleSendMessage = () => {
-    console.log('isConnected', isConnected)
     if (!isConnected) return
     if (inputMessage.trim() !== '') {
       const newMessage: IChannelMessage = {
@@ -51,12 +51,22 @@ const ChatInput = ({
       <div className='absolute right-0 items-center inset-y-0 flex'>
         <button
           type='button'
+          onClick={() => {
+            console.log('play')
+          }}
+          className='btn btn-error'
+        >
+          <span className='font-bold text-accent-content'>Play</span>
+          <FaRocket className='text-accent-content text-lg' />
+        </button>
+        <button
+          type='button'
           onClick={handleSendMessage}
           className='btn btn-primary'
           disabled={!inputMessage.trim()}
         >
-          <span className='font-bold text-base-content'>Send</span>
-          <MdSend className='text-base-content text-lg' />
+          <span className='font-bold text-primary-content'>Send</span>
+          <MdSend className='text-primary-content text-lg' />
         </button>
       </div>
     </div>

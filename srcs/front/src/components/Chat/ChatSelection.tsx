@@ -24,7 +24,6 @@ type ChannelProps = {
 
 const Channel = ({ channel, selectedChannel, mutate, user }: ChannelProps) => {
   const me = channel.members.find((m) => m.user.id === user?.id)
-  console.log(me)
   const [isInviteModalOpen, setInviteModalOpen] = React.useState(false)
   const [isEditChannelModalOpen, setEditChannelModalOpen] = React.useState(false)
   const queryClient = useQueryClient()
@@ -52,23 +51,22 @@ const Channel = ({ channel, selectedChannel, mutate, user }: ChannelProps) => {
           <button
             onClick={(e) => {
               e.preventDefault()
-              setEditChannelModalOpen(true)
-            }}
-            className='btn btn-ghost btn-sm'
-          >
-            <HiDotsVertical />
-          </button>
-        )}
-
-        {(me.role === 'admin' || me.role === 'owner') && (
-          <button
-            onClick={(e) => {
-              e.preventDefault()
               setInviteModalOpen(true)
             }}
             className='btn btn-ghost btn-sm'
           >
             <FaPlus />
+          </button>
+        )}
+        {me.role === 'owner' && (
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              setEditChannelModalOpen(true)
+            }}
+            className='btn btn-ghost btn-sm'
+          >
+            <HiDotsVertical />
           </button>
         )}
       </div>
