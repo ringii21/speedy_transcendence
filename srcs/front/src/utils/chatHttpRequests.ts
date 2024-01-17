@@ -1,4 +1,5 @@
 import { ChannelType, IChannel, IChannelMember } from '../types/Chat'
+import { IUser } from '../types/User'
 import httpInstance from './httpClient'
 
 export const getMyChannels = async () => {
@@ -20,7 +21,6 @@ export const joinChannel = async (channelId: string, password: string) => {
   const { data } = await httpInstance().post(`/api/chat/channels/${channelId}/join`, {
     password,
   })
-  console.log(data)
   return data
 }
 
@@ -31,6 +31,21 @@ export const leaveChannel = async (channelId: string): Promise<IChannelMember> =
 
 export const createChannel = async (name: string, type: ChannelType, password?: string) => {
   const { data } = await httpInstance().post<IChannel>('/api/chat/channels', {
+    name,
+    type,
+    password,
+  })
+  return data
+}
+
+export const editChannel = async (
+  id: string,
+  name: string,
+  type: ChannelType,
+  password?: string,
+) => {
+  const { data } = await httpInstance().patch<IChannel>('/api/chat/channels', {
+    id,
     name,
     type,
     password,
@@ -57,3 +72,15 @@ export const userAction = async ({
   httpInstance().post(`/api/chat/channels/${channelId}/${action}`, {
     userId,
   })
+
+export const getUsersNotInChannel = async ({ channelId }: { channelId: string }) => {
+  const { data } = await httpInstance().get<IUser[]>(`/api/chat/channels/${channelId}/users`)
+  return data
+}
+
+export const inviteUser = async ({ channelId, userId }: { channelId: string; userId: number }) => {
+  const { data } = await httpInstance().post(`/api/chat/channels/${channelId}/invite`, {
+    userId,
+  })
+  return data
+}

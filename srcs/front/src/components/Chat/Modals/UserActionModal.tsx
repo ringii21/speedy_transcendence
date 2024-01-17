@@ -4,7 +4,7 @@ import clsx from 'clsx'
 import React, { Fragment } from 'react'
 import { useForm } from 'react-hook-form'
 
-import { userAction } from '../../utils/chatHttpRequests'
+import { userAction } from '../../../utils/chatHttpRequests'
 
 type UserActionModalProps = {
   isModalOpen: boolean

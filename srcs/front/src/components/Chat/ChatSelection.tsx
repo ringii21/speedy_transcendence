@@ -1,7 +1,8 @@
 import { UseMutateFunction, useMutation } from '@tanstack/react-query'
 import clsx from 'clsx'
 import React from 'react'
-import { FaEyeSlash, FaHashtag, FaLock } from 'react-icons/fa'
+import { FaEyeSlash, FaHashtag, FaLock, FaPlus } from 'react-icons/fa'
+import { HiDotsVertical } from 'react-icons/hi'
 import { IoCloseSharp } from 'react-icons/io5'
 import { Link } from 'react-router-dom'
 
@@ -9,48 +10,66 @@ import { useAuth } from '../../providers/AuthProvider'
 import { useChat } from '../../providers/ChatProvider'
 import { IChannel, IChannelMember } from '../../types/Chat'
 import { leaveChannel } from '../../utils/chatHttpRequests'
+import { EditChannelModal } from './Modals/EditChannelModal'
+import { InviteChannelModal } from './Modals/InviteChannelModal'
 
 type ChannelProps = {
-  channel?: IChannel
+  channel: IChannel
   selectedChannel?: string
   mutate: UseMutateFunction<IChannelMember, Error, string, unknown>
 }
 
 const Channel = ({ channel, selectedChannel, mutate }: ChannelProps) => {
-  const { user } = useAuth()
-  if (!user || !channel) return <></>
+  const [isInviteModalOpen, setInviteModalOpen] = React.useState(false)
+  const [isEditChannelModalOpen, setEditChannelModalOpen] = React.useState(false)
 
   const wrapperClass = clsx({
-    ['flex hover:bg-base-300 items-center justify-between']: true,
+    ['flex hover:bg-base-300 items-center justify-between p-1 rounded']: true,
     ['bg-base-300']: channel.id === selectedChannel,
   })
 
-  const wrapper = (divs: React.JSX.Element) => (
+  return (
     <div className={wrapperClass}>
-      <button
-        onClick={() => {
-          mutate(channel.id)
-        }}
-        className='btn btn-ghost btn-sm'
-      >
-        <IoCloseSharp />
-      </button>
-      <Link to={`/chat/${channel.id}`} className='flex p-2 cursor-pointer'>
-        <div className='flex items-center mr-4'>{divs}</div>
-        <div className='flex-grow text-right'>
-          {channel.members.filter((m) => m.present).length ?? 0}
+      {EditChannelModal({ isEditChannelModalOpen, setEditChannelModalOpen, channel })}
+      {InviteChannelModal({ isInviteModalOpen, setInviteModalOpen, channel })}
+      <div>
+        <button
+          onClick={() => {
+            mutate(channel.id)
+          }}
+          className='btn btn-ghost btn-sm'
+        >
+          <IoCloseSharp />
+        </button>
+        <button
+          onClick={(e) => {
+            e.preventDefault()
+            setEditChannelModalOpen(true)
+          }}
+          className='btn btn-ghost btn-sm'
+        >
+          <HiDotsVertical />
+        </button>
+        <button
+          onClick={(e) => {
+            e.preventDefault()
+            setInviteModalOpen(true)
+          }}
+          className='btn btn-ghost btn-sm'
+        >
+          <FaPlus />
+        </button>
+      </div>
+      <Link to={`/chat/${channel.id}`} className='flex cursor-pointer'>
+        <div className='flex items-center mr-4'>
+          {channel.type === 'private' && <FaEyeSlash size={12} className='text-base-content' />}
+          {channel.type === 'protected' && <FaLock size={12} className='text-base-content' />}
+          {channel.type === 'public' && <FaHashtag size={12} className='text-base-content' />}
+          <span className='ml-2 font-normal overflow-ellipsis'>{channel.name}</span>
         </div>
+        <div>{channel.members.filter((m) => m.present).length ?? 0}</div>
       </Link>
     </div>
-  )
-
-  return wrapper(
-    <>
-      {channel.type === 'private' && <FaEyeSlash size={12} className='text-base-content' />}
-      {channel.type === 'protected' && <FaLock size={12} className='text-base-content' />}
-      {channel.type === 'public' && <FaHashtag size={12} className='text-base-content' />}
-      <span className='ml-2 font-normal'>{channel.name}</span>
-    </>,
   )
 }
 
@@ -59,26 +78,24 @@ type ChatSelectionProps = {
 }
 
 const ChatSelection = ({ channelId }: ChatSelectionProps) => {
-  const { myChannels, channelMap } = useChat()
-
+  const { allChannels } = useChat()
   const { mutate } = useMutation({
     mutationFn: (channelId: string) => leaveChannel(channelId),
   })
+
   return (
     <div className='items-center gap-12'>
       <div className='p-2'>
         <h2 className='text-center text-base-content text-lg'>Channels</h2>
-        <div className='m-2 scroll-auto'>
-          {myChannels
-            // .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-            .map((channel) => (
-              <Channel
-                channel={channelMap.find((c) => c.id === channel.id)}
-                key={channel.id}
-                selectedChannel={channelId}
-                mutate={mutate}
-              />
-            ))}
+        <div className='m-2 overflow-y-auto max-h-screen'>
+          {allChannels.map((channel) => (
+            <Channel
+              channel={channel}
+              key={channel.id}
+              selectedChannel={channelId}
+              mutate={mutate}
+            />
+          ))}
         </div>
       </div>
     </div>

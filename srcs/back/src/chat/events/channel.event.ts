@@ -6,6 +6,11 @@ export class ChannelJoinedEvent {
   ) {}
 }
 
+export class ChannelEditEvent {
+  name = 'channel:edit'
+  constructor(public readonly channelId: string) {}
+}
+
 export class ChannelLeftEvent {
   name = 'channel:left'
   constructor(
