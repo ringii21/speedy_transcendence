@@ -51,7 +51,6 @@ export class NotificationController {
         req.user.id,
         notificationDto.receivedId,
       )
-    this.notificationGateway.handleNotification(req.socket, createdNotification)
     return createdNotification
   }
 
