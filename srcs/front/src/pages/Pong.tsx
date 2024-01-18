@@ -16,7 +16,6 @@ const Game = () => {
   if (!isConnected) {
     socket?.connect()
   }
-
   return (
     <div>
       <Play />

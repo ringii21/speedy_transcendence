@@ -28,6 +28,7 @@ const ChatConversation = ({ currentChannel, me }: ChatChannelProps) => {
 
   useEffect(() => {
     const messageListener = (newMessage: FrontEndMessage) => {
+      console.log(socket)
       if (newMessage.channelId === currentChannel.id) {
         setMessages((messages) => [...messages, newMessage])
       }

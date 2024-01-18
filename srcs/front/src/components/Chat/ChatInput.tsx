@@ -22,6 +22,7 @@ const ChatInput = ({
 
   const sendMessage = (message: FrontEndMessage) => {
     if (!isConnected) return
+    console.log(socket)
     socket.emit(ChatSocketEvent.MESSAGE, message)
     setMessage((messages) => [...messages, message])
   }

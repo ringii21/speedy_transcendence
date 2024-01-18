@@ -30,7 +30,10 @@ const Chat = () => {
   }, [channelId, allChannels])
 
   useEffect(() => {
-    socket.connect()
+    if (!socket.connected) {
+      console.log('Je me connecte')
+      socket.connect()
+    }
     return () => {
       socket.disconnect()
     }

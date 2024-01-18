@@ -5,6 +5,7 @@ import {
     SubscribeMessage,
     WebSocketGateway,
     WebSocketServer,
+    WsException
   } from '@nestjs/websockets';
   import { Server, Socket } from 'socket.io';
   import {} from '@nestjs/platform-socket.io';
@@ -14,8 +15,9 @@ import {
   import { $Enums } from '@prisma/client';
   import * as crypto from 'crypto';
   import { UsersService } from 'src/users/users.service';
-  import { ChatGateway } from 'src/chat/chat.gateway';
-  
+  import { JwtAuthService } from 'src/auth/jwt/jwt-auth.service';
+  import { parse } from 'cookie'
+ 
   interface GameInvite {
     inviter: string;
     opponentId: string;
@@ -36,14 +38,15 @@ import {
       private prisma: PrismaService,
       private readonly eventEmitter: EventEmitter2,
       private readonly usersService: UsersService,
-      private readonly chatGateway: ChatGateway,
+      private readonly jwtAuthService: JwtAuthService,
     ) {}
   
     @WebSocketServer() private server: Server;
     private games_map = new Map<string, Game>();
     private game_invites = new Set<GameInvite>();
     async handleConnection(client: Socket) {
-      const user = await this.chatGateway.getUser(client)
+      console.log('Je suis connecter a game')
+      const user = await this.getUser(client)
       if (!user) {
         client.disconnect()
         return
@@ -51,7 +54,7 @@ import {
     }
   
     async handleDisconnect(client: Socket) {
-      const user = await this.chatGateway.getUser(client)
+      const user = await this.getUser(client)
       if (!user) {
         client.disconnect()
         return
@@ -105,7 +108,7 @@ import {
 
     @SubscribeMessage('game.stop')
     async handleGameStop(client: Socket, data: { gameid: string, gameState: any }) {
-      const user = await this.chatGateway.getUser(client)
+      const user = await this.getUser(client)
       const game = this.games_map.get(data.gameid)
       if (!user || !game) {
         return 
@@ -306,6 +309,22 @@ import {
         client.emit('friendOnline', friendId);
       } else {
         client.emit('friendOffline', friendId);
+      }
+    }
+
+    async getUser(socket: Socket) {
+      const jwtCookie = socket.handshake.headers.cookie
+      if (!jwtCookie) return null
+      const parsed = parse(jwtCookie)
+      if (!parsed.jwt) return null
+      try {
+        const jwt = await this.jwtAuthService.verify(parsed.jwt)
+        if (!jwt || !jwt.sub) return null
+        const user = await this.usersService.find({ id: jwt.sub })
+        if (!user) return null
+        return user
+      } catch (e) {
+        throw new WsException('Invalid token')
       }
     }
   }
