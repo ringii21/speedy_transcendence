@@ -1,25 +1,25 @@
 # Make rules
-up				:
-					sudo docker compose -f ./srcs/docker-compose.yml up -d
+up:
+	docker compose -f docker-compose.yml up -d
 
-stop			:
-					sudo docker compose -f ./srcs/docker-compose.yml stop
+stop:
+	docker compose -f docker-compose.yml stop
 
-start			:
-					sudo docker compose -f ./srcs/docker-compose.yml start
+start:
+	docker compose -f docker-compose.yml start
 
-prune			:
-					sudo docker system prune --volumes --all
+prune:
+	docker system prune --volumes --all
 
-down			:
-					sudo docker compose down
+down:
+	docker compose down
 
-build			:
-					sudo docker compose build
+build:
+	docker compose build --no-cache
 
-clean			:	prune
+clean:	prune
 
-dev				:
-					docker compose -f ./srcs/docker-compose.dev.yml up
+dev:
+	docker compose -f docker-compose.dev.yml up
 
 .PHONY	=		up start down build stop prune clean dev

@@ -30,7 +30,7 @@ export class AppModule {
       'TOKEN_URL',
       'BASE_URL',
       'JWT_SECRET',
-      '2FA_APP_NAME',
+      'TWOFA_APP_NAME',
       'BACKEND_URL',
       'SALT',
     ]

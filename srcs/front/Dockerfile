@@ -1,24 +1,22 @@
-FROM        node:lts AS build
+# Build stage
+FROM node:lts-alpine AS build
 
-WORKDIR     /app
+WORKDIR /app
 
-RUN         apt-get install -y && \
-            npm install -g npm@latest
+COPY package*.json ./
 
-COPY        package*.json .
+RUN npm install
 
-RUN         npm install
+COPY . .
 
-COPY        . .
+RUN npm run build
 
-RUN         npm run build
+# Serve stage
+FROM nginx:alpine
 
-CMD         [ "npm", "run", "build" ]
+COPY --from=build /app/build /usr/share/nginx/html
+COPY ./conf/nginx.conf /etc/nginx/conf.d/default.conf
 
-FROM        nginx:latest
+EXPOSE 80
 
-COPY        ./conf/default.conf ./etc/nginx/http.d/default.conf
-COPY        ./conf/nginx.conf ./etc/nginx/nginx.conf
-COPY        --from=build /app/build /usr/share/nginx/html
-
-EXPOSE      8080
+CMD ["nginx", "-g", "daemon off;"]

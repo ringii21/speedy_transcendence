@@ -1,17 +1,31 @@
-FROM		node:lts AS development
+# Dev stage
+FROM node:lts AS dev
 
-WORKDIR		/app
+WORKDIR /app
+COPY . .
+RUN npm install
 
-RUN			apt-get update -y && \
-			npm install -g @nestjs/cli
+# Build stage
+FROM node:lts AS build
 
-COPY		. .
+WORKDIR /app
+COPY --from=dev /app/node_modules ./node_modules
+COPY . .
+RUN npm run prisma:generate
+RUN npm run build
+RUN npm install --omit=dev
 
-RUN			npm install
+# Prod stage
+FROM node:lts
 
-EXPOSE		3000
+WORKDIR /app
+ARG NODE_ENV=production
+COPY --from=build /app/dist dist
+COPY package*.json ./
+COPY --from=build /app/node_modules node_modules
+COPY prisma prisma
+COPY setup.sh ./
 
-# RUN			npm run start
+EXPOSE 3000
 
-CMD			[ "npm", "run", "start" ]
-
+CMD ["sh", "setup.sh"]
