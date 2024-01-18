@@ -1,3 +1,4 @@
+import { useMutation } from '@tanstack/react-query'
 import clsx from 'clsx'
 import React, { useEffect, useState } from 'react'
 import { FC, HTMLAttributes } from 'react'
@@ -6,9 +7,10 @@ import { PiSwordFill } from 'react-icons/pi'
 import { Link } from 'react-router-dom'
 
 import { useAuth } from '../../providers/AuthProvider'
-import { IChannel, IChannelMember } from '../../types/Chat'
+import { EChannelType, IChannel, IChannelMember } from '../../types/Chat'
 import { IUser } from '../../types/User'
-import { UserActionModal } from './UserActionModal'
+import { createPm } from '../../utils/chatHttpRequests'
+import { UserActionModal } from './Modals/UserActionModal'
 
 type UserProps = HTMLAttributes<HTMLDivElement> & {
   member: IChannelMember
@@ -36,14 +38,23 @@ const User: FC<UserProps> = ({
     'bg-base-200': index % 2 === 1,
   })
 
+  const { mutate } = useMutation({
+    mutationFn: createPm,
+  })
+
   const onClickAction = () => {
     setSelectedUser(member.user)
     setModalOpen(!modalOpen)
   }
 
+  const onClickOnUserInList = () => {
+    if (member.user.id === user.id) return
+    mutate(member.userId)
+  }
+
   return (
     <div className={userStyle}>
-      <div className='flex items-center'>
+      <div onClick={onClickOnUserInList} className='flex items-center'>
         {member.role == 'owner' && <FaCrown className='text-error mt-1 m-1' />}
         {member.role == 'admin' && <PiSwordFill className='text-warning mt-1 m-1' />}
         {member.role == 'user' && <FaUser className='text-base mt-1 m-1' />}
@@ -60,6 +71,60 @@ const User: FC<UserProps> = ({
             <FaUser />
           </Link>
         )}
+      </div>
+    </div>
+  )
+}
+
+const directMessageChannelRender = (user: IUser, channel: IChannel) => {
+  const notMe = channel.members.find((m) => m.user.id !== user?.id)
+  if (!notMe) return <></>
+  return (
+    <div className='grid place-items-center mt-4'>
+      <Link className='w-1/2 avatar' to={`/profile/${notMe.userId}`}>
+        <div className='rounded'>
+          <img src={notMe.user.image} alt='My profile' />
+        </div>
+      </Link>
+      <span className='text-lg'>{notMe.user.username}</span>
+    </div>
+  )
+}
+
+const userRender = ({
+  user,
+  channel,
+  setModalOpen,
+  setSelectedUser,
+  showActionModal,
+  isModalOpen,
+}: {
+  user: IUser
+  channel: IChannel
+  setModalOpen: React.Dispatch<React.SetStateAction<boolean>>
+  setSelectedUser: React.Dispatch<React.SetStateAction<IUser | null>>
+  showActionModal: (member: IChannelMember) => boolean
+  isModalOpen: boolean
+}) => {
+  return (
+    <div>
+      <h1 className='text-lg text-base-content text-center'>Users</h1>
+      <div className='p-2'>
+        {channel.members
+          .filter((member) => member.present)
+          .sort((a, b) => (a.user.username > b.user.username ? 1 : -1))
+          .map((member, i) => (
+            <User
+              key={i}
+              member={member}
+              index={i}
+              setModalOpen={setModalOpen}
+              modalOpen={isModalOpen}
+              setSelectedUser={setSelectedUser}
+              user={user}
+              showActionModal={showActionModal(member)}
+            />
+          ))}
       </div>
     </div>
   )
@@ -97,24 +162,16 @@ const ChatUsers = ({ channel }: { channel: IChannel }) => {
           userId={selectedUser.id}
         />
       )}
-      <h1 className='text-lg text-base-content text-center'>Users</h1>
-      <div className='p-2'>
-        {channel.members
-          .filter((member) => member.present)
-          .sort((a, b) => (a.user.username > b.user.username ? 1 : -1))
-          .map((member, i) => (
-            <User
-              key={i}
-              member={member}
-              index={i}
-              setModalOpen={setModalOpen}
-              modalOpen={isModalOpen}
-              setSelectedUser={setSelectedUser}
-              user={user}
-              showActionModal={showActionModal(member)}
-            />
-          ))}
-      </div>
+      {channel.type === EChannelType.direct
+        ? directMessageChannelRender(user, channel)
+        : userRender({
+            user,
+            channel,
+            setModalOpen,
+            setSelectedUser,
+            showActionModal,
+            isModalOpen,
+          })}
     </div>
   )
 }

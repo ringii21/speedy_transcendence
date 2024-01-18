@@ -36,6 +36,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   )
+  console.log(join(__dirname, '..', 'uploads'))
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/public',
   })

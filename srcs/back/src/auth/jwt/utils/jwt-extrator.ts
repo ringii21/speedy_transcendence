@@ -8,6 +8,7 @@ const isHandshake = (data: Handshake | Request): data is Handshake => {
 
 export const extractJwtFromCookie = (req: Handshake | Request) => {
   if (isHandshake(req)) {
+    if (!req.headers.cookie) return ''
     return parse(req!.headers!.cookie!).jwt
   }
 

@@ -3,7 +3,13 @@ export class ChannelJoinedEvent {
   constructor(
     public readonly channelId: string,
     public readonly userId: number,
+    public readonly background: boolean = false,
   ) {}
+}
+
+export class ChannelEditEvent {
+  name = 'channel:edit'
+  constructor(public readonly channelId: string) {}
 }
 
 export class ChannelLeftEvent {

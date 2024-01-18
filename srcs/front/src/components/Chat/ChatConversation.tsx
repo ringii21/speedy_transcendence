@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 
 import { useSocket } from '../../providers/SocketProvider'
-import { IChannel, IChannelMessage } from '../../types/Chat'
+import { FrontEndMessage, IChannel } from '../../types/Chat'
 import { ChatSocketEvent } from '../../types/Events'
 import { IUser } from '../../types/User'
 import { ChatInput } from './ChatInput'
@@ -15,8 +15,7 @@ type ChatChannelProps = {
 const ChatConversation = ({ currentChannel, me }: ChatChannelProps) => {
   const currentRef = useRef<HTMLDivElement>(null)
   const { socket } = useSocket()
-  const [messages, setMessages] = useState<IChannelMessage[]>([])
-
+  const [messages, setMessages] = useState<FrontEndMessage[]>([])
   useEffect(() => setMessages(currentChannel.messages), [currentChannel])
   useEffect(() => {
     if (currentRef.current) {
@@ -28,7 +27,7 @@ const ChatConversation = ({ currentChannel, me }: ChatChannelProps) => {
   }, [messages])
 
   useEffect(() => {
-    const messageListener = (newMessage: IChannelMessage) => {
+    const messageListener = (newMessage: FrontEndMessage) => {
       if (newMessage.channelId === currentChannel.id) {
         setMessages((messages) => [...messages, newMessage])
       }

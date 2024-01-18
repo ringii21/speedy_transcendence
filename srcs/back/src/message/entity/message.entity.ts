@@ -5,6 +5,7 @@ export class ChannelMessageEntity implements PrismaChannelMessage {
   content: string
   channelId: string
   senderId: number
+  gameInvite: boolean
   createdAt: Date
   deletedAt: Date | null
   updatedAt: Date

@@ -34,9 +34,6 @@ const Navbar = () => {
           </div>
           <ul className='menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52'>
             <li>
-              <Link to='/'>Home</Link>
-            </li>
-            <li>
               <Link to='/chat'>Chat</Link>
             </li>
             <li>
@@ -59,7 +56,9 @@ const Navbar = () => {
           </li>
           <li>
             <button type='button' className='btn-menu btn-one letterMove'>
-              <Link to='/play'>Game</Link>
+              <Link className='text-base-content' to='/play'>
+                Game
+              </Link>
             </button>
           </li>
         </ul>

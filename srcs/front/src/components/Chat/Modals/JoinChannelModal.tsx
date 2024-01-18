@@ -5,12 +5,9 @@ import clsx from 'clsx'
 import React, { Fragment, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 
-import { ChatQueryKey } from '../../providers/ChatProvider'
-import { useSocket } from '../../providers/SocketProvider'
-import { IChannelMember } from '../../types/Chat'
-import { IChannel } from '../../types/Chat'
-import { ChatSocketEvent } from '../../types/Events'
-import { getNotJoinedVisibleChannels, joinChannel } from '../../utils/chatHttpRequests'
+import { ChatQueryKey } from '../../../providers/ChatProvider'
+import { IChannel } from '../../../types/Chat'
+import { getNotJoinedVisibleChannels, joinChannel } from '../../../utils/chatHttpRequests'
 
 type CreateChannelModalProps = {
   isJoinModalOpen: boolean
@@ -26,7 +23,6 @@ const JoinChannelModal = ({
   isJoinModalOpen: isOpen,
   setJoinModalOpen: setIsOpen,
 }: CreateChannelModalProps) => {
-  const { socket } = useSocket()
   const notJoinedChannels = useQuery({
     queryKey: [ChatQueryKey.CHANNEL_NOT_JOINED],
     queryFn: getNotJoinedVisibleChannels,
@@ -35,6 +31,7 @@ const JoinChannelModal = ({
     register,
     handleSubmit,
     watch,
+    reset,
     formState: { errors },
     setError,
   } = useForm<FormValues>({})
@@ -42,14 +39,12 @@ const JoinChannelModal = ({
   useEffect(() => {
     if (!isOpen) return
     notJoinedChannels.refetch()
+    reset()
   }, [isOpen])
 
   const joinChan = useMutation({
     mutationFn: ({ id, password }: { id: string; password: string }) => joinChannel(id, password),
-    onSuccess: async (data: IChannelMember) => {
-      socket.emit(ChatSocketEvent.SUBSCRIBE_CHANNEL, { channelId: data.channelId })
-      setIsOpen(false)
-    },
+    onSuccess: async () => setIsOpen(false),
     onError: (error) => {
       if (error instanceof AxiosError) {
         if (error.response?.status && error.response?.status >= 400) {
@@ -74,8 +69,22 @@ const JoinChannelModal = ({
   })
 
   const onSubmit = (data: FormValues) => {
-    console.error(data)
     joinChan.mutate(data)
+  }
+
+  const getOptions = (channels: IChannel[]) => {
+    return (
+      <>
+        <option value='' disabled>
+          Select a channel
+        </option>
+        {channels.map((channel) => (
+          <option key={channel.id} value={channel.id}>
+            {channel.name}
+          </option>
+        ))}
+      </>
+    )
   }
 
   return (
@@ -130,11 +139,9 @@ const JoinChannelModal = ({
                               No available channels
                             </option>
                           )}
-                          {notJoinedChannels.data?.map((channel) => (
-                            <option key={channel.id} value={channel.id}>
-                              {channel.name}
-                            </option>
-                          ))}
+                          {notJoinedChannels.data?.length &&
+                            notJoinedChannels.data.length > 0 &&
+                            getOptions(notJoinedChannels.data)}
                         </select>
                       </div>
                       {selectedChannel?.type === 'protected' && (

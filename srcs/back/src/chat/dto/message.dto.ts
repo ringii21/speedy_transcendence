@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsUUID } from 'class-validator'
+import { IsBoolean, IsNotEmpty, IsString, IsUUID } from 'class-validator'
 
 export class MessageDto {
   @IsUUID()
@@ -8,4 +8,7 @@ export class MessageDto {
   @IsNotEmpty()
   @IsString()
   content: string
+
+  @IsBoolean()
+  gameInvite: boolean
 }

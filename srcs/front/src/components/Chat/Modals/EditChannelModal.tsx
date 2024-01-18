@@ -2,25 +2,30 @@ import { Dialog, Transition } from '@headlessui/react'
 import { useMutation } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import clsx from 'clsx'
-import React, { Fragment } from 'react'
+import React, { Fragment, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 
-import { ChatQueryKey } from '../../providers/ChatProvider'
-import { ChannelType } from '../../types/Chat'
-import { createChannel } from '../../utils/chatHttpRequests'
+import { ChatQueryKey } from '../../../providers/ChatProvider'
+import { EChannelType, IChannel } from '../../../types/Chat'
+import { editChannel } from '../../../utils/chatHttpRequests'
 
-type CreateChannelModalProps = {
-  isCreateModalOpen: boolean
-  setCreateModalOpen: React.Dispatch<React.SetStateAction<boolean>>
+type EditChannelModalProps = {
+  isEditChannelModalOpen: boolean
+  setEditChannelModalOpen: React.Dispatch<React.SetStateAction<boolean>>
+  channel: IChannel
 }
 
 type FormValues = {
   name: string
-  type: ChannelType
+  type: EChannelType
   password?: string
 }
 
-const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateChannelModalProps) => {
+const EditChannelModal = ({
+  isEditChannelModalOpen,
+  setEditChannelModalOpen,
+  channel,
+}: EditChannelModalProps) => {
   const {
     watch,
     register,
@@ -28,9 +33,11 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
     formState: { errors },
     setError,
     reset,
+    unregister,
   } = useForm<FormValues>({
     defaultValues: {
-      type: 'public',
+      type: channel.type,
+      name: channel.name,
     },
   })
 
@@ -42,11 +49,12 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
       password,
     }: {
       name: string
-      type: ChannelType
+      type: EChannelType
       password?: string
-    }) => createChannel(name, type, password),
+    }) => editChannel(channel.id, name, type, password),
     onSuccess: () => {
-      setCreateModalOpen(false)
+      reset()
+      setEditChannelModalOpen(false)
     },
     onError: (error) => {
       if (error instanceof AxiosError) {
@@ -74,6 +82,9 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
   const onSubmit = async (data: FormValues) => mutate(data)
 
   const type = watch('type')
+  useEffect(() => {
+    type !== 'protected' && unregister('password')
+  }, [type])
 
   const buttonStyle = clsx({
     ['btn']: true,
@@ -82,11 +93,11 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
 
   const onClose = () => {
     reset()
-    setCreateModalOpen(false)
+    setEditChannelModalOpen(false)
   }
 
   return (
-    <Transition appear show={isCreateModalOpen} as={Fragment}>
+    <Transition appear show={isEditChannelModalOpen} as={Fragment}>
       <Dialog as='div' className='relative z-10' onClose={onClose}>
         <Transition.Child
           as={Fragment}
@@ -113,7 +124,7 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
             >
               <Dialog.Panel className='modal-box'>
                 <Dialog.Title as='h3' className='font-bold text-lg'>
-                  Create channel
+                  Modify channel
                 </Dialog.Title>
                 <div className='modal-action'>
                   <div className='grid grid-cols-1 gap-4 max-w-md mx-auto'>
@@ -197,7 +208,7 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
                       )}
                       <div className='flex justify-evenly mt-4'>
                         <button type='submit' className={`${buttonStyle} btn-success`}>
-                          Create
+                          Modify
                         </button>
                         <button onClick={onClose} className={`${buttonStyle} btn-error`}>
                           Cancel
@@ -215,4 +226,4 @@ const CreateChannelModal = ({ isCreateModalOpen, setCreateModalOpen }: CreateCha
   )
 }
 
-export { CreateChannelModal }
+export { EditChannelModal }

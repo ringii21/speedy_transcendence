@@ -12,14 +12,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter'
       isGlobal: true,
     }),
     EventEmitterModule.forRoot(),
-    LoggerModule.forRoot({
-      pinoHttp: {
-        transport: {
-          target: 'pino-pretty',
-          options: { colorize: true },
-        },
-      },
-    }),
+    LoggerModule.forRoot({}),
     UsersModule,
     AuthModule,
     ChatModule,
@@ -27,7 +20,6 @@ import { EventEmitterModule } from '@nestjs/event-emitter'
   ],
   providers: [Logger],
 })
-
 export class AppModule {
   constructor(configService: ConfigService) {
     const envs = [
@@ -42,6 +34,7 @@ export class AppModule {
       'JWT_SECRET',
       '2FA_APP_NAME',
       'BACKEND_URL',
+      'SALT',
     ]
     envs.forEach((env) => configService.getOrThrow(env))
   }

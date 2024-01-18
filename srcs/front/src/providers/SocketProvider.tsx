@@ -1,6 +1,7 @@
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
 import { Socket } from 'socket.io-client'
 
+import { ChatSocketEvent } from '../types/Events'
 import { chatSocket as socket } from '../utils/socketService'
 
 interface SocketContextData {
@@ -17,18 +18,27 @@ export const SocketContext = createContext<SocketContextData>({
   isConnected: false,
 })
 
+export const logSocketEvent = (event: string) => console.log(event + ' event emitted')
+
 export const SocketProvider = ({ children }: Props) => {
   const [isConnected, setIsConnected] = useState<boolean>(false)
   useEffect(() => {
     socket.on('connect', () => {
-      console.log('connected')
+      logSocketEvent('connect')
+      socket.emit(ChatSocketEvent.SUBSCRIBE)
+      logSocketEvent('subscribed')
       setIsConnected(true)
     })
     socket.on('disconnect', () => {
-      console.log('disconnected')
+      logSocketEvent('disconnect')
+      socket.emit(ChatSocketEvent.UNSUBSCRIBE)
+      logSocketEvent('unsubscribed')
       setIsConnected(false)
     })
-    socket.on('connect_error', console.error)
+    socket.on('connect_error', (e: Error) => {
+      logSocketEvent('connect_error')
+      console.warn('Connection error', e)
+    })
 
     return () => {
       socket.off('connect')
