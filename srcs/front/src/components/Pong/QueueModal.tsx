@@ -1,22 +1,22 @@
 import { forwardRef, useEffect, useState } from 'react'
 
-import { useGameSocket } from '../../providers/GameSocketProvider'
+import { useSocket } from '../../providers/SocketProvider'
 
 export const QueueWaitModal = forwardRef<HTMLDialogElement, any>((props, ref) => {
-  const { socket, isConnected } = useGameSocket()
+  const { gameSocket, isGameConnected } = useSocket()
   const [searchOpponent, setSearchOpponent] = useState('LOOKING FOR A MATE...')
 
   useEffect(() => {
-    if (socket) {
+    if (gameSocket) {
       const handleGameLaunched = () => {
         setSearchOpponent(`FOUND OPPONENT !`)
       }
 
-      socket?.on('game.launched', handleGameLaunched)
+      gameSocket?.on('game.launched', handleGameLaunched)
     }
   })
 
-  if (!isConnected) return <></>
+  if (!isGameConnected) return <></>
   return (
     <dialog ref={ref} id='queue_modal' className='modal backdrop:bg-black/70'>
       <div className='relative p-4 w-full max-w-2xl max-h-full'>
@@ -28,7 +28,7 @@ export const QueueWaitModal = forwardRef<HTMLDialogElement, any>((props, ref) =>
                 className='text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white'
                 data-modal-hide='default-modal'
                 onClick={() => {
-                  socket?.emit('quitQueue', {
+                  gameSocket?.emit('quitQueue', {
                     gameMode: props.gameMode,
                   })
                   props.setGameMode('')
@@ -86,7 +86,7 @@ export const QueueWaitModal = forwardRef<HTMLDialogElement, any>((props, ref) =>
                 data-modal-hide='default-modal'
                 className='text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
                 onClick={() => {
-                  socket?.emit('quitQueue', {
+                  gameSocket?.emit('quitQueue', {
                     gameMode: props.gameMode,
                   })
                   props.setGameMode('')

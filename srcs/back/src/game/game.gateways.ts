@@ -15,8 +15,7 @@ import {
   import { $Enums } from '@prisma/client';
   import * as crypto from 'crypto';
   import { UsersService } from 'src/users/users.service';
-  import { JwtAuthService } from 'src/auth/jwt/jwt-auth.service';
-  import { parse } from 'cookie'
+import { AuthService } from 'src/auth/auth.service';
  
   interface GameInvite {
     inviter: string;
@@ -38,15 +37,14 @@ import {
       private prisma: PrismaService,
       private readonly eventEmitter: EventEmitter2,
       private readonly usersService: UsersService,
-      private readonly jwtAuthService: JwtAuthService,
+      private readonly authService: AuthService,
     ) {}
   
     @WebSocketServer() private server: Server;
     private games_map = new Map<string, Game>();
     private game_invites = new Set<GameInvite>();
     async handleConnection(client: Socket) {
-      console.log('Je suis connecter a game')
-      const user = await this.getUser(client)
+      const user = await this.authService.getSocketUser(client)
       if (!user) {
         client.disconnect()
         return
@@ -54,7 +52,7 @@ import {
     }
   
     async handleDisconnect(client: Socket) {
-      const user = await this.getUser(client)
+      const user = await this.authService.getSocketUser(client)
       if (!user) {
         client.disconnect()
         return
@@ -108,7 +106,7 @@ import {
 
     @SubscribeMessage('game.stop')
     async handleGameStop(client: Socket, data: { gameid: string, gameState: any }) {
-      const user = await this.getUser(client)
+      const user = await this.authService.getSocketUser(client)
       const game = this.games_map.get(data.gameid)
       if (!user || !game) {
         return 
@@ -309,22 +307,6 @@ import {
         client.emit('friendOnline', friendId);
       } else {
         client.emit('friendOffline', friendId);
-      }
-    }
-
-    async getUser(socket: Socket) {
-      const jwtCookie = socket.handshake.headers.cookie
-      if (!jwtCookie) return null
-      const parsed = parse(jwtCookie)
-      if (!parsed.jwt) return null
-      try {
-        const jwt = await this.jwtAuthService.verify(parsed.jwt)
-        if (!jwt || !jwt.sub) return null
-        const user = await this.usersService.find({ id: jwt.sub })
-        if (!user) return null
-        return user
-      } catch (e) {
-        throw new WsException('Invalid token')
       }
     }
   }

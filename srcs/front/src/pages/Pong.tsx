@@ -5,16 +5,16 @@ import { Navigate } from 'react-router-dom'
 import { Play } from '../components/Pong/Play'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
-import { useGameSocket } from '../providers/GameSocketProvider'
+import { useSocket } from '../providers/SocketProvider'
 
 const Game = () => {
   const { user } = useAuth()
 
   if (!user) return <Navigate to='/login' replace />
-  const { socket, isConnected } = useGameSocket()
+  const { gameSocket, isGameConnected } = useSocket()
 
-  if (!isConnected) {
-    socket?.connect()
+  if (!isGameConnected) {
+    gameSocket?.connect()
   }
   return (
     <div>

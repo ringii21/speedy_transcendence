@@ -13,8 +13,8 @@ import { WithNavbar } from '../hoc/WithNavbar'
 import { useSocket } from '../providers/SocketProvider'
 
 const Home = () => {
-  const { socket } = useSocket()
-  socket?.connect()
+  const { chatSocket } = useSocket()
+  chatSocket?.connect()
   return (
     <div className='w-screen'>
       <b></b>

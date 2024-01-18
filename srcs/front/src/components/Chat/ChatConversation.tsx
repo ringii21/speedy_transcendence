@@ -14,7 +14,7 @@ type ChatChannelProps = {
 
 const ChatConversation = ({ currentChannel, me }: ChatChannelProps) => {
   const currentRef = useRef<HTMLDivElement>(null)
-  const { socket } = useSocket()
+  const { chatSocket } = useSocket()
   const [messages, setMessages] = useState<FrontEndMessage[]>([])
   useEffect(() => setMessages(currentChannel.messages), [currentChannel])
   useEffect(() => {
@@ -28,19 +28,19 @@ const ChatConversation = ({ currentChannel, me }: ChatChannelProps) => {
 
   useEffect(() => {
     const messageListener = (newMessage: FrontEndMessage) => {
-      console.log(socket)
+      console.log(chatSocket)
       if (newMessage.channelId === currentChannel.id) {
         setMessages((messages) => [...messages, newMessage])
       }
     }
 
-    socket.on(ChatSocketEvent.MESSAGE, messageListener)
+    chatSocket.on(ChatSocketEvent.MESSAGE, messageListener)
 
     // Fonction de nettoyage pour supprimer l'écouteur lors du démontage
     return () => {
-      socket.off(ChatSocketEvent.MESSAGE, messageListener)
+      chatSocket.off(ChatSocketEvent.MESSAGE, messageListener)
     }
-  }, [currentChannel.id, socket])
+  }, [currentChannel.id, chatSocket])
 
   return (
     <main

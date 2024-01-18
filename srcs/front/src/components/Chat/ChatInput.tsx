@@ -14,16 +14,16 @@ const ChatInput = ({
   channelId: string
   setMessage: React.Dispatch<React.SetStateAction<FrontEndMessage[]>>
 }) => {
-  const { socket, isConnected } = useSocket()
+  const { chatSocket, isChatConnected } = useSocket()
   const { user } = useAuth()
   const [inputMessage, setInputMessage] = useState<string>('')
 
   if (!user) return <></>
 
   const sendMessage = (message: FrontEndMessage) => {
-    if (!isConnected) return
-    console.log(socket)
-    socket.emit(ChatSocketEvent.MESSAGE, message)
+    if (!isChatConnected) return
+    console.log(chatSocket)
+    chatSocket.emit(ChatSocketEvent.MESSAGE, message)
     setMessage((messages) => [...messages, message])
   }
 

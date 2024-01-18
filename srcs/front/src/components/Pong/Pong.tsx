@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 
 import { WithNavbar } from '../../hoc/WithNavbar'
 import { useAuth } from '../../providers/AuthProvider'
-import { useGameSocket } from '../../providers/GameSocketProvider'
+import { useSocket } from '../../providers/SocketProvider'
 import { useGameState } from './States/GameState'
 
 const DURATION = 20
@@ -41,48 +41,48 @@ export const Game = () => {
   const { user } = useAuth()
   const [ballImage, setBallImage] = useState<HTMLImageElement | null>(null)
   const gameState = useGameState()
-  const { socket, isConnected } = useGameSocket()
+  const { gameSocket, isGameConnected } = useSocket()
   const [level, setLevel] = useState(1)
   const [t, setT] = useState(0)
   const navigate = useNavigate()
   const location = useLocation()
 
   const leave = useCallback(() => {
-    socket?.emit('leave')
+    gameSocket?.emit('leave')
     gameState.setEnd(true)
     // eslint-disable-next-line
   }, []);
 
   const handleMove = throttlify((e: any) => {
-    socket?.emit('mouse', e.evt.layerY)
+    gameSocket?.emit('mouse', e.evt.layerY)
   })
   const ArrowUp = () => {
-    socket?.emit('up')
-    socket?.off('up')
+    gameSocket?.emit('up')
+    gameSocket?.off('up')
   }
   const ArrowDown = () => {
-    socket?.emit('down')
-    socket?.off('down')
+    gameSocket?.emit('down')
+    gameSocket?.off('down')
   }
 
   useEffect(() => {
-    socket?.on('finish', () => {
+    gameSocket?.on('finish', () => {
       leave()
     })
-    socket?.on('level', (l: number) => {
+    gameSocket?.on('level', (l: number) => {
       setLevel(l)
     })
-    socket?.on('t', (t: number) => {
+    gameSocket?.on('t', (t: number) => {
       setT(t)
     })
-    socket?.on('game.end', () => {
+    gameSocket?.on('game.end', () => {
       gameState.setEnd(true)
     })
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'ArrowUp') socket?.emit('up')
-      if (event.key === 'ArrowDown') socket?.emit('down')
+      if (event.key === 'ArrowUp') gameSocket?.emit('up')
+      if (event.key === 'ArrowDown') gameSocket?.emit('down')
     })
-    socket?.on('ball', (cord: Cords) => {
+    gameSocket?.on('ball', (cord: Cords) => {
       gameState.setBall({
         x: cord.x,
         y: cord.y,
@@ -91,27 +91,27 @@ export const Game = () => {
         p2Score: cord.p2Score,
       })
     })
-    socket?.on('paddle', (paddles: any) => {
+    gameSocket?.on('paddle', (paddles: any) => {
       gameState.setLPaddle(paddles.p1PaddleY)
       gameState.setRPaddle(paddles.p2PaddleY)
       if (gameState?.side !== paddles.side) gameState.setSide(paddles.side)
     })
-    socket?.on('screen Error', () => {
+    gameSocket?.on('screen Error', () => {
       navigate('/')
     })
-    socket?.on('players', (players: any) => {
+    gameSocket?.on('players', (players: any) => {
       gameState.setP1(players[0])
       gameState.setP2(players[1])
     })
     return () => {
-      socket?.off('ball')
-      socket?.off('mouse')
-      socket?.off('down')
-      socket?.off('up')
-      socket?.off('leave')
-      socket?.off('level')
-      socket?.off('t')
-      socket?.off('game.end')
+      gameSocket?.off('ball')
+      gameSocket?.off('mouse')
+      gameSocket?.off('down')
+      gameSocket?.off('up')
+      gameSocket?.off('leave')
+      gameSocket?.off('level')
+      gameSocket?.off('t')
+      gameSocket?.off('game.end')
       window.removeEventListener('keydown', () => {
         return
       })
@@ -123,7 +123,7 @@ export const Game = () => {
     if (!gameState.p1) navigate("/");
     const divh = document.getElementById("Game")?.offsetHeight;
     const divw = document.getElementById("Game")?.offsetWidth;
-    socket?.emit("screen", { h: divh, w: divw });
+    gameSocket?.emit("screen", { h: divh, w: divw });
     gameState.setEnd(false);
     if (divw) {
       divw <= 742 ? gameState.setMobile(true) : gameState.setMobile(false);
@@ -135,7 +135,7 @@ export const Game = () => {
       const aspectRatio = 16 / 9;
       const newWidth = divw ?? 0;
       const newHeight = newWidth / aspectRatio;
-      socket?.emit("screen", { h: newHeight, w: newWidth });
+      gameSocket?.emit("screen", { h: newHeight, w: newWidth });
       if (divh) gameState.setHeight(newHeight);
       if (divw) {
         gameState.setWidth(divw);
@@ -144,7 +144,7 @@ export const Game = () => {
     });
 
     return () => {
-      socket?.off("screen");
+      gameSocket?.off("screen");
       window.removeEventListener("resize", () => {});
     };
     // disable eslit next line

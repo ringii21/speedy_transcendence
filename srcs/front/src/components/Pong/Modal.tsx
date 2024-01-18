@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
-import { useGameSocket } from '../../providers/GameSocketProvider'
+import { useSocket } from '../../providers/SocketProvider'
 import { useGameState } from './States/GameState'
 export const Modal = () => {
   const gameState = useGameState()
@@ -12,21 +12,21 @@ export const Modal = () => {
   const [timer, setTimer] = useState<undefined | number>(undefined)
   const [gameid, setGameId] = useState<undefined | string>(undefined)
   const [gameName, setGameName] = useState<undefined | string>(undefined)
-  const { socket, isConnected } = useGameSocket()
+  const { gameSocket, isGameConnected } = useSocket()
   const navigate = useNavigate()
   const location = useLocation()
   useEffect(() => {
     if (!location.pathname.startsWith('/game')) {
-      socket?.emit('game.stop', { gameid: gameName, gameState: gameState })
+      gameSocket?.emit('game.stop', { gameid: gameName, gameState: gameState })
     }
   }, [location])
   useEffect(() => {
-    if (socket !== null) {
-      socket?.on('game.launched', (GameId: any) => {
+    if (gameSocket !== null) {
+      gameSocket?.on('game.launched', (GameId: any) => {
         setGameName(GameId)
         setGameId(GameId.slice(5))
       })
-      socket?.on('timer', (msg: any) => {
+      gameSocket?.on('timer', (msg: any) => {
         msg !== 0 && setOpacity('opacity-100')
         msg === 0 && setOpacity('opacity-0')
         setTimer(msg / 1000)
@@ -34,11 +34,11 @@ export const Modal = () => {
           navigate(`/game/${gameid}`)
         }
       })
-      socket?.on('players', (players: any) => {
+      gameSocket?.on('players', (players: any) => {
         gameState.setP1(players[0])
         gameState.setP2(players[1])
       })
-      socket?.on('win', (msg: string) => {
+      gameSocket?.on('win', (msg: string) => {
         setResutl(msg)
         setStatus('win')
         setResOpacity('opacity-100')
@@ -54,7 +54,7 @@ export const Modal = () => {
           }
         }, 1000)
       })
-      socket?.on('lose', (msg: string) => {
+      gameSocket?.on('lose', (msg: string) => {
         setResutl(msg)
         setStatus('lose')
         setResOpacity('opacity-100')
@@ -72,11 +72,11 @@ export const Modal = () => {
       })
     }
     return () => {
-      socket?.off('lose')
-      socket?.off('win')
-      socket?.off('timer')
-      socket?.off('game.launched')
-      socket?.off('players')
+      gameSocket?.off('lose')
+      gameSocket?.off('win')
+      gameSocket?.off('timer')
+      gameSocket?.off('game.launched')
+      gameSocket?.off('players')
     }
     // eslint-disable-next-line
   }, [timer]);

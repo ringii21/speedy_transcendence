@@ -3,7 +3,7 @@ import toast from 'react-hot-toast'
 import { Navigate } from 'react-router-dom'
 
 import { useAuth } from '../../providers/AuthProvider'
-import { useGameSocket } from '../../providers/GameSocketProvider'
+import { useSocket } from '../../providers/SocketProvider'
 import { IUser } from '../../types/User'
 import { QueueWaitModal } from './QueueModal'
 
@@ -13,12 +13,12 @@ export const Play = () => {
   toast.success('Match making in Progress you can move until find opponent', {
     duration: 5000,
   })
-  const { socket, isConnected } = useGameSocket()
+  const { gameSocket, isGameConnected } = useSocket()
   const [gameMode, setGameMode] = useState('')
   const queueModalRef = useRef<HTMLDialogElement>(null)
   const subscribeToGame = async () => {
     try {
-      socket?.emit('startGame', { gameMode: 'classic' })
+      gameSocket?.emit('startGame', { gameMode: 'classic' })
       setGameMode('classic')
       queueModalRef.current?.showModal()
       toast.success('Match making in Progress you can move until find opponent', {
@@ -30,7 +30,7 @@ export const Play = () => {
   }
   const subscribeToGameExtra = async () => {
     try {
-      socket?.emit('startGame', { gameMode: 'extra' })
+      gameSocket?.emit('startGame', { gameMode: 'extra' })
       setGameMode('extra')
       queueModalRef.current?.showModal()
       toast.success('Match making in Progress you can move until find opponent', {
@@ -40,7 +40,7 @@ export const Play = () => {
       toast.error('can not start game')
     }
   }
-  if (!isConnected) return <></>
+  if (!isGameConnected) return <></>
   return (
     <div>
       <div className='flex h-screen justify-center items-center space-x-4'>

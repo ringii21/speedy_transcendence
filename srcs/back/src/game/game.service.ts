@@ -3,14 +3,14 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { User } from '@prisma/client';
 import { Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { GameGateway } from './game.gateways';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class GameService {
   constructor(
     private readonly prisma: PrismaService,
     private eventEmitter: EventEmitter2,
-    private readonly gameGateway: GameGateway
+    private readonly authService: AuthService
   ) {
     this.launchGame();
   }
@@ -29,7 +29,7 @@ export class GameService {
   }) {
     if (data.mode === 'register') {
       const client = data.client;
-      client.data.user = await this.gameGateway.getUser(client);
+      client.data.user = await this.authService.getSocketUser(client);
       client.data.user.inQueue = false
       if (client.data.user?.inQueue) {
         return;
@@ -46,7 +46,7 @@ export class GameService {
         this.extraWaitingPlayers.push({ socket: client, userData: client.data.user });
     } else if (data.mode === 'unregister') {
       const client = data.client;
-      client.data.user = await this.gameGateway.getUser(client);
+      client.data.user = await this.authService.getSocketUser(client);
       const gameMode = data.gameMode;
       client.data.user.inQueue = false;
       if (gameMode === 'classic')
