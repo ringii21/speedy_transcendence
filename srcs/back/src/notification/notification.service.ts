@@ -75,6 +75,17 @@ export class NotificationService {
     return sender.count > 0
   }
 
+  async waitForClientConfirmation() {
+    return this.prisma.notification.updateMany({
+      where: {
+        state: true,
+      },
+      data: {
+        state: true,
+      },
+    })
+  }
+
   async getConfirmedFriends(userId: number) {
     return this.prisma.notification.findMany({
       where: {
@@ -86,7 +97,7 @@ export class NotificationService {
             receivedId: userId,
           },
         ],
-        state: false,
+        state: true,
       },
       include: {
         sender: {

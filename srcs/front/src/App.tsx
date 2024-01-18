@@ -17,6 +17,7 @@ import { TwoFactorSettingsWithNavbar } from './pages/TwoFactor/TwoFactorSettings
 import { TwoFactorSignin } from './pages/TwoFactor/TwoFactorSignin'
 import { AuthProvider } from './providers/AuthProvider'
 import { ChatProvider } from './providers/ChatProvider'
+import { NotificationProvider } from './providers/NotificationProvider'
 import { SocketProvider } from './providers/SocketProvider'
 
 const App = () => {
@@ -26,61 +27,63 @@ const App = () => {
       <AuthProvider>
         <SocketProvider>
           <ChatProvider>
-            <Routes>
-              {/* authenticated */}
-              <Route
-                path='/'
-                element={
-                  <RequireAuth>
-                    <HomeWithNavbar />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path='/game'
-                element={
-                  <RequireAuth>
-                    <HomeWithNavbar />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path='/settings'
-                element={
-                  <RequireAuth>
-                    <SettingsWithNavbar />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path='/settings/2fa'
-                element={
-                  <RequireAuth>
-                    <TwoFactorSettingsWithNavbar />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path='/chat'
-                element={
-                  <RequireAuth>
-                    <ChatWithNavbar />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path='/profile/:id'
-                element={
-                  <RequireAuth>
-                    <ProfileWithNavbar />
-                  </RequireAuth>
-                }
-              />
-              {/* non authenticated */}
-              <Route path='/login' element={<Login />} />
-              <Route path='/login/2fa' element={<TwoFactorSignin />} />
-              <Route path='*' element={<NotFound />} />
-            </Routes>
+            <NotificationProvider>
+              <Routes>
+                {/* authenticated */}
+                <Route
+                  path='/'
+                  element={
+                    <RequireAuth>
+                      <HomeWithNavbar />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path='/game'
+                  element={
+                    <RequireAuth>
+                      <HomeWithNavbar />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path='/settings'
+                  element={
+                    <RequireAuth>
+                      <SettingsWithNavbar />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path='/settings/2fa'
+                  element={
+                    <RequireAuth>
+                      <TwoFactorSettingsWithNavbar />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path='/chat'
+                  element={
+                    <RequireAuth>
+                      <ChatWithNavbar />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path='/profile/:id'
+                  element={
+                    <RequireAuth>
+                      <ProfileWithNavbar />
+                    </RequireAuth>
+                  }
+                />
+                {/* non authenticated */}
+                <Route path='/login' element={<Login />} />
+                <Route path='/login/2fa' element={<TwoFactorSignin />} />
+                <Route path='*' element={<NotFound />} />
+              </Routes>
+            </NotificationProvider>
           </ChatProvider>
         </SocketProvider>
         <ContactOverlay />

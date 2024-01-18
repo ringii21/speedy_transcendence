@@ -29,5 +29,5 @@ export type INotification = {
   senderId: number
   receivedId: number
   state: boolean
-  createdAt: Date
+  createdAt?: Date
 }

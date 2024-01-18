@@ -7,25 +7,20 @@ import { useSocket } from '../providers/SocketProvider'
 import { IFriends, INotification, IUser } from '../types/User'
 import { acceptFriendRequest, createFriendRequest } from '../utils/friendService'
 import { deleteNotification } from '../utils/notificationService'
+import { notificationSocket, receivedNotification } from '../utils/socketService'
 
 type FriendsListModal = {
   openModal: boolean
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>
-  notifier?: INotification[]
+  notify?: INotification[]
   me: IUser
 }
 
-const NotificationModal: React.FC<FriendsListModal> = ({
-  openModal,
-  setOpenModal,
-  notifier,
-  me,
-}) => {
-  const { notificationSocket, isNotificationConnected } = useSocket()
-  const getCorrectFriend = (notifier: INotification, me: IUser | undefined) => {
-    if (!notifier || !me) return undefined
-    if (me.id === notifier.senderId) return
-    return notifier.sender
+const NotificationModal: React.FC<FriendsListModal> = ({ openModal, setOpenModal, notify, me }) => {
+  const getCorrectFriend = (notify: INotification, me: IUser | undefined) => {
+    if (!notify || !me) return undefined
+    if (me.id === notify.senderId) return
+    return notify.sender
   }
 
   const friendMutation = useMutation({
@@ -64,21 +59,10 @@ const NotificationModal: React.FC<FriendsListModal> = ({
     }
   }
 
-  const line = (sender: IUser | undefined, index: number) => {
+  const line = (sender: IUser | undefined) => {
     if (sender === undefined) return <></>
     if (!sender) {
-      return (
-        <Menu.Item key={index}>
-          <a
-            href='#'
-            className='flex static items-center justify-evenly gap-3 p-3 text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white'
-          >
-            <div className='flex-1 ms-3 whitespace-nowrap static'>
-              <p>It`s a bit quiet here</p>
-            </div>
-          </a>
-        </Menu.Item>
-      )
+      return `<div key={index}></div>`
     } else {
       return (
         <Menu.Item key={sender.id}>
@@ -122,9 +106,7 @@ const NotificationModal: React.FC<FriendsListModal> = ({
         >
           <div className='p-4 md:p-5 relative'>
             <div className='my-4 space-y-3'>
-              {notifier &&
-                notifier.length > 0 &&
-                notifier.map((f, i) => line(getCorrectFriend(f, me), i))}
+              {notify && notify.length > 0 && notify.map((f) => line(getCorrectFriend(f, me)))}
             </div>
           </div>
         </Menu.Items>

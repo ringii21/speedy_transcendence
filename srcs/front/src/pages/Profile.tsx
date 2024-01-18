@@ -6,13 +6,16 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { ModalFriendsList } from '../components/ModalFriendsList'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
-import { INotification } from '../types/User'
-import { createFriendRequest, getFriends, removeFriend } from '../utils/friendService'
+import { useNotification } from '../providers/NotificationProvider'
+import { useSocket } from '../providers/SocketProvider'
+import { INotification, IUser } from '../types/User'
+import { acceptFriendRequest, getFriends, removeFriend } from '../utils/friendService'
 import {
   createNotification,
   deleteNotification,
   getNotification,
 } from '../utils/notificationService'
+import { notificationSocket, receivedNotification } from '../utils/socketService'
 import { fetchUser, getUser } from '../utils/userHttpRequests'
 
 const Profile = () => {
@@ -28,7 +31,8 @@ const Profile = () => {
   const [isFollow, setIsFollow] = useState('Follow')
   const [openModal, setOpenModal] = useState(false)
   const [isColor, setIsColor] = useState('btn-primary')
-  const [isNotification, setIsNotification] = useState<INotification>()
+  const [isNotify, setIsNotify] = useState(false)
+
   const ref = useRef<HTMLDivElement>(null)
 
   let queryConfig
@@ -44,7 +48,6 @@ const Profile = () => {
     }
   }
 
-  // requests
   const {
     data: friends,
     isError: isErrorFriends,
@@ -56,14 +59,24 @@ const Profile = () => {
 
   const { data: profileUser, isError } = useQuery(queryConfig)
 
+  // const getNotificationQuery = useQuery({
+  //   queryKey: ['notification'],
+  //   queryFn: getNotification,
+  // })
+
   const notificationMutation = useMutation({
     mutationKey: ['notification'],
     mutationFn: createNotification,
   })
 
-  const getNotificationQuery = useQuery({
-    queryKey: ['notification'],
-    queryFn: getNotification,
+  const deleteNotificationMutation = useMutation({
+    mutationKey: ['friends'],
+    mutationFn: deleteNotification,
+  })
+
+  const deleteFriendMutation = useMutation({
+    mutationKey: ['friends'],
+    mutationFn: removeFriend,
   })
 
   useEffect(() => {
@@ -79,49 +92,31 @@ const Profile = () => {
     }
   }, [])
 
-  // Socket to handle and change notification state
-  // useEffect(() => {
-  //   const receivedNotification = (notification: INotification) => {
-  //     setIsNotification((prevNotification) => ({
-  //       ...prevNotification,
-  //       [notification.senderId]: [...(prevNotification[notification.senderId] ?? [])],
-  //     }))
-  //   }
-
-  //   notificationSocket?.on(RECEIVED, receivedNotification)
-  // }, [])
-
   const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()
     await signout()
   }
 
-  const deleteNotificationMutation = useMutation({
-    mutationKey: ['friends'],
-    mutationFn: deleteNotification,
-  })
-
-  const deleteFriendMutation = useMutation({
-    mutationKey: ['friends'],
-    mutationFn: removeFriend,
-  })
-
   const followColorButton = () => {
-    if (isFollow == 'Unfollow') setIsColor('btn-warning')
+    if (isFollow === 'Unfollow') setIsColor('btn-warning')
     else if (isFollow === 'Discard') setIsColor('btn-warning')
     else setIsColor('btn-primary')
   }
 
   const changeFriendStatus = (id: number) => {
     try {
-      if (isFollow === 'Discard') {
+      if (isFollow === 'Discard' && !isNotify) {
+        console.log('status: ', 1)
         deleteNotificationMutation.mutate(id)
-        console.log('1st step')
         return
-      } else if (isFollow === 'Unfollow') {
+      } else if (isFollow === 'Unfollow' && !isNotify) {
+        console.log('status: ', 2)
+        setIsNotify(false)
         deleteFriendMutation.mutate(id)
         return
       } else {
+        console.log('status: ', 3)
+        setIsNotify(true)
         notificationMutation.mutate(id)
         return
       }
@@ -130,25 +125,70 @@ const Profile = () => {
     }
   }
 
+  // *********************************************************
+  const { notificationSocket: socket, isNotificationConnected } = useSocket()
+  const { notifier, sendedNotification, notification } = useNotification()
+
   useEffect(() => {
-    const fetchData = async () => {
-      if (!(friends && friends.forEach)) return undefined
-      friends.forEach((friend) => {
-        if (friend.confirmed === true) {
-          setIsFollow('Unfollow')
-          followColorButton()
-        }
-      })
-      if (!(getNotificationQuery && getNotificationQuery.data)) return undefined
-      getNotificationQuery.data.map((not) => {
-        if (not.state === true) {
-          setIsFollow('Discard')
-          followColorButton()
-        }
-      })
+    const handle = (data: any) => {
+      console.log('data: ', data.data)
     }
-    fetchData()
-  }, [setIsFollow, isFollow, friends])
+
+    if (!(notifier && notifier.data)) return undefined
+
+    notifier.data.map((not) => {
+      console.log('3')
+      receivedNotification
+      receivedNotification(notificationSocket)(not, user)
+    })
+
+    console.log('Notification Data:', notification)
+
+    socket.on('connect', () => {
+      console.log('Socket connected')
+      handle // Assurez-vous d'appeler la fonction handle ici
+    })
+
+    socket.on('disconnect', () => {
+      console.log('Socket disconnected')
+    })
+
+    socket.on('connect_error', (error: any) => {
+      console.error('Socket connection error:', error)
+    })
+
+    console.log('connected: ', isNotificationConnected, '\nSocket: ', socket)
+
+    if (!(friends && friends.forEach)) return undefined
+    friends.forEach((friend) => {
+      if (friend.confirmed === true) {
+        setIsFollow('Unfollow')
+        followColorButton()
+      }
+    })
+
+    if (!(notifier && notifier.data)) return undefined
+    notifier.data.forEach((data: any) => {
+      if (isNotify === true) {
+        setIsFollow('Discard')
+        followColorButton()
+        return
+      }
+      if (data.state === true) {
+        setIsFollow('Discard')
+        followColorButton()
+        return
+      }
+    })
+  }, [setIsFollow, isFollow, friends, isNotify, setIsColor])
+
+  // const { notificationSocket } = useSocket()
+  // const [isNotification, setIsNotification] = useState<INotification[]>()
+
+  // const receivedNotificationHandler = (notification: INotification) => {
+  //   console.log(notification)
+  //   setIsNotification((prevNotification: any) => [...prevNotification, notification])
+  // }
 
   const isUserId = () => {
     if (!profileUser) return <></>

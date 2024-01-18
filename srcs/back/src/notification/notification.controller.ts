@@ -6,6 +6,7 @@ import { NotificationDto } from './dto/notification.dto'
 import { FriendsService } from 'src/friends/friends.service'
 import { DeleteNotificationDto } from './dto/deleteNotification.dto'
 import { RequestWithDbNotification } from '../types/Request'
+import { NotificationGateway } from './notification.gateway'
 import {
   Body,
   Controller,
@@ -26,6 +27,7 @@ export class NotificationController {
   constructor(
     private readonly friendsService: FriendsService,
     private readonly notificationService: NotificationService,
+    private readonly notificationGateway: NotificationGateway,
   ) {}
 
   @Post()
@@ -44,10 +46,13 @@ export class NotificationController {
       )
     )
       throw new BadRequestException('Already sent a friend request')
-    return this.notificationService.createNotification(
-      req.user.id,
-      notificationDto.receivedId,
-    )
+    const createdNotification =
+      await this.notificationService.createNotification(
+        req.user.id,
+        notificationDto.receivedId,
+      )
+    this.notificationGateway.handleNotification(req.socket, createdNotification)
+    return createdNotification
   }
 
   @Get()

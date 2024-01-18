@@ -1,15 +1,6 @@
 import React, { useState } from 'react'
-import {
-  BrowserView,
-  isBrowser,
-  isDesktop,
-  isMobile,
-  isTablet,
-  MobileOnlyView,
-  MobileView,
-  TabletView,
-} from 'react-device-detect'
-import { Link, Navigate } from 'react-router-dom'
+import { isDesktop, isMobile, isTablet, MobileView } from 'react-device-detect'
+import { Navigate } from 'react-router-dom'
 
 import { ChatConv, ChatSelection, ChatUsers } from '../components/Chat'
 import { WithNavbar } from '../hoc/WithNavbar'

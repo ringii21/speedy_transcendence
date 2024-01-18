@@ -51,13 +51,17 @@ export const sendPrivateMessage = (socket: Socket) => (message: IChannelMessage)
   socket.emit(ChatSocketEvent.SENT_PRIVATE_MESSAGE, message)
 }
 
-export const receivedNotification = (socket: Socket) => (sender: INotification, user: IUser) => {
+// ********************************* Socket Notification ************************************ //
+
+export const receivedNotification = (socket: Socket) => (receiver: INotification, user: IUser) => {
+  console.log('HEYYY')
   const socketMessage = {
-    sender: {
-      senderId: sender.senderId,
+    receiver: {
+      state: receiver.state,
     },
     user,
   }
+  console.log('socket message: ', socketMessage)
   socket.emit(NotificationSocketEvent.RECEIVED, socketMessage)
 }
 

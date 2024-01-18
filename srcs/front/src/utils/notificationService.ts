@@ -7,7 +7,7 @@ export const createNotification = async (receivedId: number) => {
   })
 }
 
-export const getNotification = async () => {
+export const getNotification = async (): Promise<INotification[]> => {
   const { data } = await httpInstance().get<INotification[]>(`/api/notification`)
   return data
 }

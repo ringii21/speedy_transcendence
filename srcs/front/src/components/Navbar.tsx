@@ -1,72 +1,82 @@
 import './../styles/navbar.css'
 
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { FaBell } from 'react-icons/fa'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 
 import { useAuth } from '../providers/AuthProvider'
-import { INotification } from '../types/User'
-import { getFriends } from '../utils/friendService'
-import { createNotification, getNotification } from '../utils/notificationService'
-import { getUser } from '../utils/userHttpRequests'
+import { useNotification } from '../providers/NotificationProvider'
+import { useSocket } from '../providers/SocketProvider'
+import { getNotification } from '../utils/notificationService'
+import { notificationSocket, receivedNotification } from '../utils/socketService'
 import { NotificationModal } from './NotificationModal'
 
 const Navbar = () => {
   const { user, signout } = useAuth()
-  const [isColor, setIsColor] = useState<{ [key: string]: string }>({})
-  if (!user) return <Navigate to='/login' state={{ from: location }} replace />
-  const ref = useRef<HTMLDivElement>(null)
-  const { id } = useParams()
+
+  const [activeNotification, setActiveNotification] = useState<string[]>([])
   const [openModal, setOpenModal] = useState(false)
+
+  if (!user) return <Navigate to='/login' state={{ from: location }} replace />
+
+  const ref = useRef<HTMLDivElement>(null)
   const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()
     await signout()
   }
 
-  const {
-    data: notifier,
-    isError: isErrorNotifier,
-    isLoading: isLoadingNotifier,
-  } = useQuery({
-    queryKey: ['notification'],
-    queryFn: getNotification,
-  })
+  const [isState, setIsState] = useState(false)
+  const { notificationSocket: socket } = useSocket()
+  const { notifier, sendedNotification, notification } = useNotification()
+  useEffect(() => {
+    const handleNotification = (data: any) => {
+      console.log('Notification sent correctly', data)
+    }
 
-  const getNotificationQuery = useQuery({
-    queryKey: ['notification'],
-    queryFn: getNotification,
-  })
+    socket.on('notification_received', handleNotification)
 
-  const getNotificationData = useMemo(() => getNotificationQuery.data, [getNotificationQuery.data])
+    socket.on('connect', () => {
+      setIsState(true)
+    })
+    return () => {
+      socket.off('notification_received', handleNotification)
+      setIsState(false)
+    }
+  }, [socket, setActiveNotification])
 
   useEffect(() => {
-    if (!getNotificationData) return undefined
-    const updatedUserColors = { ...isColor }
-    getNotificationData.forEach((not) => {
+    if (!(notifier && notifier.data)) return undefined
+
+    notifier.data.forEach((not: any) => {
       if (not.state === true && not.receivedId) {
-        updatedUserColors[not.receivedId.toString()] = 'text-blue-500'
+        setOpenModal(false)
+
+        setActiveNotification((prevActiveNotification) => [
+          ...prevActiveNotification,
+          not.receivedId.toString(),
+        ])
       }
     })
-    setIsColor(updatedUserColors)
+
     const isOpen = (e: MouseEvent) => {
       const el = e.target as HTMLDivElement
       if (ref.current && !ref.current.contains(el)) {
         setOpenModal(false)
       }
     }
+
     document.addEventListener('click', isOpen)
     return () => {
       document.removeEventListener('click', isOpen)
     }
-  }, [getNotificationData])
-
-  // const changeBellColor = (bool: boolean) => {
-  //   if (bool === true) setIsColor('btn-secondary')
-  // }
+  }, [notifier])
 
   const notificationLine = () => {
-    const userColor = isColor[user.id?.toString()] || 'btn-ghost'
+    if (!setIsState) return <></>
+
+    const isNotificationActive = activeNotification.includes(user?.id.toString())
+
     return (
       <div ref={ref} className='right-0'>
         <button
@@ -78,7 +88,11 @@ const Navbar = () => {
           }}
           className={`btn btn-ghost changeBellColor`}
         >
-          <FaBell tabIndex={0} size={20} className={`${userColor}`} />
+          <FaBell
+            tabIndex={0}
+            size={20}
+            className={`${isNotificationActive ? 'text-blue-500' : ''}`}
+          />
         </button>
       </div>
     )
@@ -89,7 +103,7 @@ const Navbar = () => {
       <NotificationModal
         openModal={openModal}
         setOpenModal={setOpenModal}
-        notifier={notifier}
+        notify={notifier ? notifier.data : undefined}
         me={user}
       />
       <div className='navbar-start'>
