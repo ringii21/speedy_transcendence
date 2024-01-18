@@ -22,6 +22,7 @@ export const logSocketEvent = (event: string) => console.log(event + ' event emi
 
 export const SocketProvider = ({ children }: Props) => {
   const [isConnected, setIsConnected] = useState<boolean>(false)
+
   useEffect(() => {
     socket.on('connect', () => {
       logSocketEvent('connect')

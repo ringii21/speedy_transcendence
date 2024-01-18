@@ -22,7 +22,6 @@
   },
   "include": [
     "src",
-    "src/components/.AddDelUser.tsx",
     "src/pages/Profil.tsx"
-  ]
+, "src/pages/.ProfileMe.tsx"  ]
 }

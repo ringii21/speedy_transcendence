@@ -21,6 +21,9 @@ const Chat = () => {
   const [isCreateModalOpen, setCreateModalOpen] = useState(false)
   const [isJoinModalOpen, setJoinModalOpen] = useState(false)
   const [currentChannel, setCurrentChannel] = useState<IChannel | undefined>(undefined)
+  const [userChannelList, setUserChannelList] = useState(false)
+  const [channelList, setChannelList] = useState(true)
+  const [conv, setConv] = useState(false)
 
   if (!user) return <Navigate to='/login' replace />
 
@@ -35,6 +38,18 @@ const Chat = () => {
       socket.disconnect()
     }
   }, [])
+
+  const handleChatSelectionClose = () => {
+    setChannelList(true)
+    setConv(false)
+    setUserChannelList(false)
+  }
+
+  const handleUserChannelList = () => {
+    setConv(false)
+    setUserChannelList(true)
+    setChannelList(false)
+  }
 
   const getChannelName = () => {
     if (currentChannel) {
@@ -112,7 +127,12 @@ const Chat = () => {
         ) : (
           <>
             <div className='w-6/12'>
-              <ChatConversation currentChannel={currentChannel} me={user} />
+              <ChatConversation
+                currentChannel={currentChannel}
+                me={user}
+                onClickChannelList={handleChatSelectionClose}
+                onClickUserChannelList={handleUserChannelList}
+              />
             </div>
             <div className='w-3/12'>
               <ChatUsers channel={currentChannel} />

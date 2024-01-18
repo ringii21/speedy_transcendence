@@ -1,39 +1,30 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { MutableRefObject, useEffect, useRef, useState } from 'react'
 import { isMobile } from 'react-device-detect'
 import { HiHashtag } from 'react-icons/hi2'
 import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io'
 
 import { useChat } from '../../providers/ChatProvider'
-import { useSocket } from '../../providers/SocketProvider'
-import { FrontEndMessage, IChannel } from '../../types/Chat'
-import { ChatSocketEvent } from '../../types/Events'
 import { IUser } from '../../types/User'
 import { ChatInput } from './ChatInput'
 import { ChatMessage } from './ChatMessage'
 
-type ChatChannelProps = {
-  currentChannel: IChannel
+type ChatConvProps = {
   me: IUser
   onClickChannelList: ((e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void) | null
   onClickUserChannelList: ((e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void) | null
 }
 
-const ChatConversation = ({
-  currentChannel,
-  me,
-  onClickChannelList,
-  onClickUserChannelList,
-}: ChatChannelProps) => {
-  const currentRef = useRef<HTMLDivElement>(null)
-  const { socket } = useSocket()
-  const [messages, setMessages] = useState<FrontEndMessage[]>([])
+const ChatConv: React.FC<ChatConvProps> = ({ me, onClickChannelList, onClickUserChannelList }) => {
+  const { channel, messages } = useChat()
   const [userChannelList, setUserChannelList] = useState(false)
+  const [scrollPos, setScrollPos] = useState(0)
+  const currentRef = useRef<HTMLDivElement>(null)
 
-  // if (!channel) return <span>Select a channel</span>
+  if (!channel) return <span>Select a channel</span>
 
-  // if (channel.isLoading) return <span className='loading loading-lg'></span>
-  // if (channel.isError) return <span>Error</span>
-  // if (!channel.data) return <span>No data</span>
+  if (channel.isLoading) return <span className='loading loading-lg'></span>
+  if (channel.isError) return <span>Error</span>
+  if (!channel.data) return <span>No data</span>
 
   const handleChannelList = (e: React.MouseEvent<HTMLButtonElement, MouseEvent> | null) => {
     if (onClickChannelList && e !== null) onClickChannelList(e)
@@ -48,24 +39,15 @@ const ChatConversation = ({
     if (!userChannelList) setUserChannelList(true)
   }, [userChannelList])
 
-  useEffect(() => setMessages(currentChannel.messages), [currentChannel])
-
   useEffect(() => {
     if (currentRef.current) {
       currentRef.current.scrollTo({
         top: currentRef.current.scrollHeight,
-        behavior: 'auto',
+        behavior: 'smooth',
       })
+      if (scrollPos) setScrollPos(currentRef.current.scrollHeight)
     }
   }, [messages])
-
-  useEffect(() => {
-    socket.on(ChatSocketEvent.MESSAGE, (newMessage: FrontEndMessage) => {
-      if (newMessage.channelId === currentChannel.id) {
-        setMessages((messages) => [...messages, newMessage])
-      }
-    })
-  }, [])
 
   const arrowIsMobile = () => {
     if (isMobile) {
@@ -77,10 +59,10 @@ const ChatConversation = ({
             </button>
           </div>
           <div className='flex align-items gap-2'>
-            {currentChannel.type === 'public' && (
+            {channel.data.channelType === 'public' && (
               <HiHashtag size={18} className='text-gray-500 mt-1' />
             )}
-            <span className='text-gray-500'>{currentChannel.name}</span>
+            <span className='text-gray-500'>{channel.data.name}</span>
           </div>
           <div className='flex justify-end space-x-2 pr-4'>
             <button type='button' onClick={handleUserList}>
@@ -98,10 +80,10 @@ const ChatConversation = ({
             </button>
           </div>
           <div className='flex align-items gap-2'>
-            {currentChannel.type === 'public' && (
+            {channel.data.channelType === 'public' && (
               <HiHashtag size={18} className='text-gray-500 mt-1' />
             )}
-            <span className='text-gray-500'>{currentChannel.name}</span>
+            <span className='text-gray-500'>{channel.data.name}</span>
           </div>
           <div className='flex justify-end space-x-2 pr-4 md:hidden'>
             <button type='button' onClick={handleUserList}>
@@ -112,6 +94,7 @@ const ChatConversation = ({
       )
     }
   }
+
   return (
     <div className='flex flex-col gap-6 box-content rounded-b-lg shadow-2xl h-3/4 justify-between bg-gray-100 relative'>
       {arrowIsMobile()}
@@ -119,15 +102,16 @@ const ChatConversation = ({
         ref={currentRef}
         className='flex flex-col scroll rounded-lg overflow-y-auto scrollbar scrollbar-track-gray-200 scrollbar-thumb-gray-900 scrollbar-thin scrollbar-thumb-rounded-md'
       >
-        {messages.map((message, i) => (
-          <ChatMessage key={i} message={message} user={me} members={currentChannel.members} />
-        ))}
+        {messages[channel.data.id] &&
+          messages[channel.data.id].map((message, i) => (
+            <ChatMessage key={i} message={message} user={me} members={channel.data.members} />
+          ))}
       </div>
       <div className='flex flex-col rounded-lg'>
-        <ChatInput channelId={currentChannel.id} setMessage={setMessages} />
+        <ChatInput channel={channel.data} />
       </div>
     </div>
   )
 }
 
-export { ChatConversation }
+export { ChatConv }

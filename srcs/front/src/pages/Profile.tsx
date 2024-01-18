@@ -1,62 +1,183 @@
-import React, { useEffect, useId, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import React, { useEffect, useRef, useState } from 'react'
+import { FaMinus, FaPaperPlane, FaPlus } from 'react-icons/fa'
+import { Navigate, useNavigate, useParams } from 'react-router-dom'
 
+import { ModalFriendsList } from '../components/ModalFriendsList'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
-import { IFriends, IUser } from '../types/User'
+import { useNotification } from '../providers/NotificationProvider'
+import { getFriends, removeFriend } from '../utils/friendService'
+import { createNotification, deleteNotification } from '../utils/notificationService'
+import { fetchUser, getUser } from '../utils/userHttpRequests'
 
-const Profile: React.FC = () => {
-  const { user: loggedInUser, signout } = useAuth()
-  const { userId } = useParams<{ userId: string }>()
-  const [profilUser, setProfilUser] = useState<IUser>()
-  const [isFriend, setIsFriend] = useState(false)
-  const [addFriends, setAddFriends] = useState<IFriends>()
+const Profile = () => {
+  const { user, signout } = useAuth()
+  const navigate = useNavigate()
+  const { id } = useParams()
+  if (!id) {
+    navigate('*')
+    return <></>
+  }
+
+  const [isFollow, setIsFollow] = useState('Follow')
+  const [openModal, setOpenModal] = useState(false)
+  const [isColor, setIsColor] = useState('btn-primary')
+  const [isNotify, setIsNotify] = useState(false)
+
+  const ref = useRef<HTMLDivElement>(null)
+  if (!user) return <Navigate to='/login' state={{ from: location }} replace />
+
+  let queryConfig
+  if (id === 'me') {
+    queryConfig = {
+      queryKey: ['profile', 'me'],
+      queryFn: fetchUser,
+    }
+  } else {
+    queryConfig = {
+      queryKey: ['profile', id],
+      queryFn: getUser,
+    }
+  }
+
+  const { data: friends } = useQuery({
+    queryKey: ['friends'],
+    queryFn: getFriends,
+  })
+
+  const { data: profileUser } = useQuery(queryConfig)
+
+  const notificationMutation = useMutation({
+    mutationKey: ['notification'],
+    mutationFn: createNotification,
+  })
+
+  const deleteNotificationMutation = useMutation({
+    mutationKey: ['friends'],
+    mutationFn: deleteNotification,
+  })
+
+  const deleteFriendMutation = useMutation({
+    mutationKey: ['friends'],
+    mutationFn: removeFriend,
+  })
+
+  useEffect(() => {
+    const isOpen = (e: MouseEvent) => {
+      const el = e.target as HTMLDivElement
+      if (ref.current && !ref.current.contains(el)) {
+        setOpenModal(false)
+      }
+    }
+    document.addEventListener('click', isOpen)
+    return () => {
+      document.removeEventListener('click', isOpen)
+    }
+  }, [])
+
   const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()
     await signout()
   }
 
+  const followColorButton = () => {
+    if (isFollow === 'Unfollow') setIsColor('btn-warning')
+    else if (isFollow === 'Discard') setIsColor('btn-warning')
+    else setIsColor('btn-primary')
+  }
+
+  const changeFriendStatus = (id: number) => {
+    try {
+      if (isFollow === 'Discard' && !isNotify) {
+        console.log('status: ', 1)
+        deleteNotificationMutation.mutate(id)
+        return
+      } else if (isFollow === 'Unfollow' && !isNotify) {
+        console.log('status: ', 2)
+        setIsNotify(false)
+        deleteFriendMutation.mutate(id)
+        return
+      } else {
+        console.log('status: ', 3)
+        setIsNotify(true)
+        notificationMutation.mutate(id)
+        return
+      }
+    } catch (e) {
+      console.error('Error during mutations: ', e)
+    }
+  }
+
+  // *********************************************************
+  const { notifier } = useNotification()
+
+  useEffect(() => {
+    if (!(friends && friends.forEach)) return undefined
+    friends.forEach((friend) => {
+      if (friend.confirmed === true) {
+        setIsFollow('Unfollow')
+        followColorButton()
+      }
+    })
+
+    if (!notifier) return undefined
+    notifier.forEach((data: any) => {
+      if (isNotify === true) {
+        setIsFollow('Discard')
+        followColorButton()
+        return
+      }
+      if (data.state === true) {
+        setIsFollow('Discard')
+        followColorButton()
+        return
+      }
+    })
+  }, [setIsFollow, isFollow, friends, isNotify, setIsColor])
+
   const isUserId = () => {
-    if (loggedInUser && profilUser?.id !== loggedInUser.id) {
+    if (profileUser === undefined) {
+      return <></>
+    }
+    if (!(profileUser?.id === user?.id)) {
       return (
-        <div>
-          <button className='btn btn-primary drop-shadow-xl rounded-lg' onClick={onButtonClick}>
-            Logout
+        <div className={`flex justify-evenly`}>
+          <button
+            onClick={() => changeFriendStatus(profileUser?.id)}
+            className={`btn ${isColor} followColorButton drop-shadow-xl rounded-lg flex flex-row`}
+          >
+            {isFollow === 'Follow' ? <FaPlus className='mb-0.5' /> : <FaMinus className='mb-0.5' />}
+            {isFollow}
+          </button>
+          <button className='btn drop-shadow-xl rounded-lg'>
+            <FaPaperPlane className='mb-1' />
+            Message
           </button>
         </div>
       )
     } else {
       return (
-        <div className='flex justify-evenly'>
-          {addFriends?.id !== profilUser?.id ? (
-            <button className='btn btn-primary drop-shadow-xl rounded-lg'>Follow</button>
-          ) : (
-            <button className='btn btn-primary drop-shadow-xl rounded-lg'>Unfollow</button>
-          )}
-
-          <button className='btn btn-secondary drop-shadow-xl rounded-lg'>Message</button>
+        <div ref={ref} className='flex justify-evenly'>
+          <button className='btn btn-primary drop-shadow-xl rounded-lg' onClick={onButtonClick}>
+            Logout
+          </button>
+          <button
+            type='button'
+            className='btn btn-secondary drop-shadow-xl rounded-lg'
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setOpenModal(!openModal)
+            }}
+          >
+            Friends
+          </button>
         </div>
       )
     }
   }
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        let response
-        if (loggedInUser && profilUser?.id !== loggedInUser.id)
-          response = await fetch(`localhost:3001/profile/${profilUser?.id}`)
-        else if (loggedInUser) response = await fetch(`localhost:3001/profile/me`)
-        if (response && response.ok) {
-          const userData = await response.json()
-          setProfilUser(userData)
-        }
-      } catch (error) {
-        console.error('Error fetching user data: ', error)
-      }
-    }
-    fetchData()
-  }, [loggedInUser, userId])
   return (
     <div
       className='hero pt-6'
@@ -64,15 +185,16 @@ const Profile: React.FC = () => {
         padding: '10px',
       }}
     >
+      {ModalFriendsList({ openModal, setOpenModal, friends, me: user })}
       <div className='hero-overlay bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 drop-shadow-md rounded-t-lg bg-opacity-60'></div>
       <div className='hero-content text-center text-neutral-content'>
         <div className='max-w-md'>
           <h1 className='mb-5 text-5xl font-bold text-purple-100'>
-            {profilUser ? profilUser.username : loggedInUser?.username}
+            {profileUser && <span>{profileUser?.username}</span>}
           </h1>
           <div className='avatar'>
             <div className='w-36 rounded-full drop-shadow-lg hover:drop-shadow-xl justify-self-start'>
-              <img src={profilUser ? profilUser.image : loggedInUser?.image} alt='avatar' />
+              <img src={profileUser?.image} alt='avatar' />
             </div>
           </div>
           <div className='columns-3 flex-auto space-y-20'>
@@ -91,7 +213,7 @@ const Profile: React.FC = () => {
             <div className='grid-cols-2 space-x-0 rounded-lg  shadow-xl'>
               <p className='font-bold drop-shadow-md'>Friends</p>
               <p className='px-10 text-black rounded-b-lg backdrop-opacity-10 backdrop-invert bg-white/50'>
-                5
+                {friends && friends.length}
               </p>
             </div>
           </div>
@@ -101,5 +223,6 @@ const Profile: React.FC = () => {
     </div>
   )
 }
+
 const ProfileWithNavbar = WithNavbar(Profile)
 export { Profile, ProfileWithNavbar }

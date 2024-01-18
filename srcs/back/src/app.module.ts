@@ -5,6 +5,8 @@ import { AuthModule } from './auth/auth.module'
 import { ChatModule } from './chat/chat.module'
 import { LoggerModule } from 'nestjs-pino'
 import { EventEmitterModule } from '@nestjs/event-emitter'
+import { FriendsModule } from './friends/friends.module'
+import { NotificationModule } from './notification/notification.module'
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -15,6 +17,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter'
     UsersModule,
     AuthModule,
     ChatModule,
+    FriendsModule,
+    NotificationModule,
   ],
   providers: [Logger],
 })

@@ -4,15 +4,30 @@ export interface IUser {
   username: string
   image: string
   twoFaEnabled: boolean
+  friends?: IFriends[]
+  notifier?: INotification[]
   expiresAt?: Date
   createdAt: Date
   updatedAt: Date
   deletedAt?: Date
-  friends: IFriends[]
 }
 
 export type IFriends = {
-  id: number
-  username: string
-  user: IUser
+  friend: IUser
+  friendOf: IUser
+  friendId: number
+  friendOfId: number
+  confirmed: boolean
+  createdAt: Date
+  updatedAt: Date
+  deletedAt?: Date
+}
+
+export type INotification = {
+  sender: IUser
+  received: IUser
+  senderId: number
+  receivedId: number
+  state: boolean
+  createdAt?: Date
 }
