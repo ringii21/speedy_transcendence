@@ -60,6 +60,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() socket: SocketWithUser,
     @MessageBody(new ValidationPipe()) messageDto: MessageDto,
   ) {
+    console.log('Je passe 2 fois icicicicicici---------')
     const msg = await this.messageService.saveChannelMessage(
       socket.handshake.user.id,
       messageDto.channelId,
