@@ -2,7 +2,9 @@ import { useMutation } from '@tanstack/react-query'
 import clsx from 'clsx'
 import React, { useEffect, useState } from 'react'
 import { FC, HTMLAttributes } from 'react'
+import { isMobile } from 'react-device-detect'
 import { FaCrown, FaGavel, FaUser } from 'react-icons/fa'
+import { IoIosArrowBack } from 'react-icons/io'
 import { PiSwordFill } from 'react-icons/pi'
 import { Link } from 'react-router-dom'
 
@@ -32,7 +34,7 @@ const User: FC<UserProps> = ({
   user,
 }) => {
   const userStyle = clsx({
-    'flex justify-between cursor-pointer hover:bg-accent hover:text-accent-content text-base-content':
+    'flex justify-between cursor-pointer hover:bg-accent hover:text-accent-content text-base-content p-2 rounded':
       true,
     'bg-base-100': index % 2 === 0,
     'bg-base-200': index % 2 === 1,
@@ -55,9 +57,9 @@ const User: FC<UserProps> = ({
   return (
     <div className={userStyle}>
       <div onClick={onClickOnUserInList} className='flex items-center'>
-        {member.role == 'owner' && <FaCrown className='text-error mt-1 m-1' />}
-        {member.role == 'admin' && <PiSwordFill className='text-warning mt-1 m-1' />}
-        {member.role == 'user' && <FaUser className='text-base mt-1 m-1' />}
+        {member.role == 'owner' && <FaCrown className='text-error mt-1 m-1 mr-5' />}
+        {member.role == 'admin' && <PiSwordFill className='text-warning mt-1 m-1 mr-5' />}
+        {member.role == 'user' && <FaUser className='text-base mt-1 m-1 mr-5' />}
         {member.user.username}
       </div>
       <div className='flex items-center gap-2'>
@@ -80,13 +82,16 @@ const directMessageChannelRender = (user: IUser, channel: IChannel) => {
   const notMe = channel.members.find((m) => m.user.id !== user?.id)
   if (!notMe) return <></>
   return (
-    <div className='grid place-items-center mt-4'>
-      <Link className='w-1/2 avatar' to={`/profile/${notMe.userId}`}>
-        <div className='rounded'>
-          <img src={notMe.user.image} alt='My profile' />
-        </div>
-      </Link>
-      <span className='text-lg'>{notMe.user.username}</span>
+    <div className='flex flex-col'>
+      <div className='mr-3 ml-2 border-b'>
+        <h1 className='font-bold text-base-content text-center pb-3'>Users</h1>
+      </div>
+      <div className='flex flex-row pt-3 ml-3'>
+        <Link className='w-1/12 avatar' to={`/profile/${notMe.userId}`}>
+          <img src={notMe.user.image} alt='My profile' className='rounded-full' />
+        </Link>
+        <span className='text-lg pl-5'>{notMe.user.username}</span>
+      </div>
     </div>
   )
 }
@@ -107,9 +112,11 @@ const userRender = ({
   isModalOpen: boolean
 }) => {
   return (
-    <div>
-      <h1 className='text-lg text-base-content text-center'>Users</h1>
-      <div className='p-2'>
+    <div className='flex flex-col gap-3 mt-2'>
+      <div className='border-b mr-3 ml-2'>
+        <h1 className='font-bold text-base-content text-center mt-3 pb-3'>Users</h1>
+      </div>
+      <div className='flex flex-col gap-3 p-2 mr-2'>
         {channel.members
           .filter((member) => member.present)
           .sort((a, b) => (a.user.username > b.user.username ? 1 : -1))
@@ -130,50 +137,93 @@ const userRender = ({
   )
 }
 
-const ChatUsers = ({ channel }: { channel: IChannel }) => {
+type handleUserChannelList = HTMLAttributes<HTMLDivElement> & {
+  channel: IChannel
+  onClickConv: ((e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void) | null
+}
+
+const ChatUsers: FC<handleUserChannelList> = ({ channel, onClickConv }) => {
   const { user } = useAuth()
+  if (!user) return <></>
+  const findRole = (userId: number, members?: IChannelMember[]) =>
+    members?.find((member) => member.userId === userId)?.role
+
+  const userRole = findRole(user.id, channel.members)
+
   const [userChannelList, setUserChannelList] = useState(true)
   const [isModalOpen, setModalOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null)
 
-  useEffect(() => {
-    if (userChannelList) setUserChannelList(false)
-  }, [userChannelList])
-
-  const findRole = (userId: number, members?: IChannelMember[]) =>
-    members?.find((member) => member.userId === userId)?.role
-
+  const handleClickConv = (e: React.MouseEvent<HTMLButtonElement, MouseEvent> | null) => {
+    setUserChannelList(false)
+    if (onClickConv && e) onClickConv(e)
+  }
   const showActionModal = (member: IChannelMember) => {
     if (userRole === 'user') return false
     if (userRole === 'admin') return member.role === 'user'
     if (userRole === 'owner') return member.role !== 'owner'
     return false
   }
-  if (!user) return <></>
-  const userRole = findRole(user.id, channel.members)
 
-  return (
-    <div>
-      {isModalOpen && selectedUser && (
-        <UserActionModal
-          isModalOpen={isModalOpen}
-          setModalOpen={setModalOpen}
-          channelId={channel.id}
-          userId={selectedUser.id}
-        />
-      )}
-      {channel.type === EChannelType.direct
-        ? directMessageChannelRender(user, channel)
-        : userRender({
-            user,
-            channel,
-            setModalOpen,
-            setSelectedUser,
-            showActionModal,
-            isModalOpen,
-          })}
-    </div>
-  )
+  useEffect(() => {
+    if (userChannelList) setUserChannelList(false)
+  }, [userChannelList])
+  const arrowMobile = () => {
+    if (isMobile) {
+      return (
+        <>
+          <div className='flex space-x-2 ml-4'>
+            <button type='button' className='btn btn-ghost' onClick={handleClickConv}>
+              <IoIosArrowBack size={18} className='text-black mt-1' />
+            </button>
+          </div>
+          {isModalOpen && selectedUser && (
+            <UserActionModal
+              isModalOpen={isModalOpen}
+              setModalOpen={setModalOpen}
+              channelId={channel.id}
+              userId={selectedUser.id}
+            />
+          )}
+          {channel.type === EChannelType.direct
+            ? directMessageChannelRender(user, channel)
+            : userRender({
+                user,
+                channel,
+                setModalOpen,
+                setSelectedUser,
+                showActionModal,
+                isModalOpen,
+              })}
+        </>
+      )
+    } else {
+      return (
+        <>
+          {isModalOpen && selectedUser && (
+            <UserActionModal
+              isModalOpen={isModalOpen}
+              setModalOpen={setModalOpen}
+              channelId={channel.id}
+              userId={selectedUser.id}
+            />
+          )}
+          {channel.type === EChannelType.direct
+            ? directMessageChannelRender(user, channel)
+            : userRender({
+                user,
+                channel,
+                setModalOpen,
+                setSelectedUser,
+                showActionModal,
+                isModalOpen,
+              })}
+        </>
+      )
+    }
+  }
+
+  return <div>{arrowMobile()}</div>
 }
 
 export { ChatUsers }

@@ -6,6 +6,7 @@ import { Route, Routes } from 'react-router-dom'
 import { RequireAuth } from './components/RequireAuth'
 import { NotFound } from './pages/404'
 import { ChatWithNavbar } from './pages/Chat'
+import { Footer } from './pages/Footer'
 import { HomeWithNavbar } from './pages/Home'
 import Login from './pages/Login'
 import { ProfileWithNavbar } from './pages/Profile'
@@ -83,7 +84,7 @@ const App = () => {
             </NotificationProvider>
           </ChatProvider>
         </SocketProvider>
-        {/* <Footer /> */}
+        <Footer />
       </AuthProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

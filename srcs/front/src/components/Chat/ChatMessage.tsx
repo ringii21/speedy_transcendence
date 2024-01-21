@@ -55,7 +55,7 @@ const ChatMessage: React.FC<ChatBubbleProps> = ({ user, message, members }) => {
   return (
     <div className={messageJustify}>
       <div className={messagePosition}>
-        {BubbleChannelModal({ openModal, setOpenModal, message, user })}
+        {/* {BubbleChannelModal({ openModal, setOpenModal, message, user })} */}
         {message.senderId !== user.id ? (
           <button
             type='button'

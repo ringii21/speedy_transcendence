@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { FaHashtag, FaLock } from 'react-icons/fa'
-import { IoEyeOffSharp } from 'react-icons/io5'
+import {
+  BrowserView,
+  isDesktop,
+  isMobile,
+  isTablet,
+  MobileView,
+  TabletView,
+} from 'react-device-detect'
 import { Navigate, useParams } from 'react-router-dom'
 
 import { ChatConversation, ChatSelection, ChatUsers } from '../components/Chat'
@@ -18,9 +24,8 @@ const Chat = () => {
   const { allChannels } = useChat()
   const { socket } = useSocket()
 
-  const [isCreateModalOpen, setCreateModalOpen] = useState(false)
-  const [isJoinModalOpen, setJoinModalOpen] = useState(false)
   const [currentChannel, setCurrentChannel] = useState<IChannel | undefined>(undefined)
+
   const [userChannelList, setUserChannelList] = useState(false)
   const [channelList, setChannelList] = useState(true)
   const [conv, setConv] = useState(false)
@@ -39,94 +44,79 @@ const Chat = () => {
     }
   }, [])
 
+  const handleChatSelectionOpen = () => {
+    console.log('Enter: ', 1)
+    setConv(true)
+    setChannelList(false)
+    setUserChannelList(false)
+  }
+
   const handleChatSelectionClose = () => {
+    console.log('Enter: ', 2)
     setChannelList(true)
     setConv(false)
     setUserChannelList(false)
   }
 
   const handleUserChannelList = () => {
+    console.log('Enter: ', 3)
     setConv(false)
     setUserChannelList(true)
     setChannelList(false)
   }
 
-  const getChannelName = () => {
-    if (currentChannel) {
-      if (currentChannel.type === 'public') {
-        return (
-          <div className='flex items-center'>
-            <FaHashtag className='mr-2' />
-            {currentChannel.name}
-          </div>
-        )
-      }
-      if (currentChannel.type === 'private') {
-        return (
-          <div className='flex items-center'>
-            <IoEyeOffSharp className='mr-2' />
-            {currentChannel.name}
-          </div>
-        )
-      }
-      if (currentChannel.type === 'protected') {
-        return (
-          <div className='flex items-center'>
-            <FaLock className='mr-2' />
-            {currentChannel.name}
-          </div>
-        )
-      }
-      if (currentChannel.type === 'direct') {
-        return (
-          <div className='flex items-center'>
-            {currentChannel.members.find((member) => member.userId !== user.id)?.user.username}
-          </div>
-        )
-      }
-    }
-  }
+  // const channelPart = () => {
+  //   return (
+  //     <div className='lg:w-3/12 w-4/5'>
+  //       <div className='flex flex-col gap-2 border-b ml-3 p-4'>
+  //         <button
+  //           onClick={(e) => {
+  //             e.preventDefault()
+  //             setCreateModalOpen(!isCreateModalOpen)
+  //           }}
+  //           className='btn btn-primary'
+  //         >
+  //           Add Channel
+  //         </button>
+  //         <button
+  //           onClick={(e) => {
+  //             e.preventDefault()
+  //             setJoinModalOpen(!isJoinModalOpen)
+  //           }}
+  //           className='btn btn-secondary'
+  //         >
+  //           Join Channel
+  //         </button>
+  //       </div>
+  //       <ChatSelection channelId={channelId} />
+  //     </div>
+  //   )
+  // }
 
-  return (
-    <div className='container mx-auto'>
-      {CreateChannelModal({ isCreateModalOpen, setCreateModalOpen })}
-      {JoinChannelModal({ isJoinModalOpen, setJoinModalOpen })}
-      <div className='gap-6 mt-4 border-b pb-4'>
-        <div className='flex justify-center align-middle items-center w-full h-5'>
-          {getChannelName()}
-        </div>
+  console.log(
+    'UseState value: \n',
+    'Conv: ',
+    conv,
+    '\n',
+    'channelList: ',
+    channelList,
+    '\n',
+    'userChannelList:',
+    userChannelList,
+  )
+
+  const showUsersMobile = (): React.ReactNode => {
+    let content: React.ReactNode = null
+    content = (
+      <div className='bg-gray-100 relative w-3/12'>
+        <ChatSelection channelId={channelId} catchEvent={handleChatSelectionOpen} />
       </div>
-      <div className='flex flex-row'>
-        <div className='w-3/12'>
-          <div className='flex flex-col gap-2 border-b p-4'>
-            <button
-              onClick={(e) => {
-                e.preventDefault()
-                setCreateModalOpen(!isCreateModalOpen)
-              }}
-              className='btn btn-primary'
-            >
-              Add Channel
-            </button>
-            <button
-              onClick={(e) => {
-                e.preventDefault()
-                setJoinModalOpen(!isJoinModalOpen)
-              }}
-              className='btn btn-secondary'
-            >
-              Join Channel
-            </button>
-          </div>
-          <ChatSelection channelId={channelId} />
-        </div>
-        {!currentChannel ? (
-          <div className='w-9/12 items-center text-center'>
-            <h1 className='text-2xl mt-32'>Select a channel</h1>
-          </div>
-        ) : (
-          <>
-            <div className='w-6/12'>
+    )
+    allChannels.map((channel) => {
+      if (channel.id && currentChannel) {
+        if (conv && !channelList && !userChannelList) {
+          content = (
+            <div className='h-screen w-full relative'>
               <ChatConversation
                 currentChannel={currentChannel}
                 me={user}
@@ -134,14 +124,65 @@ const Chat = () => {
                 onClickUserChannelList={handleUserChannelList}
               />
             </div>
-            <div className='w-3/12'>
-              <ChatUsers channel={currentChannel} />
+          )
+        } else if (!conv && !channelList && userChannelList) {
+          content = (
+            <div className='h-screen w-screen bg-gray-100'>
+              <ChatUsers channel={currentChannel} onClickConv={handleChatSelectionOpen} />
             </div>
-          </>
-        )}
-      </div>
-    </div>
-  )
+          )
+        } else if (!conv && channelList && !userChannelList) {
+          content = (
+            <div className='bg-gray-100 relative w-full'>
+              <ChatSelection channelId={channelId} catchEvent={handleChatSelectionOpen} />
+            </div>
+          )
+        }
+      }
+    })
+    return content
+  }
+
+  const mobileFormat = () => {
+    if (isDesktop) {
+      console.log('Desktop')
+      return (
+        <div className='flex h-screen w-screen justify-between'>
+          {!currentChannel ? (
+            <div className='bg-gray-100 w-1/5'>
+              <ChatSelection channelId={channelId} catchEvent={handleChatSelectionOpen} />
+            </div>
+          ) : (
+            <div className='flex h-screen w-screen justify-between'>
+              <div className='bg-gray-100 w-1/5'>
+                <ChatSelection channelId={channelId} catchEvent={handleChatSelectionOpen} />
+              </div>
+              <div className='w-6/12'>
+                <ChatConversation
+                  currentChannel={currentChannel}
+                  me={user}
+                  onClickChannelList={handleChatSelectionClose}
+                  onClickUserChannelList={handleUserChannelList}
+                />
+              </div>
+              <div className='w-3/12 bg-gray-100'>
+                <ChatUsers channel={currentChannel} onClickConv={handleChatSelectionOpen} />
+              </div>
+            </div>
+          )}
+        </div>
+      )
+    } else if (isMobile || isTablet) {
+      console.log('Mobile')
+      return (
+        <MobileView>
+          <div className='flex justify-between w-screen h-screen'>{showUsersMobile()}</div>
+        </MobileView>
+      )
+    }
+  }
+
+  return <div className='flex h-screen justify-around gap-5'>{mobileFormat()}</div>
 }
 
 const ChatWithNavbar = WithNavbar(Chat)
