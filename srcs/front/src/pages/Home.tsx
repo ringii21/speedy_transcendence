@@ -3,10 +3,10 @@ import './../styles/home.css'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
+import { RatingModal } from '../components/RatingModal'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useSocket } from '../providers/SocketProvider'
 import pongTheme from './../assets/boardcard_pong.png'
-
 const Home = () => {
   const { socket } = useSocket()
   socket?.connect()
