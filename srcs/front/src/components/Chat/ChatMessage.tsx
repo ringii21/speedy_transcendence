@@ -28,6 +28,12 @@ const ChatMessage: React.FC<ChatBubbleProps> = ({ user, message, members }) => {
     ['order-2 items-start ml-10']: message.senderId !== user.id,
   })
 
+  const messageStyle = clsx({
+    ['px-4 py-2 inline-block rounded-lg']: true,
+    ['bg-primary text-primary-content']: message.senderId === user.id,
+    ['bg-gray-300 text-gray-600']: message.senderId !== user.id,
+  })
+
   const messageJustify = clsx({
     ['flex items-end py-4']: true,
     ['justify-end mr-6']: message.senderId === user.id,
@@ -67,7 +73,15 @@ const ChatMessage: React.FC<ChatBubbleProps> = ({ user, message, members }) => {
           <div className={messagePosition}>
             <div className='flex flex-row relative'>
               <div className={bubblePosition}>
-                {message.senderId !== user.id ? message.content : message.content}
+                {message.gameInvite && (
+                  <Link
+                    className='link link-error font-bold no-underliner'
+                    to={`/game/${message.content}`}
+                  >
+                    Play with me !
+                  </Link>
+                )}
+                {!message.gameInvite && <span>{message.content}</span>}
               </div>
             </div>
           </div>

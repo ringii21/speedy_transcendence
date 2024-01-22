@@ -59,7 +59,7 @@ const ChatInput = ({
           onClick={() => {
             sendMessage({
               channelId,
-              content: 'lobbyId',
+              content: 'Play with me !',
               gameInvite: true,
               senderId: user.id,
             })
