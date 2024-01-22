@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useState } from 'react'
 
 import { useSocket } from '../../providers/SocketProvider'
 
+// eslint-disable-next-line
 export const QueueWaitModal = forwardRef<HTMLDialogElement, any>((props, ref) => {
   const { gameSocket, isGameConnected } = useSocket()
   const [searchOpponent, setSearchOpponent] = useState('LOOKING FOR A MATE...')

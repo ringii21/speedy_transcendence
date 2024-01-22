@@ -4,7 +4,6 @@ import { Navigate } from 'react-router-dom'
 
 import { useAuth } from '../../providers/AuthProvider'
 import { useSocket } from '../../providers/SocketProvider'
-import { IUser } from '../../types/User'
 import { QueueWaitModal } from './QueueModal'
 
 export const Play = () => {

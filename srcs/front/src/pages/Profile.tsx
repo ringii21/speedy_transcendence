@@ -1,5 +1,4 @@
-import { stat } from 'fs'
-import React, { useEffect, useId, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { WithNavbar } from '../hoc/WithNavbar'
@@ -10,7 +9,6 @@ const Profile: React.FC = () => {
   const { user: loggedInUser, signout } = useAuth()
   const { userId } = useParams<{ userId: string }>()
   const [profilUser, setProfilUser] = useState<IUser>()
-  const [isFriend, setIsFriend] = useState(false)
   const [addFriends, setAddFriends] = useState<IFriends>()
   const onButtonClick = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()

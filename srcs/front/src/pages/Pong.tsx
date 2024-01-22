@@ -1,5 +1,4 @@
-import React, { useState } from 'react'
-import { BrowserView, isDesktop, isMobile, MobileView, TabletView } from 'react-device-detect'
+import React from 'react'
 import { Navigate } from 'react-router-dom'
 
 import { Play } from '../components/Pong/Play'

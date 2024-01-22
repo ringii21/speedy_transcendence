@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { BsFillArrowLeftCircleFill, BsFillArrowRightCircleFill } from 'react-icons/bs'
-import { Circle, Image, Layer, Line, Rect, Stage } from 'react-konva'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Circle, Layer, Line, Rect, Stage } from 'react-konva'
+import { useNavigate } from 'react-router-dom'
 
 import { WithNavbar } from '../../hoc/WithNavbar'
-import { useAuth } from '../../providers/AuthProvider'
 import { useSocket } from '../../providers/SocketProvider'
 import { useGameState } from './States/GameState'
 
@@ -17,6 +16,7 @@ type Cords = {
   p2Score: number
 }
 
+/* eslint-disable */
 const throttle = (function () {
   let timeout: any = undefined
   return function throttle(callback: any) {
@@ -28,7 +28,6 @@ const throttle = (function () {
     }
   }
 })()
-
 function throttlify(callback: any) {
   return function throttlified(event: any) {
     throttle(() => {
@@ -36,16 +35,14 @@ function throttlify(callback: any) {
     })
   }
 }
+/* eslint-enable */
 
 export const Game = () => {
-  const { user } = useAuth()
-  const [ballImage, setBallImage] = useState<HTMLImageElement | null>(null)
   const gameState = useGameState()
-  const { gameSocket, isGameConnected } = useSocket()
+  const { gameSocket } = useSocket()
   const [level, setLevel] = useState(1)
   const [t, setT] = useState(0)
   const navigate = useNavigate()
-  const location = useLocation()
 
   const leave = useCallback(() => {
     gameSocket?.emit('leave')
@@ -53,6 +50,7 @@ export const Game = () => {
     // eslint-disable-next-line
   }, []);
 
+  /* eslint-disable */
   const handleMove = throttlify((e: any) => {
     gameSocket?.emit('mouse', e.evt.layerY)
   })
@@ -64,7 +62,7 @@ export const Game = () => {
     gameSocket?.emit('down')
     gameSocket?.off('down')
   }
-
+  /* eslint-enable */
   useEffect(() => {
     gameSocket?.on('finish', () => {
       leave()
@@ -91,6 +89,7 @@ export const Game = () => {
         p2Score: cord.p2Score,
       })
     })
+    /* eslint-disable */
     gameSocket?.on('paddle', (paddles: any) => {
       gameState.setLPaddle(paddles.p1PaddleY)
       gameState.setRPaddle(paddles.p2PaddleY)
@@ -103,6 +102,7 @@ export const Game = () => {
       gameState.setP1(players[0])
       gameState.setP2(players[1])
     })
+    /* eslint-enable */
     return () => {
       gameSocket?.off('ball')
       gameSocket?.off('mouse')

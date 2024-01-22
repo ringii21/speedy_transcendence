@@ -12,7 +12,8 @@ export const Modal = () => {
   const [timer, setTimer] = useState<undefined | number>(undefined)
   const [gameid, setGameId] = useState<undefined | string>(undefined)
   const [gameName, setGameName] = useState<undefined | string>(undefined)
-  const { gameSocket, isGameConnected } = useSocket()
+  // eslint-disable-next-line
+  const { gameSocket } = useSocket()
   const navigate = useNavigate()
   const location = useLocation()
   useEffect(() => {
@@ -22,11 +23,11 @@ export const Modal = () => {
   }, [location])
   useEffect(() => {
     if (gameSocket !== null) {
-      gameSocket?.on('game.launched', (GameId: any) => {
+      gameSocket?.on('game.launched', (GameId: string) => {
         setGameName(GameId)
         setGameId(GameId.slice(5))
       })
-      gameSocket?.on('timer', (msg: any) => {
+      gameSocket?.on('timer', (msg: number) => {
         msg !== 0 && setOpacity('opacity-100')
         msg === 0 && setOpacity('opacity-0')
         setTimer(msg / 1000)
@@ -34,6 +35,7 @@ export const Modal = () => {
           navigate(`/game/${gameid}`)
         }
       })
+      // eslint-disable-next-line
       gameSocket?.on('players', (players: any) => {
         gameState.setP1(players[0])
         gameState.setP2(players[1])

@@ -14,7 +14,9 @@ type GameStateType = {
   lPaddle: number
   rPaddle: number
   ballOwner: number
+  // eslint-disable-next-line
   p1: any
+  // eslint-disable-next-line
   p2: any
   side: boolean
   end: boolean
