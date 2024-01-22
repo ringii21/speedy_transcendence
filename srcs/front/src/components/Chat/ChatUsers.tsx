@@ -2,9 +2,9 @@ import { useMutation } from '@tanstack/react-query'
 import clsx from 'clsx'
 import React, { useEffect, useState } from 'react'
 import { FC, HTMLAttributes } from 'react'
-import { isMobile } from 'react-device-detect'
+import { isMobile, isTablet } from 'react-device-detect'
 import { FaCrown, FaGavel, FaUser } from 'react-icons/fa'
-import { IoIosArrowBack } from 'react-icons/io'
+import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io'
 import { PiSwordFill } from 'react-icons/pi'
 import { Link } from 'react-router-dom'
 
@@ -112,10 +112,7 @@ const userRender = ({
   isModalOpen: boolean
 }) => {
   return (
-    <div className='flex flex-col gap-3 mt-2'>
-      <div className='border-b mr-3 ml-2'>
-        <h1 className='font-bold text-base-content text-center mt-3 pb-3'>Users</h1>
-      </div>
+    <div className='flex flex-col gap-3 mt-2 w-screen'>
       <div className='flex flex-col gap-3 p-2 mr-2'>
         {channel.members
           .filter((member) => member.present)
@@ -169,58 +166,47 @@ const ChatUsers: FC<handleUserChannelList> = ({ channel, onClickConv }) => {
     if (userChannelList) setUserChannelList(false)
   }, [userChannelList])
   const arrowMobile = () => {
-    if (isMobile) {
-      return (
-        <>
-          <div className='flex space-x-2 ml-4'>
-            <button type='button' className='btn btn-ghost' onClick={handleClickConv}>
-              <IoIosArrowBack size={18} className='text-black mt-1' />
+    return (
+      <>
+        <div className='flex flex-row justify-evenly gap-5 mt-1.5 border-b'>
+          <div className='flex space-x-2 pl-3.5'>
+            <button
+              type='button'
+              className='btn btn-ghost text-gray-500 rounded-full hover:text-black'
+              onClick={handleClickConv}
+            >
+              <IoIosArrowBack size={18} className='text-gray-500' />
             </button>
           </div>
-          {isModalOpen && selectedUser && (
-            <UserActionModal
-              isModalOpen={isModalOpen}
-              setModalOpen={setModalOpen}
-              channelId={channel.id}
-              userId={selectedUser.id}
-            />
-          )}
-          {channel.type === EChannelType.direct
-            ? directMessageChannelRender(user, channel)
-            : userRender({
-                user,
-                channel,
-                setModalOpen,
-                setSelectedUser,
-                showActionModal,
-                isModalOpen,
-              })}
-        </>
-      )
-    } else {
-      return (
-        <>
-          {isModalOpen && selectedUser && (
-            <UserActionModal
-              isModalOpen={isModalOpen}
-              setModalOpen={setModalOpen}
-              channelId={channel.id}
-              userId={selectedUser.id}
-            />
-          )}
-          {channel.type === EChannelType.direct
-            ? directMessageChannelRender(user, channel)
-            : userRender({
-                user,
-                channel,
-                setModalOpen,
-                setSelectedUser,
-                showActionModal,
-                isModalOpen,
-              })}
-        </>
-      )
-    }
+          <div className='flex align-items mt-3'>
+            <h1 className='text-gray-500'>Users</h1>
+          </div>
+          <div className='flex justify-end space-x-2 pr-4 invisible'>
+            <span>
+              <IoIosArrowForward size={18} className='text-gray-500' />
+            </span>
+          </div>
+        </div>
+        {isModalOpen && selectedUser && (
+          <UserActionModal
+            isModalOpen={isModalOpen}
+            setModalOpen={setModalOpen}
+            channelId={channel.id}
+            userId={selectedUser.id}
+          />
+        )}
+        {channel.type === EChannelType.direct
+          ? directMessageChannelRender(user, channel)
+          : userRender({
+              user,
+              channel,
+              setModalOpen,
+              setSelectedUser,
+              showActionModal,
+              isModalOpen,
+            })}
+      </>
+    )
   }
 
   return <div>{arrowMobile()}</div>

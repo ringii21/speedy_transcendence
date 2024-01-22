@@ -115,7 +115,7 @@ const Navbar = () => {
             </li>
           </ul>
         </div>
-        <Link to={'/'} className='btn btn-ghost text-xl pongBtn invisible lg:visible'>
+        <Link to={'/'} className='btn btn-ghost text-white text-xl pongBtn invisible lg:visible'>
           Pong
         </Link>
       </div>
@@ -123,14 +123,14 @@ const Navbar = () => {
         <ul className='menu menu-horizontal px-1 flex gap-40'>
           <li>
             <button type='button' className='btn-menu btn-one letterMove'>
-              <Link className='text-base-content' to='/chat'>
+              <Link className='font-bold text-white' to='/chat'>
                 Chat
               </Link>
             </button>
           </li>
           <li>
             <button type='button' className='btn-menu btn-one letterMove'>
-              <Link className='text-base-content' to='/game'>
+              <Link className='font-bold text-white' to='/game'>
                 Game
               </Link>
             </button>

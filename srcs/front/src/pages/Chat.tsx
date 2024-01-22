@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import React, { useEffect, useState } from 'react'
 import {
   BrowserView,
@@ -147,30 +148,38 @@ const Chat = () => {
     if (isDesktop) {
       console.log('Desktop')
       return (
-        <div className='flex h-screen w-screen justify-between'>
-          {!currentChannel ? (
-            <div className='bg-gray-100 w-1/5'>
-              <ChatSelection channelId={channelId} catchEvent={handleChatSelectionOpen} />
-            </div>
-          ) : (
-            <div className='flex h-screen w-screen justify-between'>
-              <div className='bg-gray-100 w-1/5'>
+        <BrowserView>
+          <div className='flex h-screen w-screen justify-between'>
+            {!currentChannel ? (
+              <div className='bg-gray-100'>
                 <ChatSelection channelId={channelId} catchEvent={handleChatSelectionOpen} />
               </div>
-              <div className='w-6/12'>
-                <ChatConversation
-                  currentChannel={currentChannel}
-                  me={user}
-                  onClickChannelList={handleChatSelectionClose}
-                  onClickUserChannelList={handleUserChannelList}
-                />
+            ) : (
+              <div className='flex h-screen w-screen justify-between'>
+                {!conv && !userChannelList && (
+                  <div className='bg-gray-100'>
+                    <ChatSelection channelId={channelId} catchEvent={handleChatSelectionOpen} />
+                  </div>
+                )}
+                {!channelList && !userChannelList && conv && (
+                  <div className='w-6/12'>
+                    <ChatConversation
+                      currentChannel={currentChannel}
+                      me={user}
+                      onClickChannelList={handleChatSelectionClose}
+                      onClickUserChannelList={handleUserChannelList}
+                    />
+                  </div>
+                )}
+                {!conv && !channelList && (
+                  <div className='bg-gray-100'>
+                    <ChatUsers channel={currentChannel} onClickConv={handleChatSelectionOpen} />
+                  </div>
+                )}
               </div>
-              <div className='w-3/12 bg-gray-100'>
-                <ChatUsers channel={currentChannel} onClickConv={handleChatSelectionOpen} />
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        </BrowserView>
       )
     } else if (isMobile || isTablet) {
       console.log('Mobile')

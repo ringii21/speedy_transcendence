@@ -127,8 +127,8 @@ const ChatConversation = ({
       )
     } else if (isDesktop) {
       return (
-        <div className='flex justify-center gap-6 mt-4 border-b pb-4 ml-6 mr-6'>
-          <div className='flex space-x-2 pl-4 md:hidden'>
+        <div className='flex justify-evenly center gap-6 mt-4 border-b pb-4 ml-6 mr-6'>
+          <div className='flex space-x-2 pl-4'>
             <button type='button' onClick={handleChannelList}>
               <IoIosArrowBack size={18} className='text-gray-500 mt-1' />
             </button>
@@ -136,7 +136,7 @@ const ChatConversation = ({
           <div className='flex align-items gap-2'>
             <span className='text-gray-500'>{getChannelName()}</span>
           </div>
-          <div className='flex justify-end space-x-2 pr-4 md:hidden'>
+          <div className='flex justify-end space-x-2 pr-4'>
             <button type='button' onClick={handleUserList}>
               <IoIosArrowForward size={18} className='text-gray-500 mt-1' />
             </button>
@@ -146,7 +146,7 @@ const ChatConversation = ({
     }
   }
   return (
-    <div className='flex flex-col gap-6 box-content rounded-b-lg shadow-2xl h-3/4 justify-between bg-gray-100 relative'>
+    <div className='flex flex-col gap-6 box-content rounded-b-lg shadow-2xl h-3/4 justify-between bg-gray-100 relative w-screen'>
       {arrowIsMobile()}
       <div
         ref={currentRef}
