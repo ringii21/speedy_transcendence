@@ -27,7 +27,7 @@ const ChatConversation = ({
   onClickUserChannelList,
 }: ChatChannelProps) => {
   const currentRef = useRef<HTMLDivElement>(null)
-  const { socket } = useSocket()
+  const { chatSocket } = useSocket()
   const [messages, setMessages] = useState<FrontEndMessage[]>([])
   const [userChannelList, setUserChannelList] = useState(false)
   const [scrollPos, setScrollPos] = useState(0)
@@ -99,12 +99,20 @@ const ChatConversation = ({
   }, [messages])
 
   useEffect(() => {
-    socket.on(ChatSocketEvent.MESSAGE, (newMessage: FrontEndMessage) => {
+    const messageListener = (newMessage: FrontEndMessage) => {
+      console.log(chatSocket)
       if (newMessage.channelId === currentChannel.id) {
         setMessages((messages) => [...messages, newMessage])
       }
-    })
-  }, [])
+    }
+
+    chatSocket.on(ChatSocketEvent.MESSAGE, messageListener)
+
+    // Fonction de nettoyage pour supprimer l'écouteur lors du démontage
+    return () => {
+      chatSocket.off(ChatSocketEvent.MESSAGE, messageListener)
+    }
+  }, [currentChannel.id, chatSocket])
 
   const arrowIsMobile = () => {
     if (isMobile || isTablet) {

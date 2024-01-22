@@ -62,6 +62,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() socket: SocketWithUser,
     @MessageBody(new ValidationPipe()) messageDto: MessageDto,
   ) {
+    console.log(`Event received from namespace: ${socket.nsp.name}`)
     const msg = await this.messageService.saveChannelMessage(
       socket.handshake.user.id,
       messageDto.channelId,

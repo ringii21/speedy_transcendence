@@ -108,10 +108,13 @@ const Navbar = () => {
           </div>
           <ul className='menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52'>
             <li>
+              <Link to='/'>Home</Link>
+            </li>
+            <li>
               <Link to='/chat'>Chat</Link>
             </li>
             <li>
-              <Link to='/game'>Game</Link>
+              <Link to='/play'>Game</Link>
             </li>
           </ul>
         </div>
@@ -130,7 +133,7 @@ const Navbar = () => {
           </li>
           <li>
             <button type='button' className='btn-menu btn-one letterMove'>
-              <Link className='font-bold text-white' to='/game'>
+              <Link className='text-base-content' to='/play'>
                 Game
               </Link>
             </button>

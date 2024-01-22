@@ -30,7 +30,7 @@ export const ChatContext = createContext<ChatContextData>({
 })
 
 export const ChatProvider = ({ children }: Props) => {
-  const { socket } = useSocket()
+  const { chatSocket } = useSocket()
   const { user } = useAuth()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -50,13 +50,13 @@ export const ChatProvider = ({ children }: Props) => {
   })
 
   useEffect(() => {
-    socket.on(ChatSocketEvent.EDIT_CHANNEL, async (data: IChannelMember) => {
+    chatSocket.on(ChatSocketEvent.EDIT_CHANNEL, async (data: IChannelMember) => {
       await queryClient.invalidateQueries({
         queryKey: [data.channelId],
       })
     })
 
-    socket.on(
+    chatSocket.on(
       ChatSocketEvent.JOIN_CHANNEL,
       async (data: { channelId: string; userId: number; background: boolean }) => {
         if (data.userId === user?.id) {
@@ -72,7 +72,7 @@ export const ChatProvider = ({ children }: Props) => {
       },
     )
 
-    socket.on(
+    chatSocket.on(
       ChatSocketEvent.LEAVE_CHANNEL,
       async (data: { channelId: string; userId: number }) => {
         if (data.userId === user?.id) {
@@ -87,9 +87,9 @@ export const ChatProvider = ({ children }: Props) => {
     )
 
     return () => {
-      socket.off(ChatSocketEvent.EDIT_CHANNEL)
-      socket.off(ChatSocketEvent.JOIN_CHANNEL)
-      socket.off(ChatSocketEvent.LEAVE_CHANNEL)
+      chatSocket.off(ChatSocketEvent.EDIT_CHANNEL)
+      chatSocket.off(ChatSocketEvent.JOIN_CHANNEL)
+      chatSocket.off(ChatSocketEvent.LEAVE_CHANNEL)
     }
   }, [user])
 

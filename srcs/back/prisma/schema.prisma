@@ -36,8 +36,8 @@ model User {
   sender    Notification[]    @relation("sender")
   received  Notification[]    @relation("received")
 
-  playedAsp1 Game[] @relation("player1")
-  playedAsp2 Game[] @relation("player2")
+  participant1  Game[]        @relation("participant1")
+  participant2  Game[]        @relation("participant2")
 
   @@map("users")
 }
@@ -131,21 +131,20 @@ model ChannelAction {
 }
 
 model Game {
-  id            String    @id @default(uuid())
-  scoreP1       Int       @map("score_p1")
-  scoreP2       Int       @map("score_p2")
-  player1       User      @relation("player1", fields: [player1Id], references: [id])
-  player1Id     Int       @map("player1_id")
-  player2       User      @relation("player2", fields: [player2Id], references: [id])
-  player2Id     Int       @map("player2_id")
-  exchangeCount Int       @default(0) @map("exchange_count")
-  startedAt     DateTime? @map("started_at")
-  endedAt       DateTime? @map("ended_at")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-  deletedAt     DateTime? @map("deleted_at")
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
 
-  @@index([player1Id, player2Id])
+  id             Int     @id @default(autoincrement())
+  participant1Id Int
+  participant2Id Int
+  winner_id      Int?
+  scoreP1         Int?
+  scoreP2         Int?
+  gametype       String?
+  exchangeCount Int       @default(0) @map("exchange_count")
+  participant1   User    @relation("participant1", fields: [participant1Id], references: [id], onDelete: Cascade)
+  participant2   User    @relation("participant2", fields: [participant2Id], references: [id], onDelete: Cascade)
+
   @@map("games")
 }
 

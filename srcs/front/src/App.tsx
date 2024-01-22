@@ -3,12 +3,15 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import React from 'react'
 import { Route, Routes } from 'react-router-dom'
 
+import { Modal } from './components/Pong/Modal'
+import { GameWithNavbar } from './components/Pong/Pong'
 import { RequireAuth } from './components/RequireAuth'
 import { NotFound } from './pages/404'
 import { ChatWithNavbar } from './pages/Chat'
 import { Footer } from './pages/Footer'
 import { HomeWithNavbar } from './pages/Home'
 import Login from './pages/Login'
+import { PlayWithNavbar } from './pages/Pong'
 import { ProfileWithNavbar } from './pages/Profile'
 import { SettingsWithNavbar } from './pages/Settings'
 import { TwoFactorSettingsWithNavbar } from './pages/TwoFactor/TwoFactorSettings'
@@ -23,68 +26,83 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <SocketProvider>
-          <ChatProvider>
-            <NotificationProvider>
-              <Routes>
-                {/* authenticated */}
-                <Route
-                  path='/'
-                  element={
-                    <RequireAuth>
-                      <HomeWithNavbar />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path='/game'
-                  element={
-                    <RequireAuth>
-                      <HomeWithNavbar />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path='/settings'
-                  element={
-                    <RequireAuth>
-                      <SettingsWithNavbar />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path='/settings/2fa'
-                  element={
-                    <RequireAuth>
-                      <TwoFactorSettingsWithNavbar />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path='/chat/:channelId?'
-                  element={
-                    <RequireAuth>
-                      <ChatWithNavbar />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path='/profile/:id'
-                  element={
-                    <RequireAuth>
-                      <ProfileWithNavbar />
-                    </RequireAuth>
-                  }
-                />
-                {/* non authenticated */}
-                <Route path='/login' element={<Login />} />
-                <Route path='/login/2fa' element={<TwoFactorSignin />} />
-                <Route path='*' element={<NotFound />} />
-              </Routes>
-            </NotificationProvider>
-          </ChatProvider>
-        </SocketProvider>
-        <Footer />
+        <ChatProvider>
+          <SocketProvider>
+            <Modal />
+            <Routes>
+              {/* authenticated */}
+              <Route
+                path='/'
+                element={
+                  <RequireAuth>
+                    <HomeWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path='/play'
+                element={
+                  <RequireAuth>
+                    <PlayWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path='/game/:id'
+                element={
+                  <RequireAuth>
+                    <GameWithNavbar />
+                  </RequireAuth>
+                }
+              ></Route>
+              <Route
+                path='/settings'
+                element={
+                  <RequireAuth>
+                    <SettingsWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path='/settings/2fa'
+                element={
+                  <RequireAuth>
+                    <TwoFactorSettingsWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path='/chat/:channelId?'
+                element={
+                  <RequireAuth>
+                    <ChatWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path='/profile/me'
+                element={
+                  <RequireAuth>
+                    <ProfileWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path='/profile/:id'
+                element={
+                  <RequireAuth>
+                    <ProfileWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              {/* non authenticated */}
+              <Route path='/login' element={<Login />} />
+              <Route path='/login/2fa' element={<TwoFactorSignin />} />
+              <Route path='*' element={<NotFound />} />
+            </Routes>
+          </SocketProvider>
+        </ChatProvider>
+        {/* <Footer /> */}
       </AuthProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

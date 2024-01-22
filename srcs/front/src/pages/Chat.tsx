@@ -23,7 +23,7 @@ const Chat = () => {
   const { channelId } = useParams<{ channelId: string | undefined }>()
   const { user } = useAuth()
   const { allChannels } = useChat()
-  const { socket } = useSocket()
+  const { chatSocket } = useSocket()
 
   const [currentChannel, setCurrentChannel] = useState<IChannel | undefined>(undefined)
 
@@ -39,9 +39,11 @@ const Chat = () => {
   }, [channelId, allChannels])
 
   useEffect(() => {
-    socket.connect()
+    if (!chatSocket.connected) {
+      chatSocket.connect()
+    }
     return () => {
-      socket.disconnect()
+      chatSocket.disconnect()
     }
   }, [])
 

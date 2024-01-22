@@ -3,6 +3,7 @@ import { UsersModule } from './users/users.module'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { AuthModule } from './auth/auth.module'
 import { ChatModule } from './chat/chat.module'
+import { GameModule } from './game/game.module'
 import { LoggerModule } from 'nestjs-pino'
 import { EventEmitterModule } from '@nestjs/event-emitter'
 import { FriendsModule } from './friends/friends.module'
@@ -19,6 +20,7 @@ import { NotificationModule } from './notification/notification.module'
     ChatModule,
     FriendsModule,
     NotificationModule,
+    GameModule,
   ],
   providers: [Logger],
 })
