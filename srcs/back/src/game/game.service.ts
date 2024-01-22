@@ -86,71 +86,33 @@ export class GameService {
     });
     return user;
   }
-  async getHistory(userId: number, offset: number, limit: number) {
-    const matches = await this.prisma.game.findMany({
-      skip: offset,
-      take: limit,
+  
+  async getHistory(userId: number) {
+    const games = await this.prisma.game.findMany({
       where: {
         OR: [
-          {
-            participant1Id: userId,
-          },
-          {
-            participant2Id: userId,
-          },
+          { participant1Id: userId },
+          { participant2Id: userId },
         ],
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
       select: {
-        createdAt: true,
-        scoreP1: true,
-        scoreP2: true,
-        participant1: {
-          select: {
-            id: true,
-            username: true,
-            image: true,
-          },
-        },
-        participant2: {
-          select: {
-            id: true,
-            username: true,
-            image: true,
-          },
-        },
+        winner_id: true,
+        participant1Id: true,
+        participant2Id: true,
       },
     });
-    return matches.map((game: any) => {
-      /* const avatar1: PICTURE = {
-        thumbnail: `https://res.cloudinary.com/trandandan/image/upload/c_thumb,h_48,w_48/${game.participant1.avatar}`,
-        medium: `https://res.cloudinary.com/trandandan/image/upload/c_thumb,h_72,w_72/${game.participant1.avatar}`,
-        large: `https://res.cloudinary.com/trandandan/image/upload/c_thumb,h_128,w_128/${game.participant1.avatar}`,
-      };
-      const avatar2: PICTURE = {
-        thumbnail: `https://res.cloudinary.com/trandandan/image/upload/c_thumb,h_48,w_48/${game.participant2.avatar}`,
-        medium: `https://res.cloudinary.com/trandandan/image/upload/c_thumb,h_72,w_72/${game.participant2.avatar}`,
-        large: `https://res.cloudinary.com/trandandan/image/upload/c_thumb,h_128,w_128/${game.participant2.avatar}`,
-      }; */
-      return {
-        game: {
-          createdAt: game.createdAt,
-          Player1: {
-            id: game.participant1.userId,
-            username: game.participant1.Username,
-            score: game.score1,
-           // avatar: avatar1,
-          },
-          Player2: {
-            id: game.participant2.userId,
-            username: game.participant2.Username,
-            score: game.score2,
-            //avatar: avatar2,
-          },
-        },
-      };
+  
+    let victories = 0;
+    let defeats = 0;
+  
+    games.forEach(game => {
+      if (game.winner_id === userId) {
+        victories++;
+      } else if (game.participant1Id === userId || game.participant2Id === userId) {
+        defeats++;
+      }
     });
+  
+    return { victories, defeats };
   }
 }

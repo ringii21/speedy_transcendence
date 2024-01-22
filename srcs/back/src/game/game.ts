@@ -210,7 +210,7 @@ export class Game {
     this.loop();
   }
 
-  setplayerScokets(
+  setplayerSockets(
     game_channel: string,
     p1socket: Socket,
     p2socket: Socket,

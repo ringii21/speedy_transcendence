@@ -12,7 +12,6 @@ import {
   import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
   import { PrismaService } from 'src/prisma/prisma.service';
   import { Game } from 'src/game/game';
-  import { $Enums } from '@prisma/client';
   import * as crypto from 'crypto';
   import { UsersService } from 'src/users/users.service';
 import { AuthService } from 'src/auth/auth.service';
@@ -58,7 +57,6 @@ import { AuthService } from 'src/auth/auth.service';
         return
       }
   
-      //this.server.emit('friendOffline', userId);
       this.eventEmitter.emit('game.start', {
         client,
         gameMode: 'classic',
@@ -234,6 +232,7 @@ import { AuthService } from 'src/auth/auth.service';
   
     @OnEvent('game.launched')
     async handleGameLaunchedEvent(clients: any, mode: string) {
+      // Create id of the game
       const game_channel = crypto.randomBytes(16).toString('hex');
   
       clients.forEach((client: any) => {
@@ -241,9 +240,10 @@ import { AuthService } from 'src/auth/auth.service';
         client.socket.data.user.inGame = true;
         client.socket.data.user.inQueue = false;
       });
+      // Create new object game
       const new_game = new Game(this.eventEmitter, this.server, mode);
   
-      new_game.setplayerScokets(
+      new_game.setplayerSockets(
         game_channel,
         clients[0].socket,
         clients[1].socket,
