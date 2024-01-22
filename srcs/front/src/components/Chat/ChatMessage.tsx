@@ -23,21 +23,29 @@ const ChatMessage: React.FC<ChatBubbleProps> = ({ user, message, members }) => {
 
   const ref = useRef<HTMLDivElement>(null)
   const messagePosition = clsx({
-    ['flex space-y-2 text-xs max-w-xs mx-2']: true,
-    ['order-1 items-end']: message.senderId === user.id,
-    ['order-2 items-start']: message.senderId !== user.id,
+    ['flex space-y-2 text-xs max-w-xs']: true,
+    ['order-1 items-end mr-10']: message.senderId === user.id,
+    ['order-2 items-start ml-10']: message.senderId !== user.id,
   })
 
   const messageJustify = clsx({
-    ['flex items-end mb-4']: true,
+    ['flex items-end py-4']: true,
     ['justify-end mr-6']: message.senderId === user.id,
     ['justify-start ml-6']: message.senderId !== user.id,
   })
 
+  const bubblePosition = clsx({
+    ['flex flex-col space-y-2 text-xs max-w-xs mx-2 order-2 break-words overflow-hidden']: true,
+    ['px-4 py-2 rounded-lg inline-block rounded-bl-none bg-gray-300 text-gray-600']:
+      message.senderId !== user.id,
+    ['px-4 py-2 rounded-lg inline-block rounded-br-none bg-blue-600 text-white']:
+      message.senderId === user.id,
+  })
+
   const imageStyle = clsx({
-    ['w-6 rounded-full']: true,
-    ['order-2']: message.senderId === user.id,
-    ['order-1 hover:shadow-lg hover:shadow-indigo-500/50']: message.senderId !== user.id,
+    ['w-6 h-6 rounded-full']: true,
+    ['order-2 absolute bottom-0 right-0']: message.senderId === user.id,
+    ['order-1 absolute bottom-0 left-0']: message.senderId !== user.id,
   })
 
   useEffect(() => {
@@ -54,24 +62,29 @@ const ChatMessage: React.FC<ChatBubbleProps> = ({ user, message, members }) => {
   }, [])
   return (
     <div className={messageJustify}>
-      <div className={messagePosition}>
-        {/* {BubbleChannelModal({ openModal, setOpenModal, message, user })} */}
-        {message.senderId !== user.id ? (
-          <button
-            type='button'
-            className='block'
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              setOpenModal(!openModal)
-            }}
-          >
-            <img src={sender.user.image} alt='My profile' className={imageStyle} />
-          </button>
-        ) : (
+      {message.senderId !== user.id ? (
+        <div className='flex flex-row relative'>
+          <div className={messagePosition}>
+            <div className='flex flex-row relative'>
+              <div className={bubblePosition}>
+                {message.senderId !== user.id ? message.content : message.content}
+              </div>
+            </div>
+          </div>
           <img src={sender.user.image} alt='My profile' className={imageStyle} />
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className='flex flex-row relative'>
+          <div className={messagePosition}>
+            <div className='flex flex-row relative'>
+              <div className={bubblePosition}>
+                {message.senderId !== user.id ? message.content : message.content}
+              </div>
+            </div>
+          </div>
+          <img src={sender.user.image} alt='My profile' className={imageStyle} />
+        </div>
+      )}
     </div>
   )
 }
