@@ -1,9 +1,13 @@
 import {
+  BadRequestException,
   Body,
   ClassSerializerInterceptor,
   Controller,
   Get,
+  Param,
+  ParseIntPipe,
   Patch,
+  Post,
   Query,
   Req,
   UploadedFile,
@@ -13,11 +17,12 @@ import {
 import { UsersService } from './users.service'
 import { UserEntity } from './entity/user.entity'
 import { PatchUserDto } from './dto/patch-user.dto'
-import { QueryUsersDto } from './dto/query-users.dto'
+import { QueryFindUsersDto, QueryUsersDto } from './dto/query-users.dto'
 import JwtTwoFaGuard from '../auth/jwt/jwt-2fa.guard'
 import { UploadUserImage } from './decorator/file-upload.decorator'
 import { ConfigService } from '@nestjs/config'
 import { RequestWithDbUser } from '../types/Request'
+import { NotFoundException } from '@nestjs/common'
 
 @Controller('users')
 @UseGuards(JwtTwoFaGuard)
@@ -39,6 +44,13 @@ export class UsersController {
   @Get('me')
   async me(@Req() req: RequestWithDbUser) {
     return new UserEntity(req.user)
+  }
+
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const user = await this.usersService.findUserById(id)
+    if (!user) return new NotFoundException('user not found')
+    return new UserEntity(user)
   }
 
   @Patch('me')

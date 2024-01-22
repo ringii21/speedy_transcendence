@@ -30,13 +30,42 @@ model User {
   actions  ChannelAction[]
   messages ChannelMessage[]
 
-  friends  User[] @relation("friends")
-  friendOf User[] @relation("friends")
+  friend    Friends[] @relation("friend")
+  friendOf  Friends[] @relation("friendOf")
+
+  sender    Notification[]    @relation("sender")
+  received  Notification[]    @relation("received")
 
   playedAsp1 Game[] @relation("player1")
   playedAsp2 Game[] @relation("player2")
 
   @@map("users")
+}
+
+model Notification {
+  sender      User      @relation("sender", fields: [senderId], references: [id])
+  received    User      @relation("received", fields: [receivedId], references: [id])
+  senderId    Int       @map("sender_id")
+  receivedId  Int       @map("received_id")
+  state       Boolean   @default(false)
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@id([senderId, receivedId])
+  @@map("notification")
+}
+
+model Friends {
+  friend       User      @relation("friend", fields: [friendId], references: [id])
+  friendId     Int       @map("friend_id")
+  friendOf       User      @relation("friendOf", fields: [friendOfId], references: [id])
+  friendOfId     Int       @map("friend_of_id")
+  confirmed Boolean @default(false)
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+  deletedAt DateTime?   @map("deleted_at")
+
+  @@id([friendId, friendOfId])
+  @@map("friends")
 }
 
 model ChannelMessage {

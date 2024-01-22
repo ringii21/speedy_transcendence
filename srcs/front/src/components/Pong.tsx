@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
 import '../styles/pong.css'
+
+import React, { useEffect, useRef, useState } from 'react'
+import { NavLink, useNavigate } from 'react-router-dom'
+
 import ballImageSrc from '../assets/balle-pong.png'
 
 /*Pour l'instant je suis un tuto pong qui se trouve ici: https://javascript.plainenglish.io/create-ping-pong-game-using-react-2d78c8e1cd9b
