@@ -16,22 +16,22 @@ const MatchHistory: React.FC<MatchProps> = ({ user }) => {
             <thead>
               <tr role='row'>
                 <th role='columnheader' title='Toggle SortBy'>
-                  <div className='flex items-center justify-between pb-2 pt-4 ml-4 text-center uppercase tracking-wide text-purple-100 sm:text-xs lg:text-xs'>
+                  <div className='flex items-center justify-between pb-2 ml-4 text-center uppercase tracking-wide text-purple-100 sm:text-xs lg:text-xs'>
                     You
                   </div>
                 </th>
                 <th role='columnheader' title='Toggle SortBy'>
-                  <div className='flex items-center justify-between pb-2 pt-4 pl-4 text-center uppercase tracking-wide text-purple-100 sm:text-xs lg:text-xs'>
+                  <div className='flex items-center justify-between pb-2 pl-4 text-center uppercase tracking-wide text-purple-100 sm:text-xs lg:text-xs'>
                     Score
                   </div>
                 </th>
                 <th role='columnheader' title='Toggle SortBy'>
-                  <div className='flex items-center justify-between pb-2 pt-4 ml-4 pr-4 text-center uppercase tracking-wide text-purple-100 sm:text-xs lg:text-xs'>
+                  <div className='flex items-center justify-between pb-2 ml-4 pr-4 text-center uppercase tracking-wide text-purple-100 sm:text-xs lg:text-xs'>
                     Adversary
                   </div>
                 </th>
                 <th role='columnheader' title='Toggle SortBy'>
-                  <div className='flex items-center justify-between pb-2 pt-4 mr-4 text-center uppercase tracking-wide text-purple-100 sm:text-xs lg:text-xs'>
+                  <div className='flex items-center justify-between pb-2 mr-4 text-center uppercase tracking-wide text-purple-100 sm:text-xs lg:text-xs'>
                     Score
                   </div>
                 </th>
@@ -40,16 +40,16 @@ const MatchHistory: React.FC<MatchProps> = ({ user }) => {
             <tbody role='rowgroup'>
               <tr role='row'>
                 {/************* USER HOST **************************/}
-                <td className='text-sm' role='cell'>
+                <td className='text-sm pt-2' role='cell'>
                   <div className='flex items-center pr-2 ml-3'>
                     <img src={user.image} className='rounded-full w-10 h-10' alt='' />
                   </div>
                 </td>
-                <td className='text-sm pl-2' role='cell'>
+                <td className='text-sm pl-2 pt-2' role='cell'>
                   <p className='text-md font-medium text-purple-100 pl-4'>9821</p>
                 </td>
                 {/************* FAKE USER **************************/}
-                <td className='text-sm' role='cell'>
+                <td className='text-sm pt-2' role='cell'>
                   <div className='flex items-center pl-7 mr-3'>
                     <img
                       src='https://images.unsplash.com/photo-1506863530036-1efeddceb993?ixlib=rb-1.2.1&amp;ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&amp;auto=format&amp;fit=crop&amp;w=2244&amp;q=80'
@@ -58,7 +58,7 @@ const MatchHistory: React.FC<MatchProps> = ({ user }) => {
                     />
                   </div>
                 </td>
-                <td className='text-sm pl-2' role='cell'>
+                <td className='text-sm pl-2 pt-2' role='cell'>
                   <p className='text-md font-medium text-purple-100 break-all'>9821</p>
                 </td>
                 {/***************************************************/}
