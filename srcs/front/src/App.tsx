@@ -92,9 +92,9 @@ const App = () => {
               <Route path='/login/2fa' element={<TwoFactorSignin />} />
               <Route path='*' element={<NotFound />} />
             </Routes>
+            {/* <Footer /> */}
           </SocketProvider>
         </ChatProvider>
-        {/* <Footer /> */}
       </AuthProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

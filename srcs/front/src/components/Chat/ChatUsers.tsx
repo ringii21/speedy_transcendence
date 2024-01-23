@@ -36,8 +36,8 @@ const User: FC<UserProps> = ({
   const userStyle = clsx({
     'flex justify-between cursor-pointer hover:bg-accent hover:text-accent-content text-base-content p-2 rounded':
       true,
-    'bg-base-100': index % 2 === 0,
-    'bg-base-200': index % 2 === 1,
+    'bg-gray-800 text-white': index % 2 !== 0,
+    'bg-gray-400 text-black': index % 2 === 0,
   })
 
   const { mutate } = useMutation({
@@ -172,7 +172,7 @@ const ChatUsers: FC<handleUserChannelList> = ({ channel, onClickConv }) => {
           <div className='flex space-x-2 pl-3.5'>
             <button
               type='button'
-              className='btn btn-ghost text-gray-500 rounded-full hover:text-black'
+              className='btn btn-ghost text-gray-500 rounded-full'
               onClick={handleClickConv}
             >
               <IoIosArrowBack size={18} className='text-gray-500' />

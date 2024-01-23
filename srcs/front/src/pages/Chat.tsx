@@ -1,3 +1,5 @@
+import '../index.css'
+
 import clsx from 'clsx'
 import React, { useEffect, useState } from 'react'
 import {
@@ -67,46 +69,6 @@ const Chat = () => {
     setUserChannelList(true)
     setChannelList(false)
   }
-
-  // const channelPart = () => {
-  //   return (
-  //     <div className='lg:w-3/12 w-4/5'>
-  //       <div className='flex flex-col gap-2 border-b ml-3 p-4'>
-  //         <button
-  //           onClick={(e) => {
-  //             e.preventDefault()
-  //             setCreateModalOpen(!isCreateModalOpen)
-  //           }}
-  //           className='btn btn-primary'
-  //         >
-  //           Add Channel
-  //         </button>
-  //         <button
-  //           onClick={(e) => {
-  //             e.preventDefault()
-  //             setJoinModalOpen(!isJoinModalOpen)
-  //           }}
-  //           className='btn btn-secondary'
-  //         >
-  //           Join Channel
-  //         </button>
-  //       </div>
-  //       <ChatSelection channelId={channelId} />
-  //     </div>
-  //   )
-  // }
-
-  console.log(
-    'UseState value: \n',
-    'Conv: ',
-    conv,
-    '\n',
-    'channelList: ',
-    channelList,
-    '\n',
-    'userChannelList:',
-    userChannelList,
-  )
 
   const showUsersMobile = (): React.ReactNode => {
     let content: React.ReactNode = null
