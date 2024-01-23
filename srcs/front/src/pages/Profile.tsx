@@ -181,7 +181,7 @@ const Profile = () => {
   }
 
   return (
-    <div className='flex lg:flex-row flex-col justify-center align-middle'>
+    <div className='flex lg:flex-row flex-col items-center justify-center align-middle'>
       <div
         className='hero'
         style={{
@@ -191,7 +191,7 @@ const Profile = () => {
         {ModalFriendsList({ openModal, setOpenModal, friends, me: user })}
         <div className='hero-overlay bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 drop-shadow-md rounded-lg bg-opacity-60'></div>
         <div className='hero-content text-center text-neutral-content'>
-          <div className='max-w-md'>
+          <div className='w-full'>
             <h1 className='mb-5 text-5xl font-bold text-purple-100'>
               {profileUser && <span>{profileUser?.username}</span>}
             </h1>
