@@ -80,14 +80,6 @@ const App = () => {
                 }
               />
               <Route
-                path='/profile/me'
-                element={
-                  <RequireAuth>
-                    <ProfileWithNavbar />
-                  </RequireAuth>
-                }
-              />
-              <Route
                 path='/profile/:id'
                 element={
                   <RequireAuth>
