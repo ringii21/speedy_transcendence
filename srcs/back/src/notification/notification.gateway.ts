@@ -57,7 +57,7 @@ export class NotificationGateway
         return
       }
       const friend = await this.notificationService.getNonConfirmedFriends(
-        notification.receivedId,
+        notification.senderId,
       )
       if (!friend) return
       console.log('Friend: ', friend)
