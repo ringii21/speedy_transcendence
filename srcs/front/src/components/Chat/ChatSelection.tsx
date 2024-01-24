@@ -83,8 +83,9 @@ const Channel = ({ channel, selectedChannel, mutate, user, onClickEvent }: Chann
   const queryClient = useQueryClient()
 
   const wrapperClass = clsx({
-    ['grid grid-rows-1 hover:bg-base-300 items-center p-1 rounded']: true,
-    ['bg-base-100']: channel.id !== selectedChannel,
+    ['grid grid-rows-1 text-gray-700 hover:bg-base-300 hover:text-gray-200 items-center p-1 rounded']:
+      true,
+    ['border-b']: channel.id !== selectedChannel,
   })
 
   if (!me) return <></>
@@ -93,7 +94,7 @@ const Channel = ({ channel, selectedChannel, mutate, user, onClickEvent }: Chann
       {EditChannelModal({ isEditChannelModalOpen, setEditChannelModalOpen, channel })}
       {InviteChannelModal({ isInviteModalOpen, setInviteModalOpen, channel })}
       <div className='flex flex-row justify-between'>
-        <div className='flex flex-row pl-3'>
+        <div className='flex flex-row'>
           <FaUser className='mt-2' />
           <div className='pl-3 mt-1'>{channel.members.filter((m) => m.present).length ?? 0}</div>
         </div>
@@ -109,27 +110,24 @@ const Channel = ({ channel, selectedChannel, mutate, user, onClickEvent }: Chann
             })
           }}
         >
-          {channel.type === 'private' && (
-            <FaEyeSlash size={12} className='text-base-content mt-2' />
-          )}
-          {channel.type === 'protected' && (
-            <FaLock size={12} className='text-base-content mt-2 sm:w-5 sm:h-5' />
-          )}
-          {channel.type === 'public' && <FaHashtag size={12} className='text-base-content mt-2' />}
-          <span className='ml-2 pr-7 overflow-ellipsis font-bold border-r-black'>
-            {channel.name}
-          </span>
+          <div className='flex flex-row pl-6'>
+            {channel.type === 'private' && <FaEyeSlash className='mt-1 ml-4' />}
+            {channel.type === 'protected' && <FaLock size={12} className=' mt-1 sm:w-5 sm:h-5' />}
+            {channel.type === 'public' && <FaHashtag size={12} className=' mt-2' />}
+            <span className='ml-2 pr-7 overflow-ellipsis font-bold border-r-black'>
+              {channel.name}
+            </span>
+          </div>
         </Link>
-        <div className='flex'>
+        <div className='flex mt-1'>
           {(me.role === 'admin' || me.role === 'owner') && (
             <button
               onClick={(e) => {
                 e.preventDefault()
                 setInviteModalOpen(true)
               }}
-              className='text-gray-700'
             >
-              <FaPlus size={12} />
+              <FaPlus size={12} className='hover:text-green-600 text-gray-700' />
             </button>
           )}
           {me.role === 'owner' && (
@@ -138,16 +136,16 @@ const Channel = ({ channel, selectedChannel, mutate, user, onClickEvent }: Chann
                 e.preventDefault()
                 setEditChannelModalOpen(true)
               }}
-              className='text-gray-700 pl-3'
+              className=' pl-3'
             >
-              <HiDotsVertical size={12} />
+              <HiDotsVertical size={12} className='hover:text-blue-600 text-gray-700' />
             </button>
           )}
           <button
             onClick={() => {
               mutate(channel.id)
             }}
-            className='btn btn-ghost btn-sm'
+            className='text-black hover:text-red-600 pl-3'
           >
             <IoCloseSharp />
           </button>

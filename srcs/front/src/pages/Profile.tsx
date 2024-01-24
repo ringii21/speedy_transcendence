@@ -10,7 +10,11 @@ import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
 import { useNotification } from '../providers/NotificationProvider'
 import { getFriends, removeFriend } from '../utils/friendService'
-import { createNotification, deleteNotification } from '../utils/notificationService'
+import {
+  createNotification,
+  deleteNotification,
+  getNotification,
+} from '../utils/notificationService'
 import { fetchUser, getUser } from '../utils/userHttpRequests'
 
 const Profile = () => {
@@ -113,6 +117,20 @@ const Profile = () => {
 
   // *********************************************************
   const { notifier } = useNotification()
+
+  // const { data: notifier } = useQuery({
+  //   queryKey: ['notification'],
+  //   queryFn: getNotification,
+  // })
+
+  // const fetchData = async () => {
+  //   const result = await notifier
+  //   console.log('Data fetch manually: ', result)
+  // }
+
+  useEffect(() => {
+    console.log('notifier: ', notifier)
+  }, [notifier])
 
   useEffect(() => {
     if (!(friends && friends.forEach)) return undefined

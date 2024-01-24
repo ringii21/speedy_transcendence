@@ -8,6 +8,7 @@ import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../providers/AuthProvider'
 import { useNotification } from '../providers/NotificationProvider'
 import { useSocket } from '../providers/SocketProvider'
+import { getNotification } from '../utils/notificationService'
 import { NotificationModal } from './NotificationModal'
 
 const Navbar = () => {
@@ -25,7 +26,24 @@ const Navbar = () => {
   }
 
   const [isState, setIsState] = useState(false)
+  const { notificationSocket } = useSocket()
   const { notifier } = useNotification()
+
+  // const { data: notifier } = useQuery({
+  //   queryKey: ['notification'],
+  //   queryFn: getNotification,
+  // })
+
+  useEffect(() => {
+    if (!notificationSocket.connected) {
+      notificationSocket.connect()
+    }
+    return () => {
+      notificationSocket.disconnect()
+    }
+  }, [])
+
+  // console.log(notifier)
 
   useEffect(() => {
     if (!notifier) return undefined
@@ -40,7 +58,9 @@ const Navbar = () => {
         ])
       }
     })
+  }, [notifier, setOpenModal, setActiveNotification])
 
+  useEffect(() => {
     const isOpen = (e: MouseEvent) => {
       const el = e.target as HTMLDivElement
       if (ref.current && !ref.current.contains(el)) {

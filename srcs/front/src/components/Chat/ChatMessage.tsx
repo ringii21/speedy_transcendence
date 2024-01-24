@@ -16,7 +16,6 @@ type ChatBubbleProps = {
 
 const ChatMessage: React.FC<ChatBubbleProps> = ({ user, message, members }) => {
   const [openModal, setOpenModal] = useState(false)
-  const [selectedUser, setSelectedUser] = useState<IUser>()
 
   const sender = members.find((member) => member.userId === message.senderId)
   if (!sender) return <span>Error</span>
@@ -26,12 +25,6 @@ const ChatMessage: React.FC<ChatBubbleProps> = ({ user, message, members }) => {
     ['flex space-y-2 text-xs max-w-xs']: true,
     ['order-1 items-end mr-10']: message.senderId === user.id,
     ['order-2 items-start ml-10']: message.senderId !== user.id,
-  })
-
-  const messageStyle = clsx({
-    ['px-4 py-2 inline-block rounded-lg']: true,
-    ['bg-primary text-primary-content']: message.senderId === user.id,
-    ['bg-gray-300 text-gray-600']: message.senderId !== user.id,
   })
 
   const messageJustify = clsx({
