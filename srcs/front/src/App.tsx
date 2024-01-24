@@ -28,71 +28,73 @@ const App = () => {
       <AuthProvider>
         <ChatProvider>
           <SocketProvider>
-            <Modal />
-            <Routes>
-              {/* authenticated */}
-              <Route
-                path='/'
-                element={
-                  <RequireAuth>
-                    <HomeWithNavbar />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path='/play'
-                element={
-                  <RequireAuth>
-                    <PlayWithNavbar />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path='/game/:id'
-                element={
-                  <RequireAuth>
-                    <GameWithNavbar />
-                  </RequireAuth>
-                }
-              ></Route>
-              <Route
-                path='/settings'
-                element={
-                  <RequireAuth>
-                    <SettingsWithNavbar />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path='/settings/2fa'
-                element={
-                  <RequireAuth>
-                    <TwoFactorSettingsWithNavbar />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path='/chat/:channelId?'
-                element={
-                  <RequireAuth>
-                    <ChatWithNavbar />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path='/profile/:id'
-                element={
-                  <RequireAuth>
-                    <ProfileWithNavbar />
-                  </RequireAuth>
-                }
-              />
-              {/* non authenticated */}
-              <Route path='/login' element={<Login />} />
-              <Route path='/login/2fa' element={<TwoFactorSignin />} />
-              <Route path='*' element={<NotFound />} />
-            </Routes>
-            {/* <Footer /> */}
+            <NotificationProvider>
+              <Modal />
+              <Routes>
+                {/* authenticated */}
+                <Route
+                  path='/'
+                  element={
+                    <RequireAuth>
+                      <HomeWithNavbar />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path='/play'
+                  element={
+                    <RequireAuth>
+                      <PlayWithNavbar />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path='/game/:id'
+                  element={
+                    <RequireAuth>
+                      <GameWithNavbar />
+                    </RequireAuth>
+                  }
+                ></Route>
+                <Route
+                  path='/settings'
+                  element={
+                    <RequireAuth>
+                      <SettingsWithNavbar />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path='/settings/2fa'
+                  element={
+                    <RequireAuth>
+                      <TwoFactorSettingsWithNavbar />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path='/chat/:channelId?'
+                  element={
+                    <RequireAuth>
+                      <ChatWithNavbar />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path='/profile/:id'
+                  element={
+                    <RequireAuth>
+                      <ProfileWithNavbar />
+                    </RequireAuth>
+                  }
+                />
+                {/* non authenticated */}
+                <Route path='/login' element={<Login />} />
+                <Route path='/login/2fa' element={<TwoFactorSignin />} />
+                <Route path='*' element={<NotFound />} />
+              </Routes>
+              {/* <Footer /> */}
+            </NotificationProvider>
           </SocketProvider>
         </ChatProvider>
       </AuthProvider>

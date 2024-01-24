@@ -34,15 +34,6 @@ const Navbar = () => {
   //   queryFn: getNotification,
   // })
 
-  useEffect(() => {
-    if (!notificationSocket.connected) {
-      notificationSocket.connect()
-    }
-    return () => {
-      notificationSocket.disconnect()
-    }
-  }, [])
-
   // console.log(notifier)
 
   useEffect(() => {

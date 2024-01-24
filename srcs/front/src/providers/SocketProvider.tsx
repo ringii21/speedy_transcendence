@@ -66,12 +66,12 @@ export const SocketProvider = ({ children }: Props) => {
 
     notificationSocket.on('connect', () => {
       logSocketEvent('connect')
-      notificationSocket.emit(NotificationSocketEvent.RECEIVED)
+      // notificationSocket.emit(NotificationSocketEvent.RECEIVED)
       setisNotificationConnected(true)
     })
     notificationSocket.on('disconnect', () => {
       logSocketEvent('disconnect')
-      notificationSocket.emit(NotificationSocketEvent.DELETED)
+      // notificationSocket.emit(NotificationSocketEvent.DELETED)
       setisNotificationConnected(false)
     })
     notificationSocket.on('connect_error', (e: Error) => {

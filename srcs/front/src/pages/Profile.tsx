@@ -9,6 +9,9 @@ import { RatingHistory } from '../components/RatingHistory'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
 import { useNotification } from '../providers/NotificationProvider'
+import { useSocket } from '../providers/SocketProvider'
+import { NotificationSocketEvent } from '../types/Events'
+import { INotification } from '../types/User'
 import { getFriends, removeFriend } from '../utils/friendService'
 import {
   createNotification,
@@ -19,6 +22,7 @@ import { fetchUser, getUser } from '../utils/userHttpRequests'
 
 const Profile = () => {
   const { user, signout } = useAuth()
+  const { notificationSocket, isNotificationConnected } = useSocket()
   const navigate = useNavigate()
   const { id } = useParams()
   if (!id) {
@@ -33,6 +37,21 @@ const Profile = () => {
 
   const ref = useRef<HTMLDivElement>(null)
   if (!user) return <Navigate to='/login' state={{ from: location }} replace />
+
+  useEffect(() => {
+    const handleNotificationReceived = (friend: any) => {
+      console.log('Notification reçue :', friend)
+      // Mettez à jour l'état, effectuez des actions, etc.
+    }
+
+    // Écoutez l'événement côté client
+    notificationSocket.on('RECEIVED', handleNotificationReceived)
+
+    // Nettoyez l'écouteur lorsque le composant est démonté
+    return () => {
+      notificationSocket.off('DELETED', handleNotificationReceived)
+    }
+  }, [notificationSocket])
 
   let queryConfig
   if (id === 'me') {
@@ -87,28 +106,54 @@ const Profile = () => {
     await signout()
   }
 
-  const followColorButton = () => {
-    if (isFollow === 'Unfollow') setIsColor('btn-warning')
-    else if (isFollow === 'Discard') setIsColor('btn-warning')
-    else setIsColor('btn-primary')
+  const { notifier, myNotification } = useNotification()
+
+  const getMyNotification = async (data: INotification) => {
+    if (!isNotificationConnected) {
+      console.log('not connected')
+      return
+    }
+    console.log(notificationSocket)
+    notificationSocket.emit(NotificationSocketEvent.RECEIVED, data)
   }
 
-  const changeFriendStatus = (id: number) => {
+  const changeFriendStatus = async (id: number) => {
     try {
       if (isFollow === 'Discard' && !isNotify) {
-        console.log('status: ', 1)
-        deleteNotificationMutation.mutate(id)
-        return
+        deleteNotificationMutation.mutateAsync(id, {
+          onSuccess: () => {
+            console.log('Mutation success')
+            setIsFollow('Follow')
+            setIsColor('btn-primary')
+          },
+        })
       } else if (isFollow === 'Unfollow' && !isNotify) {
-        console.log('status: ', 2)
-        setIsNotify(false)
-        deleteFriendMutation.mutate(id)
-        return
-      } else {
-        console.log('status: ', 3)
-        setIsNotify(true)
-        notificationMutation.mutate(id)
-        return
+        deleteFriendMutation.mutateAsync(id, {
+          onSuccess: () => {
+            console.log('Mutation success')
+            setIsFollow('Follow')
+            setIsColor('btn-primary')
+          },
+        })
+      } else if (isFollow === 'Follow') {
+        notificationMutation.mutateAsync(id, {
+          onSuccess: () => {
+            console.log('Mutation success')
+            setIsFollow('Discard')
+            setIsColor('btn-warning')
+            console.log(notificationSocket)
+            if (!profileUser) return
+            const newData: INotification = {
+              sender: user,
+              received: profileUser,
+              senderId: user.id,
+              receivedId: profileUser.id,
+              state: true,
+            }
+            getMyNotification(newData)
+            console.log(notificationSocket)
+          },
+        })
       }
     } catch (e) {
       console.error('Error during mutations: ', e)
@@ -116,45 +161,26 @@ const Profile = () => {
   }
 
   // *********************************************************
-  const { notifier } = useNotification()
-
-  // const { data: notifier } = useQuery({
-  //   queryKey: ['notification'],
-  //   queryFn: getNotification,
-  // })
-
-  // const fetchData = async () => {
-  //   const result = await notifier
-  //   console.log('Data fetch manually: ', result)
-  // }
 
   useEffect(() => {
-    console.log('notifier: ', notifier)
-  }, [notifier])
+    const confirmedFriend = friends?.find((friend) => friend.confirmed === true)
+    const confirmedNotification = notifier?.find((not) => not.state === true)
+    let followStatus = 'Follow'
+    let color = 'btn-primary'
 
-  useEffect(() => {
-    if (!(friends && friends.forEach)) return undefined
-    friends.forEach((friend) => {
-      if (friend.confirmed === true) {
-        setIsFollow('Unfollow')
-        followColorButton()
-      }
-    })
+    if (confirmedFriend) {
+      followStatus = confirmedFriend ? 'Unfollow' : 'Follow'
+      color = confirmedFriend ? 'btn-error' : 'btn-primary'
+    }
 
-    if (!notifier) return undefined
-    notifier.forEach((data: any) => {
-      if (isNotify === true) {
-        setIsFollow('Discard')
-        followColorButton()
-        return
-      }
-      if (data.state === true) {
-        setIsFollow('Discard')
-        followColorButton()
-        return
-      }
-    })
-  }, [setIsFollow, isFollow, friends, isNotify, setIsColor])
+    if (confirmedNotification) {
+      followStatus = confirmedNotification ? 'Discard' : 'Follow'
+      color = confirmedNotification ? 'btn-warning' : 'btn-primary'
+    }
+
+    setIsFollow(followStatus)
+    setIsColor(color)
+  }, [friends, notifier])
 
   const isUserId = () => {
     if (profileUser === undefined) {
@@ -164,10 +190,11 @@ const Profile = () => {
       return (
         <div className={`flex justify-evenly`}>
           <button
-            onClick={() => changeFriendStatus(profileUser?.id)}
+            onClick={() => {
+              changeFriendStatus(profileUser?.id)
+            }}
             className={`btn ${isColor} followColorButton drop-shadow-xl rounded-lg flex flex-row`}
           >
-            {isFollow === 'Follow' ? <FaPlus className='mb-0.5' /> : <FaMinus className='mb-0.5' />}
             {isFollow}
           </button>
           <button className='btn drop-shadow-xl rounded-lg'>

@@ -10,7 +10,7 @@ import { deleteNotification } from '../utils/notificationService'
 type FriendsListModal = {
   openModal: boolean
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>
-  notifier?: INotification[]
+  notifier: INotification[]
   me: IUser
 }
 
@@ -65,7 +65,7 @@ const NotificationModal: React.FC<FriendsListModal> = ({
   const line = (sender: IUser | undefined) => {
     if (sender === undefined) return <></>
     if (!sender) {
-      return `<div key={index}></div>`
+      return <></>
     } else {
       return (
         <Menu.Item key={sender.id}>
