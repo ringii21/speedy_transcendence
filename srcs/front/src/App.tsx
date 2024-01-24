@@ -80,14 +80,6 @@ const App = () => {
                 }
               />
               <Route
-                path='/profile/me'
-                element={
-                  <RequireAuth>
-                    <ProfileWithNavbar />
-                  </RequireAuth>
-                }
-              />
-              <Route
                 path='/profile/:id'
                 element={
                   <RequireAuth>
@@ -100,9 +92,9 @@ const App = () => {
               <Route path='/login/2fa' element={<TwoFactorSignin />} />
               <Route path='*' element={<NotFound />} />
             </Routes>
+            {/* <Footer /> */}
           </SocketProvider>
         </ChatProvider>
-        {/* <Footer /> */}
       </AuthProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
