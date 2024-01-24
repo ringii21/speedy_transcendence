@@ -56,7 +56,8 @@ const BubbleChannelModal: React.FC<BubbleModal> = ({ openModal, setOpenModal, me
               </Menu.Item>
               <Menu.Item>
                 {message.gameInvite && (
-                  <Link className='link link-success' to={`/game/${message.content}`}>
+                  <Link to='/play'
+                  >
                     Play with me!
                   </Link>
                 )}
