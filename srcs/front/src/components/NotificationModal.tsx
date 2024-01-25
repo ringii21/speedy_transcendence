@@ -3,27 +3,33 @@ import { useMutation } from '@tanstack/react-query'
 import React, { Fragment, useState } from 'react'
 import { RxCheckCircled, RxCrossCircled } from 'react-icons/rx'
 
-import { IFriends, INotification, IUser } from '../types/User'
-import { acceptFriendRequest, createFriendRequest } from '../utils/friendService'
+import { useSocket } from '../providers/SocketProvider'
+import { NotificationSocketEvent } from '../types/Events'
+import { IFriends, IUser } from '../types/User'
+import { acceptFriendRequest, createFriendRequest, removeFriend } from '../utils/friendService'
 import { deleteNotification } from '../utils/notificationService'
 
 type FriendsListModal = {
   openModal: boolean
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>
-  notifier: INotification[]
+  friends: IFriends[]
   me: IUser
+  removeNotification: (friendOfId: string) => void
 }
 
 const NotificationModal: React.FC<FriendsListModal> = ({
   openModal,
   setOpenModal,
-  notifier,
+  friends,
   me,
+  removeNotification,
 }) => {
-  const getCorrectFriend = (notifier: INotification, me: IUser | undefined) => {
-    if (!notifier || !me) return undefined
-    if (me.id === notifier.senderId) return
-    return notifier.sender
+  const { notificationSocket } = useSocket()
+
+  const getCorrectFriend = (friend: IFriends, me: IUser | undefined) => {
+    if (!friend || !me) return undefined
+    if (me.id === friend.friendId) return
+    return friend.friend
   }
 
   const friendMutation = useMutation({
@@ -34,6 +40,11 @@ const NotificationModal: React.FC<FriendsListModal> = ({
   const deleteNotificationMutation = useMutation({
     mutationKey: ['friends'],
     mutationFn: deleteNotification,
+  })
+
+  const deleteFriendMutation = useMutation({
+    mutationKey: ['friends'],
+    mutationFn: removeFriend,
   })
 
   const [isFriend, setIsFriend] = useState<IFriends[]>([])
@@ -62,6 +73,21 @@ const NotificationModal: React.FC<FriendsListModal> = ({
     }
   }
 
+  const delNotification = async (id: number) => {
+    await Promise.all([
+      deleteNotificationMutation.mutateAsync(id, {
+        onSuccess: () => {
+          console.log('DeleteNotificationMutation success')
+          notificationSocket.on(NotificationSocketEvent.DELETED, (data: any) => {
+            console.log('data: ', data)
+          })
+        },
+      }),
+      deleteFriendMutation.mutateAsync(id),
+      removeNotification(id.toString()),
+    ])
+  }
+
   const line = (sender: IUser | undefined) => {
     if (sender === undefined) return <></>
     if (!sender) {
@@ -88,7 +114,7 @@ const NotificationModal: React.FC<FriendsListModal> = ({
             <RxCrossCircled
               role='button'
               onClick={() => {
-                deleteNotificationMutation.mutate(sender.id)
+                delNotification(sender.id)
               }}
               size={20}
               className='text-red-500 hover:w-6 hover:h-6'
@@ -109,9 +135,7 @@ const NotificationModal: React.FC<FriendsListModal> = ({
         >
           <div className='p-4 md:p-5 relative'>
             <div className='my-4 space-y-3'>
-              {notifier &&
-                notifier.length > 0 &&
-                notifier.map((f) => line(getCorrectFriend(f, me)))}
+              {friends && friends.length > 0 && friends.map((f) => line(getCorrectFriend(f, me)))}
             </div>
           </div>
         </Menu.Items>

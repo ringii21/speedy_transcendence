@@ -8,14 +8,17 @@ import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../providers/AuthProvider'
 import { useNotification } from '../providers/NotificationProvider'
 import { useSocket } from '../providers/SocketProvider'
+import { NotificationSocketEvent } from '../types/Events'
 import { getNotification } from '../utils/notificationService'
+import { notificationSocket as socket } from '../utils/socketService'
 import { NotificationModal } from './NotificationModal'
 
 const Navbar = () => {
   const { user, signout } = useAuth()
 
-  const [activeNotification, setActiveNotification] = useState<string[]>([])
+  const [activeNotification, setActiveNotification] = useState<string[] | null>(null)
   const [openModal, setOpenModal] = useState(false)
+  const [bellColor, setBellColor] = useState('btn-ghost')
 
   if (!user) return <Navigate to='/login' state={{ from: location }} replace />
 
@@ -27,29 +30,52 @@ const Navbar = () => {
 
   const [isState, setIsState] = useState(false)
   const { notificationSocket } = useSocket()
-  const { notifier } = useNotification()
+  const { friends } = useNotification()
 
-  // const { data: notifier } = useQuery({
-  //   queryKey: ['notification'],
-  //   queryFn: getNotification,
-  // })
+  const removeNotification = (friendOfId: string) => {
+    setActiveNotification((prevActiveNotification) => {
+      if (!prevActiveNotification) return prevActiveNotification
 
-  // console.log(notifier)
+      console.log('prevActiveNotification', prevActiveNotification)
+
+      const updatedNotification = prevActiveNotification.filter((id) => id !== friendOfId)
+      notificationSocket.emit(NotificationSocketEvent.DELETED, friendOfId)
+
+      console.log('updatedNotification: ', updatedNotification)
+
+      return updatedNotification
+    })
+  }
+  useEffect(() => {
+    if (!notificationSocket.connect()) {
+      notificationSocket.connect()
+    }
+  }, [])
 
   useEffect(() => {
-    if (!notifier) return undefined
-
-    notifier.forEach((not: any) => {
-      if (not.state === true && not.receivedId) {
-        setOpenModal(false)
-
-        setActiveNotification((prevActiveNotification) => [
-          ...prevActiveNotification,
-          not.receivedId.toString(),
-        ])
+    if (!friends) return undefined
+    const newActiveNotification = friends
+      .filter((friend: any) => friend.confirmed === false && friend.friendOfId)
+      .map((friend: any) => friend.friendOfId.toString())
+    if (newActiveNotification.length > 0) {
+      const event = (data: any) => {
+        console.log('Data: ', data)
+        newActiveNotification
       }
-    })
-  }, [notifier, setOpenModal, setActiveNotification])
+      setOpenModal(false)
+      notificationSocket.emit(NotificationSocketEvent.RECEIVED, event)
+      setActiveNotification((prevActiveNotification) => [
+        ...(prevActiveNotification || []),
+        ...newActiveNotification,
+      ])
+      notificationSocket.on(NotificationSocketEvent.RECEIVED, event)
+      setBellColor('text-blue-500')
+      return () => {
+        notificationSocket.off(NotificationSocketEvent.RECEIVED, event)
+        notificationSocket.disconnect()
+      }
+    }
+  }, [friends, setOpenModal, setActiveNotification, setBellColor, notificationSocket])
 
   useEffect(() => {
     const isOpen = (e: MouseEvent) => {
@@ -63,12 +89,12 @@ const Navbar = () => {
     return () => {
       document.removeEventListener('click', isOpen)
     }
-  }, [notifier])
+  }, [friends])
 
   const notificationLine = () => {
-    if (!setIsState) return <></>
+    if (!setIsState || !activeNotification) return <></>
 
-    const isNotificationActive = activeNotification.includes(user?.id.toString())
+    const notificationActive = activeNotification.includes(user?.id.toString())
 
     return (
       <div ref={ref} className='right-0'>
@@ -78,13 +104,14 @@ const Navbar = () => {
             e.preventDefault()
             e.stopPropagation()
             setOpenModal(!openModal)
+            setBellColor('btn-ghost')
           }}
           className={`btn btn-ghost changeBellColor`}
         >
           <FaBell
             tabIndex={0}
             size={20}
-            className={`${isNotificationActive ? 'text-blue-500' : ''}`}
+            className={`${notificationActive && user?.id ? bellColor : 'btn-ghost'}`}
           />
         </button>
       </div>
@@ -96,8 +123,9 @@ const Navbar = () => {
       <NotificationModal
         openModal={openModal}
         setOpenModal={setOpenModal}
-        notifier={notifier}
+        friends={friends}
         me={user}
+        removeNotification={removeNotification}
       />
       <div className='navbar-start'>
         <div className='dropdown'>

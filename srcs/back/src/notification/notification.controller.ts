@@ -5,7 +5,6 @@ import { NotificationEntity } from './entity/notification.entity'
 import { NotificationDto } from './dto/notification.dto'
 import { FriendsService } from 'src/friends/friends.service'
 import { DeleteNotificationDto } from './dto/deleteNotification.dto'
-import { RequestWithDbNotification } from '../types/Request'
 import { NotificationGateway } from './notification.gateway'
 import {
   Body,
@@ -35,21 +34,21 @@ export class NotificationController {
     @Req() req: RequestWithDbUser,
     @Body() notificationDto: NotificationDto,
   ) {
-    if (req.user.id === notificationDto.receivedId)
+    if (req.user.id === notificationDto.friendOfId)
       throw new BadRequestException(
         'You cannot send a notification to yourself',
       )
     if (
       await this.friendsService.findFriend(
         req.user.id,
-        notificationDto.receivedId,
+        notificationDto.friendOfId,
       )
     )
       throw new BadRequestException('Already sent a friend request')
     const createdNotification =
       await this.notificationService.createNotification(
         req.user.id,
-        notificationDto.receivedId,
+        notificationDto.friendOfId,
       )
     return createdNotification
   }
@@ -71,13 +70,13 @@ export class NotificationController {
 
   @Delete()
   async deleteNotification(
-    @Req() req: RequestWithDbNotification,
+    @Req() req: RequestWithDbUser,
     @Body() notificationDto: DeleteNotificationDto,
   ) {
     try {
       return this.notificationService.deleteRequest(
-        req.user.receivedId,
-        notificationDto.receivedId,
+        req.user.id,
+        notificationDto.friendOfId,
       )
     } catch (e) {
       console.error('Error deleting notification: ', e)

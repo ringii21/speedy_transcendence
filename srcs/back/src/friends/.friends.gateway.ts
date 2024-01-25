@@ -1,5 +1,4 @@
 import { Logger, UseGuards, ValidationPipe } from '@nestjs/common'
-import { WsAuthGuard } from '../auth/ws-auth.guard'
 import { FriendsRequestDto } from './dto/friend-request.dto'
 import { Socket } from 'socket.io'
 import { JwtAuthService } from '../auth/jwt/jwt-auth.service'
@@ -7,7 +6,8 @@ import { FriendsService } from './friends.service'
 import { UsersService } from 'src/users/users.service'
 import { parse } from 'cookie'
 import { NotificationService } from '../notification/notification.service'
-// import { Prisma, Notification } from '@prisma/client'
+import { User } from '@prisma/client'
+import JwtTwoFaGuard from '../../dist/auth/jwt/jwt-2fa.guard'
 import {
   WebSocketGateway,
   ConnectedSocket,
@@ -19,10 +19,11 @@ import {
 } from '@nestjs/websockets'
 
 enum FriendSocketEvent {
-  NOTIFICATION = 'notification',
   ACCEPTED = 'request_accepted',
   DECLINED = 'request_declined',
 }
+
+type SocketWithUser = Socket & { handshake: { user: User } }
 
 @WebSocketGateway({
   namespace: 'notification',
@@ -39,62 +40,63 @@ export class FriendGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly friendsService: FriendsService,
     private readonly notificationService: NotificationService,
   ) {}
-  @SubscribeMessage(FriendSocketEvent.NOTIFICATION)
-  @UseGuards(WsAuthGuard)
-  async handleNotification(
-    @ConnectedSocket() socket: Socket,
+  @SubscribeMessage(FriendSocketEvent.ACCEPTED)
+  @UseGuards(JwtTwoFaGuard)
+  async handleFriend(
+    @ConnectedSocket() socket: SocketWithUser,
     @MessageBody(new ValidationPipe()) friendDto: FriendsRequestDto,
   ) {
-    const user = await this.getNotification(socket)
-    if (!user) {
-      socket.disconnect()
-      return
-    }
-    const friends = await this.notificationService.getNonConfirmedFriends(
-      user.receivedId,
+    const user = await this.getFriend(socket)
+    if (!user) return
+
+    const isFriends = await this.notificationService.getConfirmedFriends(
+      user.id,
     )
-    if (!friends) return
     socket
       .to(friendDto.friendOfId.toString())
-      .emit(FriendSocketEvent.NOTIFICATION, friends)
-    this.logger.log(`Client sent a friend request: ${socket.id}`)
+      .emit(FriendSocketEvent.ACCEPTED, isFriends)
+      this.logger.log(`Client accepted a friend request: ${socket.id}`)
   }
 
-  async handleConnection(socket: Socket) {
-    const user = await this.getNotification(socket)
-    if (!user) {
-      socket.disconnect()
-      return
-    }
-    const friendRequest = await this.notificationService.getNonConfirmedFriends(
-      user.receivedId,
-    )
-    socket.join(friendRequest.map((friends) => friends.sender.id.toString()))
-    socket
-      .to(friendRequest.map((friends) => friends.sender.id.toString()))
-      .emit(FriendSocketEvent.ACCEPTED, {
-        id: user.receivedId,
-      })
-  }
-
-  async handleDisconnect(socket: Socket) {
-    const user = await this.getNotification(socket)
+  @SubscribeMessage(FriendSocketEvent.DECLINED)
+  async declineRequest(@ConnectedSocket() socket: SocketWithUser) {
+    const user = await this.getFriend(socket)
     if (!user) return
-    const friendRequest = await this.friendsService.getMyFriends(user.id)
-    await Promise.all(
-      friendRequest.map((friends) =>
-        socket
-          .to(friends.friend.id.toString())
-          .emit(FriendSocketEvent.DECLINED, {
-            username: user.username,
-            image: user.image,
-          }),
-      ),
+    const friends = await this.notificationService.getNonConfirmedFriends(
+      user.id,
     )
-    this.logger.log(`Client declined a friend request: ${socket.id}`)
+    friends.forEach((friend) => {
+      socket.to(friendOf.friendOfId).emit(FriendSocketEvent.DECLINED, {
+        friendId: user.id,
+        friendOfId: friendOf.friendOfId,
+      })
+      socket.leave(friendOf)
+    })
+    socket.emit(FriendSocketEvent.DECLINED, { friendId: user.id })
+  }
+  async declineRequest()
+
+  /**
+   * Handles a new connection from a socket.
+   * Retrieves the user associated with the socket and performs necessary actions.
+   * @param socket The socket object representing the connection.
+   * @returns Promise<void>
+   */
+  async handleConnection(socket: Socket) {
+    this.logger.log(`Client connected: ${socket.id}`)
   }
 
-  async getNotification(socket: Socket) {
+  /**
+   * Handles the disconnection of a socket.
+   * Removes the socket from the user's channels and emits a DISCONNECTED event to the channels the user was connected to.
+   * @param socket - The socket that disconnected.
+   * @returns Promise<void>
+   */
+  async handleDisconnect(socket: Socket) {
+    this.logger.log(`Client disconnected: ${socket.id}`)
+  }
+
+  async getFriend(socket: SocketWithUser) {
     const jwtCookie = socket.handshake.headers.cookie
     if (!jwtCookie) return null
     const parsed = parse(jwtCookie)
@@ -102,7 +104,7 @@ export class FriendGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const jwt = await this.jwtAuthService.verify(parsed.jwt)
       if (!jwt || !jwt.sub) return null
-      const user = await this.notificationService.find({ senderId: jwt.sub })
+      const user = await this.userService.find({ id: jwt.sub })
       if (!user) return null
       return user
     } catch (e) {

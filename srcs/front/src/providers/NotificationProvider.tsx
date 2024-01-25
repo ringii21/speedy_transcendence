@@ -17,15 +17,15 @@ import React, {
 } from 'react'
 
 import { NotificationSocketEvent } from '../types/Events'
-import { INotification } from '../types/User'
+import { IFriends } from '../types/User'
 import { getNotification } from '../utils/notificationService'
 import { notificationSocket } from '../utils/socketService'
 import { useAuth } from './AuthProvider'
 import { useSocket } from './SocketProvider'
 
 interface NotificationContextData {
-  myNotification: Pick<INotification, 'receivedId'>[]
-  notifier: INotification[]
+  myFriends: Pick<IFriends, 'friendOfId'>[]
+  friends: IFriends[]
 }
 
 type Props = {
@@ -33,8 +33,8 @@ type Props = {
 }
 
 const NotificationContext = createContext<NotificationContextData>({
-  notifier: [],
-  myNotification: [],
+  friends: [],
+  myFriends: [],
 })
 
 export const NotificationProvider = ({ children }: Props) => {
@@ -51,7 +51,7 @@ export const NotificationProvider = ({ children }: Props) => {
 
   const notificationQuery = useQueries({
     queries: myNotificationQuery.data.map((notification) => ({
-      queryKey: [notification.receivedId],
+      queryKey: [notification.friendOfId],
       queryFn: () => getNotification(),
     })),
   })
@@ -59,12 +59,12 @@ export const NotificationProvider = ({ children }: Props) => {
   useEffect(() => {
     notificationSocket.on(
       NotificationSocketEvent.RECEIVED,
-      async (data: { senderId: number; receivedId: number }) => {
-        if (data.receivedId === user?.id) {
+      async (data: { friendId: number; friendOfId: number }) => {
+        if (data.friendOfId === user?.id) {
           await myNotificationQuery.refetch()
         } else {
           await queryClient.invalidateQueries({
-            queryKey: [data.receivedId],
+            queryKey: [data.friendOfId],
           })
         }
       },
@@ -76,10 +76,10 @@ export const NotificationProvider = ({ children }: Props) => {
   }, [user])
 
   const values = {
-    notifier: notificationQuery
+    friends: notificationQuery
       .flatMap((notification) => notification.data || [])
-      .filter((notification): notification is INotification => notification !== undefined),
-    myNotification: myNotificationQuery.data,
+      .filter((notification): notification is IFriends => notification !== undefined),
+    myFriends: myNotificationQuery.data,
   }
 
   return <NotificationContext.Provider value={values}>{children}</NotificationContext.Provider>

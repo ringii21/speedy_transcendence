@@ -1,17 +1,17 @@
-import { INotification } from '../types/User'
+import { IFriends } from '../types/User'
 import httpInstance from './httpClient'
 
-export const createNotification = async (receivedId: number) => {
-  await httpInstance().post<INotification>(`/api/notification`, {
-    receivedId,
+export const createNotification = async (friendOfId: number) => {
+  await httpInstance().post<IFriends>(`/api/notification`, {
+    friendOfId,
   })
 }
 
 export const getNotification = async () =>
-  (await httpInstance().get<INotification[]>(`/api/notification`)).data
+  (await httpInstance().get<IFriends[]>(`/api/notification`)).data
 
-export const deleteNotification = async (receivedId: number) => {
-  await httpInstance().delete<INotification>(`/api/notification`, {
-    data: { receivedId },
+export const deleteNotification = async (friendOfId: number) => {
+  await httpInstance().delete<IFriends>(`/api/notification`, {
+    data: { friendOfId },
   })
 }

@@ -1,4 +1,4 @@
-import { Logger, UseGuards, ValidationPipe } from '@nestjs/common'
+import { Logger, UseGuards } from '@nestjs/common'
 import { Socket } from 'socket.io'
 import { JwtAuthService } from '../auth/jwt/jwt-auth.service'
 import { FriendsService } from '../friends/friends.service'
@@ -20,8 +20,8 @@ import {
 
 enum NotificationSocketEvent {
   RECEIVED = 'notification_received',
-  ACCEPTED = 'notification_accepted',
-  DECLINED = 'notification_declined',
+  DELETED = 'notification_deleted',
+  ERROR = 'notification_error',
 }
 
 @WebSocketGateway({
@@ -47,7 +47,7 @@ export class NotificationGateway
   @UseGuards(JwtTwoFaGuard)
   async handleNotification(
     @ConnectedSocket() socket: Socket,
-    @MessageBody(new ValidationPipe()) notificationDto: NotificationDto,
+    @MessageBody() notificationDto: NotificationDto,
   ) {
     try {
       console.log(`Event received from namespace: ${socket.nsp.name}`)
@@ -56,43 +56,26 @@ export class NotificationGateway
         socket.disconnect()
         return
       }
-      const friend = await this.notificationService.getNonConfirmedFriends(
+      const friend = await this.notificationService.waitForClientConfirmation(
         user.id,
+        false,
       )
+      console.log('Friend: ', friend)
       if (!friend) {
         console.log(`There's not friend here`)
         return
       }
-      console.log('Friend: ', friend)
       socket
-        .to(notificationDto.receivedId.toString())
+        .to(notificationDto.friendOfId?.toString())
         .emit(NotificationSocketEvent.RECEIVED, friend)
-
-      const confirmationEvent = await this.waitForClientConfirmation(socket)
-
-      if (confirmationEvent) {
-        console.log(
-          'NotificationGateway - ConfirmationEvent:',
-          confirmationEvent,
-        )
-      } else {
-        console.log(`Didn't receive the client validation`)
-      }
       this.logger.log(`Client sent a friend request: ${socket.id}`)
     } catch (e) {
       this.logger.error(`Error handling notification: ${e}`)
-      throw new WsException(
+      socket.emit(
+        NotificationSocketEvent.ERROR,
         'An error occurred while processing the notification',
       )
     }
-  }
-
-  private async waitForClientConfirmation(socket: Socket): Promise<boolean> {
-    return new Promise((resolve) => {
-      socket.once('clientNotificationConfirmation', (state: boolean) => {
-        resolve(state)
-      })
-    })
   }
 
   async handleConnection(socket: Socket) {
@@ -119,6 +102,27 @@ export class NotificationGateway
     }
   }
 
+  // async updateNotification(userId: number, state: boolean) {
+  //   return this.prisma.friends.updateMany({
+  //     where: {
+  //       OR: [
+  //         {
+  //           friendId: userId,
+  //         },
+  //         {
+  //           friendOfId: userId,
+  //         },
+  //       ],
+  //     },
+  //     data: {
+  //       confirmed: state,
+  //     },
+  //     include: {
+  //       friend: true,
+  //       friendOf: true,
+  //     },
+  //   })
+  // }
   // async handleDisconnect(socket: Socket) {
   //   const user = await this.getNotification(socket)
   //   if (!user) return

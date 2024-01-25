@@ -1,51 +1,51 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { Prisma, Notification } from '@prisma/client'
+import { Prisma, Friends } from '@prisma/client'
 
 @Injectable()
 export class NotificationService {
   constructor(private readonly prisma: PrismaService) {}
 
   async find(
-    notificationWhereUniqueInput: Prisma.NotificationWhereUniqueInput,
-  ): Promise<Notification | null> {
-    return this.prisma.notification.findUnique({
-      where: notificationWhereUniqueInput,
+    friendsWhereUniqueInput: Prisma.FriendsWhereUniqueInput,
+  ): Promise<Friends | null> {
+    return this.prisma.friends.findUnique({
+      where: friendsWhereUniqueInput,
     })
   }
 
-  async createNotification(senderId: number, receivedId: number) {
-    return this.prisma.notification.create({
+  async createNotification(friendId: number, friendOfId: number) {
+    return this.prisma.friends.create({
       data: {
-        senderId,
-        receivedId,
-        state: true,
+        friendId,
+        friendOfId,
+        confirmed: false,
       },
     })
   }
 
   async getNonConfirmedFriends(userId: number) {
-    return this.prisma.notification.findMany({
+    return this.prisma.friends.findMany({
       where: {
         OR: [
           {
-            senderId: userId,
+            friendId: userId,
           },
           {
-            receivedId: userId,
+            friendOfId: userId,
           },
         ],
-        state: true,
+        confirmed: false,
       },
       include: {
-        sender: {
+        friend: {
           select: {
             id: true,
             image: true,
             username: true,
           },
         },
-        received: {
+        friendOf: {
           select: {
             id: true,
             image: true,
@@ -56,58 +56,65 @@ export class NotificationService {
     })
   }
 
-  async deleteRequest(senderId: number, receivedId: number) {
-    const sender = await this.prisma.notification.deleteMany({
+  async deleteRequest(friendId: number, friendOfId: number) {
+    const sender = await this.prisma.friends.deleteMany({
       where: {
         OR: [
           {
-            receivedId: receivedId,
-            senderId: senderId,
+            friendId: friendOfId,
+            friendOfId: friendId,
           },
           {
-            senderId: receivedId,
-            receivedId: senderId,
+            friendId: friendId,
+            friendOfId: friendOfId,
           },
         ],
-        state: true,
+        confirmed: false,
       },
     })
     return sender.count > 0
   }
 
-  async waitForClientConfirmation() {
-    return this.prisma.notification.updateMany({
+  async waitForClientConfirmation(userId: number, state: boolean) {
+    return this.prisma.friends.updateMany({
       where: {
-        state: true,
+        AND: [
+          {
+            friendId: userId,
+          },
+          {
+            friendOfId: userId,
+          },
+        ],
       },
       data: {
-        state: true,
+        confirmed: state,
       },
     })
   }
 
   async getConfirmedFriends(userId: number) {
-    return this.prisma.notification.findMany({
+    return this.prisma.friends.findMany({
       where: {
-        OR: [
+        AND: [
           {
-            senderId: userId,
+            friendId: userId,
           },
           {
-            receivedId: userId,
+            friendOfId: userId,
           },
         ],
-        state: true,
+        confirmed: true,
       },
       include: {
-        sender: {
+        friend: {
           select: {
             id: true,
             image: true,
             username: true,
           },
         },
-        received: {
+        friendOf: {
           select: {
             id: true,
             image: true,

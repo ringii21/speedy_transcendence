@@ -11,7 +11,7 @@ import { useAuth } from '../providers/AuthProvider'
 import { useNotification } from '../providers/NotificationProvider'
 import { useSocket } from '../providers/SocketProvider'
 import { NotificationSocketEvent } from '../types/Events'
-import { INotification } from '../types/User'
+import { IFriends } from '../types/User'
 import { getFriends, removeFriend } from '../utils/friendService'
 import {
   createNotification,
@@ -38,21 +38,6 @@ const Profile = () => {
   const ref = useRef<HTMLDivElement>(null)
   if (!user) return <Navigate to='/login' state={{ from: location }} replace />
 
-  useEffect(() => {
-    const handleNotificationReceived = (friend: any) => {
-      console.log('Notification reçue :', friend)
-      // Mettez à jour l'état, effectuez des actions, etc.
-    }
-
-    // Écoutez l'événement côté client
-    notificationSocket.on('RECEIVED', handleNotificationReceived)
-
-    // Nettoyez l'écouteur lorsque le composant est démonté
-    return () => {
-      notificationSocket.off('DELETED', handleNotificationReceived)
-    }
-  }, [notificationSocket])
-
   let queryConfig
   if (id === 'me') {
     queryConfig = {
@@ -66,7 +51,7 @@ const Profile = () => {
     }
   }
 
-  const { data: friends } = useQuery({
+  const { data: myFriend } = useQuery({
     queryKey: ['friends'],
     queryFn: getFriends,
   })
@@ -106,20 +91,11 @@ const Profile = () => {
     await signout()
   }
 
-  const { notifier, myNotification } = useNotification()
-
-  const getMyNotification = async (data: INotification) => {
-    if (!isNotificationConnected) {
-      console.log('not connected')
-      return
-    }
-    console.log(notificationSocket)
-    notificationSocket.emit(NotificationSocketEvent.RECEIVED, data)
-  }
+  const { myFriends, friends } = useNotification()
 
   const changeFriendStatus = async (id: number) => {
     try {
-      if (isFollow === 'Discard' && !isNotify) {
+      if (isFollow === 'Discard') {
         deleteNotificationMutation.mutateAsync(id, {
           onSuccess: () => {
             console.log('Mutation success')
@@ -127,7 +103,7 @@ const Profile = () => {
             setIsColor('btn-primary')
           },
         })
-      } else if (isFollow === 'Unfollow' && !isNotify) {
+      } else if (isFollow === 'Unfollow') {
         deleteFriendMutation.mutateAsync(id, {
           onSuccess: () => {
             console.log('Mutation success')
@@ -141,17 +117,11 @@ const Profile = () => {
             console.log('Mutation success')
             setIsFollow('Discard')
             setIsColor('btn-warning')
-            console.log(notificationSocket)
-            if (!profileUser) return
-            const newData: INotification = {
-              sender: user,
-              received: profileUser,
-              senderId: user.id,
-              receivedId: profileUser.id,
-              state: true,
-            }
-            getMyNotification(newData)
-            console.log(notificationSocket)
+            notificationSocket.emit(
+              NotificationSocketEvent.RECEIVED,
+              id,
+              console.log('SENT REQUEST'),
+            )
           },
         })
       }
@@ -163,24 +133,40 @@ const Profile = () => {
   // *********************************************************
 
   useEffect(() => {
-    const confirmedFriend = friends?.find((friend) => friend.confirmed === true)
-    const confirmedNotification = notifier?.find((not) => not.state === true)
+    if (!myFriend || !friends) {
+      setIsFollow('Follow')
+      setIsColor('btn-primary')
+      return
+    }
+
+    const notFriendYet = friends?.find((friend) => friend.confirmed === false)
+    const isFriend = myFriend.find((friend) => friend.confirmed === true)
+
     let followStatus = 'Follow'
     let color = 'btn-primary'
 
-    if (confirmedFriend) {
-      followStatus = confirmedFriend ? 'Unfollow' : 'Follow'
-      color = confirmedFriend ? 'btn-error' : 'btn-primary'
+    if (notFriendYet) {
+      followStatus = notFriendYet ? 'Discard' : 'Follow'
+      color = notFriendYet ? 'btn-warning' : 'btn-primary'
+    } else if (isFriend) {
+      followStatus = isFriend ? 'Unfollow' : 'Follow'
+      color = isFriend ? 'btn-error' : 'btn-primary'
     }
-
-    if (confirmedNotification) {
-      followStatus = confirmedNotification ? 'Discard' : 'Follow'
-      color = confirmedNotification ? 'btn-warning' : 'btn-primary'
-    }
-
+    console.log(isFollow)
     setIsFollow(followStatus)
     setIsColor(color)
-  }, [friends, notifier])
+  }, [friends])
+
+  useEffect(() => {
+    return () => {
+      notificationSocket.off(NotificationSocketEvent.RECEIVED, (data) => {
+        console.log('NotificationSocketOff 1: ', data)
+      })
+      notificationSocket.off(NotificationSocketEvent.DELETED, (data) => {
+        console.log('NotificationSocketOff 1: ', data)
+      })
+    }
+  })
 
   const isUserId = () => {
     if (profileUser === undefined) {
@@ -225,6 +211,15 @@ const Profile = () => {
     }
   }
 
+  const numberFriends = () => {
+    if (myFriend) {
+      if (myFriend.find((friend) => friend.confirmed === true))
+        return <>{Math.round(myFriend.length / 2)}</>
+      return <>0</>
+    }
+    return <>0</>
+  }
+
   return (
     <div className='flex lg:flex-row flex-col items-center justify-center align-middle'>
       <div
@@ -261,7 +256,7 @@ const Profile = () => {
               <div className='grid-cols-2 space-x-0 rounded-lg  shadow-xl'>
                 <p className='font-bold drop-shadow-md'>Friends</p>
                 <p className='px-10 text-black rounded-b-lg backdrop-opacity-10 backdrop-invert bg-white/50'>
-                  {friends && friends.length}
+                  {numberFriends()}
                 </p>
               </div>
             </div>
