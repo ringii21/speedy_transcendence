@@ -10,6 +10,7 @@ import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
 import { useNotification } from '../providers/NotificationProvider'
 import { getFriends, removeFriend } from '../utils/friendService'
+import { getStats } from '../utils/historyHttpRequest'
 import { createNotification, deleteNotification } from '../utils/notificationService'
 import { fetchUser, getUser } from '../utils/userHttpRequests'
 
@@ -42,6 +43,16 @@ const Profile = () => {
       queryFn: getUser,
     }
   }
+
+  const userId = user.id
+  const {
+    data: userStats,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['stats', userId],
+    queryFn: getStats,
+  })
 
   const { data: friends } = useQuery({
     queryKey: ['friends'],
@@ -204,13 +215,13 @@ const Profile = () => {
               <div className='grid-cols-2 space-x-0 shadow-xl'>
                 <p className='font-bold rounded-t-lg drop-shadow-md'>Win</p>
                 <p className='px-10 text-black rounded-b-lg backdrop-opacity-10 backdrop-invert bg-white/50'>
-                  5
+                  {userStats?.victories}
                 </p>
               </div>
               <div className='grid-cols-2 space-x-0 shadow-xl'>
                 <p className='font-bold rounded-t-lg drop-shadow-md'>Lose</p>
                 <p className='px-10 text-black rounded-b-lg backdrop-opacity-10 backdrop-invert bg-white/50'>
-                  5
+                  {userStats?.defeats}
                 </p>
               </div>
               <div className='grid-cols-2 space-x-0 rounded-lg  shadow-xl'>

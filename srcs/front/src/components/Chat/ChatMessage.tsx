@@ -74,10 +74,7 @@ const ChatMessage: React.FC<ChatBubbleProps> = ({ user, message, members }) => {
             <div className='flex flex-row relative'>
               <div className={bubblePosition}>
                 {message.gameInvite && (
-                  <Link
-                    className='link link-error font-bold no-underliner'
-                    to={`/game/${message.content}`}
-                  >
+                  <Link className='link link-error font-bold no-underliner' to='/play'>
                     Play with me !
                   </Link>
                 )}
