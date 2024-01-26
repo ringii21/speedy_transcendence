@@ -8,6 +8,7 @@ import { NotificationController } from './notification.controller'
 import { FriendsService } from '../friends/friends.service'
 import { FriendsModule } from '../friends/friends.module'
 import { NotificationGateway } from './notification.gateway'
+import { AuthService } from '../auth/auth.service'
 
 @Module({
   providers: [
@@ -16,6 +17,7 @@ import { NotificationGateway } from './notification.gateway'
     UsersService,
     FriendsService,
     NotificationGateway,
+    AuthService,
   ],
   exports: [NotificationService],
   controllers: [NotificationController],

@@ -75,22 +75,24 @@ export class NotificationService {
     return sender.count > 0
   }
 
-  async waitForClientConfirmation(userId: number, state: boolean) {
-    return this.prisma.friends.updateMany({
-      where: {
-        AND: [
-          {
-            friendId: userId,
-          },
-          {
-            friendOfId: userId,
-          },
-        ],
-      },
-      data: {
-        confirmed: state,
-      },
-    })
+  async updateFriendConfirmation(userId: number, state: boolean) {
+    try {
+      if (userId === undefined || state === undefined) {
+        throw new Error('userId and state must be defined')
+      }
+
+      await this.prisma.friends.updateMany({
+        where: {
+          friendOfId: userId,
+        },
+        data: {
+          confirmed: state,
+        },
+      })
+    } catch (e: any) {
+      console.error(`Error updating friend confirmation: ${e.message}`)
+      throw new Error('Failed to update friend confirmation')
+    }
   }
 
   async getConfirmedFriends(userId: number) {

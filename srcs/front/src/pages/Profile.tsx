@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import React, { useEffect, useRef, useState } from 'react'
 import { FaMinus, FaPaperPlane, FaPlus } from 'react-icons/fa'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
@@ -12,12 +12,7 @@ import { useNotification } from '../providers/NotificationProvider'
 import { useSocket } from '../providers/SocketProvider'
 import { NotificationSocketEvent } from '../types/Events'
 import { IFriends } from '../types/User'
-import { getFriends, removeFriend } from '../utils/friendService'
-import {
-  createNotification,
-  deleteNotification,
-  getNotification,
-} from '../utils/notificationService'
+import { createFriendRequest, getFriends, removeFriend } from '../utils/friendService'
 import { fetchUser, getUser } from '../utils/userHttpRequests'
 
 const Profile = () => {
@@ -34,6 +29,7 @@ const Profile = () => {
   const [openModal, setOpenModal] = useState(false)
   const [isColor, setIsColor] = useState('btn-primary')
   const [isNotify, setIsNotify] = useState(false)
+  const queryClient = useQueryClient()
 
   const ref = useRef<HTMLDivElement>(null)
   if (!user) return <Navigate to='/login' state={{ from: location }} replace />
@@ -50,22 +46,11 @@ const Profile = () => {
       queryFn: getUser,
     }
   }
-
-  const { data: myFriend } = useQuery({
-    queryKey: ['friends'],
-    queryFn: getFriends,
-  })
-
   const { data: profileUser } = useQuery(queryConfig)
 
-  const notificationMutation = useMutation({
-    mutationKey: ['notification'],
-    mutationFn: createNotification,
-  })
-
-  const deleteNotificationMutation = useMutation({
+  const friendRequestMutation = useMutation({
     mutationKey: ['friends'],
-    mutationFn: deleteNotification,
+    mutationFn: createFriendRequest,
   })
 
   const deleteFriendMutation = useMutation({
@@ -91,82 +76,61 @@ const Profile = () => {
     await signout()
   }
 
-  const { myFriends, friends } = useNotification()
+  const { friends, friendsSuccess, friendsError } = useNotification()
 
-  const changeFriendStatus = async (id: number) => {
-    try {
-      if (isFollow === 'Discard') {
-        deleteNotificationMutation.mutateAsync(id, {
-          onSuccess: () => {
-            console.log('Mutation success')
-            setIsFollow('Follow')
-            setIsColor('btn-primary')
-          },
-        })
-      } else if (isFollow === 'Unfollow') {
-        deleteFriendMutation.mutateAsync(id, {
-          onSuccess: () => {
-            console.log('Mutation success')
-            setIsFollow('Follow')
-            setIsColor('btn-primary')
-          },
-        })
-      } else if (isFollow === 'Follow') {
-        notificationMutation.mutateAsync(id, {
-          onSuccess: () => {
-            console.log('Mutation success')
-            setIsFollow('Discard')
-            setIsColor('btn-warning')
-            notificationSocket.emit(
-              NotificationSocketEvent.RECEIVED,
-              id,
-              console.log('SENT REQUEST'),
-            )
-          },
-        })
-      }
-    } catch (e) {
-      console.error('Error during mutations: ', e)
+  const changeFriendStatus = (id: number) => {
+    if (isFollow === 'Discard') {
+      deleteFriendMutation.mutate(id, {
+        onSuccess: async () => {
+          await queryClient.invalidateQueries({
+            queryKey: ['friends'],
+          })
+          console.log('Mutation success')
+        },
+      })
+    } else if (isFollow === 'Unfollow') {
+      deleteFriendMutation.mutate(id, {
+        onSuccess: async () => {
+          await queryClient.invalidateQueries({
+            queryKey: ['friends'],
+          })
+          console.log('Mutation success')
+        },
+      })
+    } else if (isFollow === 'Follow') {
+      friendRequestMutation.mutate(id, {
+        onSuccess: async () => {
+          await queryClient.invalidateQueries({
+            queryKey: ['friends'],
+          })
+          console.log('Mutation success')
+        },
+      })
     }
   }
 
   // *********************************************************
 
   useEffect(() => {
-    if (!myFriend || !friends) {
-      setIsFollow('Follow')
-      setIsColor('btn-primary')
-      return
-    }
-
     const notFriendYet = friends?.find((friend) => friend.confirmed === false)
-    const isFriend = myFriend.find((friend) => friend.confirmed === true)
+    const isFriend = friends.find((friend) => friend.confirmed === true)
 
     let followStatus = 'Follow'
     let color = 'btn-primary'
 
-    if (notFriendYet) {
+    if (!(notFriendYet || isFriend)) {
+      followStatus = 'Follow'
+      color = 'btn-primary'
+    } else if (notFriendYet) {
       followStatus = notFriendYet ? 'Discard' : 'Follow'
       color = notFriendYet ? 'btn-warning' : 'btn-primary'
     } else if (isFriend) {
-      followStatus = isFriend ? 'Unfollow' : 'Follow'
-      color = isFriend ? 'btn-error' : 'btn-primary'
+      followStatus = 'Unfollow'
+      color = 'btn-error'
     }
-    console.log(isFollow)
     setIsFollow(followStatus)
     setIsColor(color)
-  }, [friends])
-
-  useEffect(() => {
-    return () => {
-      notificationSocket.off(NotificationSocketEvent.RECEIVED, (data) => {
-        console.log('NotificationSocketOff 1: ', data)
-      })
-      notificationSocket.off(NotificationSocketEvent.DELETED, (data) => {
-        console.log('NotificationSocketOff 1: ', data)
-      })
-    }
-  })
+  }, [friends, friendsSuccess, friendsError])
 
   const isUserId = () => {
     if (profileUser === undefined) {
@@ -212,9 +176,9 @@ const Profile = () => {
   }
 
   const numberFriends = () => {
-    if (myFriend) {
-      if (myFriend.find((friend) => friend.confirmed === true))
-        return <>{Math.round(myFriend.length / 2)}</>
+    if (friends) {
+      if (friends.find((friend) => friend.confirmed === true))
+        return <>{Math.round(friends.length / 2)}</>
       return <>0</>
     }
     return <>0</>

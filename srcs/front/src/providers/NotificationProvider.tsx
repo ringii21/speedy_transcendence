@@ -1,31 +1,14 @@
-import {
-  QueryClient,
-  useQueries,
-  useQuery,
-  useQueryClient,
-  UseQueryResult,
-} from '@tanstack/react-query'
-import React, {
-  createContext,
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import { useQuery } from '@tanstack/react-query'
+import React, { createContext, ReactNode, useContext, useEffect } from 'react'
 
-import { NotificationSocketEvent } from '../types/Events'
 import { IFriends } from '../types/User'
-import { getNotification } from '../utils/notificationService'
+import { getMyFriends } from '../utils/friendService'
 import { notificationSocket } from '../utils/socketService'
 import { useAuth } from './AuthProvider'
-import { useSocket } from './SocketProvider'
-
 interface NotificationContextData {
-  myFriends: Pick<IFriends, 'friendOfId'>[]
   friends: IFriends[]
+  friendsSuccess: boolean
+  friendsError: boolean
 }
 
 type Props = {
@@ -34,52 +17,37 @@ type Props = {
 
 const NotificationContext = createContext<NotificationContextData>({
   friends: [],
-  myFriends: [],
+  friendsSuccess: false,
+  friendsError: false,
 })
 
 export const NotificationProvider = ({ children }: Props) => {
   const { user } = useAuth()
-  const { notificationSocket } = useSocket()
-  const queryClient = useQueryClient()
 
-  const myNotificationQuery = useQuery({
-    queryKey: ['notification'],
-    queryFn: getNotification,
+  const myFriendsQuery = useQuery({
+    queryKey: ['friends'],
+    queryFn: getMyFriends,
     initialData: [],
     enabled: !!user,
   })
 
-  const notificationQuery = useQueries({
-    queries: myNotificationQuery.data.map((notification) => ({
-      queryKey: [notification.friendOfId],
-      queryFn: () => getNotification(),
-    })),
-  })
-
   useEffect(() => {
-    notificationSocket.on(
-      NotificationSocketEvent.RECEIVED,
-      async (data: { friendId: number; friendOfId: number }) => {
-        if (data.friendOfId === user?.id) {
-          await myNotificationQuery.refetch()
-        } else {
-          await queryClient.invalidateQueries({
-            queryKey: [data.friendOfId],
-          })
-        }
-      },
-    )
-
+    if (!notificationSocket.connect()) {
+      notificationSocket.connect()
+    }
+    notificationSocket.on('refresh', async () => {
+      await myFriendsQuery.refetch()
+    })
     return () => {
-      notificationSocket.off(NotificationSocketEvent.DELETED)
+      notificationSocket.off('refresh')
+      notificationSocket.disconnect()
     }
   }, [user])
 
   const values = {
-    friends: notificationQuery
-      .flatMap((notification) => notification.data || [])
-      .filter((notification): notification is IFriends => notification !== undefined),
-    myFriends: myNotificationQuery.data,
+    friends: myFriendsQuery.data,
+    friendsSuccess: myFriendsQuery.isSuccess,
+    friendsError: myFriendsQuery.isError,
   }
 
   return <NotificationContext.Provider value={values}>{children}</NotificationContext.Provider>

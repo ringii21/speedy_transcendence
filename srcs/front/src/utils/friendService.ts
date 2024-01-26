@@ -9,6 +9,8 @@ export const createFriendRequest = async (friendOfId: number) => {
   })
 }
 
+export const getMyFriends = async () => (await httpInstance().get<IFriends[]>(`/api/friends`)).data
+
 export const acceptFriendRequest = async (friendOfId: number) => {
   const response = await httpInstance().post<IFriends>(`/api/friends/add`, {
     friendOfId,
@@ -16,8 +18,11 @@ export const acceptFriendRequest = async (friendOfId: number) => {
   return response.data
 }
 
+export const getMyNonFriends = async () =>
+  (await httpInstance().get<IFriends[]>(`/api/friends/non_confirmed`)).data
+
 export const removeFriend = async (friendOfId: number) => {
-  await httpInstance().delete<IFriends>(`/api/friends/add`, {
+  await httpInstance().delete<IFriends>(`/api/friends`, {
     data: {
       friendOfId,
     },

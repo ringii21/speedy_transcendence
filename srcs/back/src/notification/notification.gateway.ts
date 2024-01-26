@@ -1,5 +1,5 @@
 import { Logger, UseGuards } from '@nestjs/common'
-import { Socket } from 'socket.io'
+import { Socket, Server } from 'socket.io'
 import { JwtAuthService } from '../auth/jwt/jwt-auth.service'
 import { FriendsService } from '../friends/friends.service'
 import { UsersService } from 'src/users/users.service'
@@ -9,6 +9,9 @@ import { NotificationDto } from './dto/notification.dto'
 import { WsException } from '@nestjs/websockets'
 import { PrismaService } from 'src/prisma/prisma.service'
 import JwtTwoFaGuard from '../auth/jwt/jwt-2fa.guard'
+import { AuthService } from '../auth/auth.service'
+import { OnEvent } from '@nestjs/event-emitter'
+import { FriendRequestEvent } from './events/notification.event'
 import {
   WebSocketGateway,
   ConnectedSocket,
@@ -16,8 +19,8 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   SubscribeMessage,
+  WebSocketServer,
 } from '@nestjs/websockets'
-
 enum NotificationSocketEvent {
   RECEIVED = 'notification_received',
   DELETED = 'notification_deleted',
@@ -35,73 +38,60 @@ export class NotificationGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
   private readonly logger = new Logger('NotificationGateway')
+
+  @WebSocketServer() socket: Server
+  userSockets = new Map<number, Socket>()
+  socketUsers = new Map<string, number>()
+
   constructor(
     private readonly jwtAuthService: JwtAuthService,
     private readonly userService: UsersService,
     private readonly notificationService: NotificationService,
     private readonly friendService: FriendsService,
     private readonly prisma: PrismaService,
+    private readonly authService: AuthService,
   ) {}
 
-  @SubscribeMessage(NotificationSocketEvent.RECEIVED)
-  @UseGuards(JwtTwoFaGuard)
-  async handleNotification(
-    @ConnectedSocket() socket: Socket,
-    @MessageBody() notificationDto: NotificationDto,
-  ) {
-    try {
-      console.log(`Event received from namespace: ${socket.nsp.name}`)
-      const user = await this.getUser(socket)
-      if (!user) {
-        socket.disconnect()
-        return
-      }
-      const friend = await this.notificationService.waitForClientConfirmation(
-        user.id,
-        false,
-      )
-      console.log('Friend: ', friend)
-      if (!friend) {
-        console.log(`There's not friend here`)
-        return
-      }
-      socket
-        .to(notificationDto.friendOfId?.toString())
-        .emit(NotificationSocketEvent.RECEIVED, friend)
-      this.logger.log(`Client sent a friend request: ${socket.id}`)
-    } catch (e) {
-      this.logger.error(`Error handling notification: ${e}`)
-      socket.emit(
-        NotificationSocketEvent.ERROR,
-        'An error occurred while processing the notification',
-      )
-    }
+  @OnEvent(FriendRequestEvent.name)
+  async sentFriendRequest({ friendOfId }: FriendRequestEvent) {
+    console.log('Im here')
+    this.getSocketByUserId(friendOfId)?.emit('refresh')
   }
 
   async handleConnection(socket: Socket) {
+    const user = await this.authService.getSocketUser(socket)
+    if (!user) {
+      socket.disconnect()
+      return
+    }
+    this.addSocketToUser(user.id, socket)
     this.logger.log(`Client connected: ${socket.id}`)
+    console.log('Connection: ', this.socketUsers)
   }
 
   async handleDisconnect(socket: Socket) {
+    const user = await this.authService.getSocketUser(socket)
+    if (!user) {
+      socket.disconnect()
+      return
+    }
+    this.removeSocketFromUser(user.id, socket.id)
     this.logger.log(`Client disconnected: ${socket.id}`)
   }
 
-  async getUser(socket: Socket) {
-    const jwtCookie = socket.handshake.headers.cookie
-    if (!jwtCookie) return null
-    const parsed = parse(jwtCookie)
-    if (!parsed.jwt) return null
-    try {
-      const jwt = await this.jwtAuthService.verify(parsed.jwt)
-      if (!jwt || !jwt.sub) return null
-      const user = await this.userService.find({ id: jwt.sub })
-      if (!user) return null
-      return user
-    } catch (e) {
-      throw new WsException('Invalid token')
-    }
+  getSocketByUserId(userId: number) {
+    return this.userSockets.get(userId)
   }
 
+  private addSocketToUser(userId: number, socket: Socket) {
+    this.userSockets.set(userId, socket)
+    this.socketUsers.set(socket.id, userId)
+  }
+
+  private removeSocketFromUser(userId: number, socketId: string) {
+    this.userSockets.delete(userId)
+    this.socketUsers.delete(socketId)
+  }
   // async updateNotification(userId: number, state: boolean) {
   //   return this.prisma.friends.updateMany({
   //     where: {

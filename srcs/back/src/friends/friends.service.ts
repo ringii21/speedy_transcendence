@@ -26,7 +26,6 @@ export class FriendsService {
             friendOfId: userId,
           },
         ],
-        confirmed: true,
       },
       include: {
         friend: {
@@ -91,7 +90,6 @@ export class FriendsService {
             friendOfId: friendId,
           },
         ],
-        confirmed: true,
       },
     })
     return !!friend

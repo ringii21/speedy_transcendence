@@ -1,5 +1,5 @@
 import { Menu, Transition } from '@headlessui/react'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import React, { Fragment, useState } from 'react'
 import { RxCheckCircled, RxCrossCircled } from 'react-icons/rx'
 
@@ -7,7 +7,6 @@ import { useSocket } from '../providers/SocketProvider'
 import { NotificationSocketEvent } from '../types/Events'
 import { IFriends, IUser } from '../types/User'
 import { acceptFriendRequest, createFriendRequest, removeFriend } from '../utils/friendService'
-import { deleteNotification } from '../utils/notificationService'
 
 type FriendsListModal = {
   openModal: boolean
@@ -25,21 +24,11 @@ const NotificationModal: React.FC<FriendsListModal> = ({
   removeNotification,
 }) => {
   const { notificationSocket } = useSocket()
-
-  const getCorrectFriend = (friend: IFriends, me: IUser | undefined) => {
-    if (!friend || !me) return undefined
-    if (me.id === friend.friendId) return
-    return friend.friend
-  }
+  const queryClient = useQueryClient()
 
   const friendMutation = useMutation({
     mutationKey: ['friends'],
     mutationFn: createFriendRequest,
-  })
-
-  const deleteNotificationMutation = useMutation({
-    mutationKey: ['friends'],
-    mutationFn: deleteNotification,
   })
 
   const deleteFriendMutation = useMutation({
@@ -61,68 +50,66 @@ const NotificationModal: React.FC<FriendsListModal> = ({
     },
   })
 
-  const selectOption = async (id: number) => {
-    try {
-      await Promise.all([
-        friendMutation.mutateAsync(id),
-        friendAcceptedMutation.mutateAsync(id),
-        deleteNotificationMutation.mutateAsync(id),
-      ])
-    } catch (e) {
-      console.error('Error during mutations: ', e)
-    }
+  // ********************** REVOIR ************************** //
+  const selectOption = (id: number) => {
+    friendAcceptedMutation.mutate(id, {
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({
+          queryKey: ['friends'],
+        })
+      },
+    })
   }
 
   const delNotification = async (id: number) => {
-    await Promise.all([
-      deleteNotificationMutation.mutateAsync(id, {
-        onSuccess: () => {
+    Promise.all([
+      deleteFriendMutation.mutate(id, {
+        onSuccess: async () => {
+          await queryClient.invalidateQueries({
+            queryKey: ['friends'],
+          })
           console.log('DeleteNotificationMutation success')
           notificationSocket.on(NotificationSocketEvent.DELETED, (data: any) => {
             console.log('data: ', data)
           })
         },
       }),
-      deleteFriendMutation.mutateAsync(id),
       removeNotification(id.toString()),
     ])
   }
 
-  const line = (sender: IUser | undefined) => {
-    if (sender === undefined) return <></>
-    if (!sender) {
-      return <></>
-    } else {
-      return (
-        <Menu.Item key={sender.id}>
-          <a
-            href='#'
-            className='flex static items-center justify-evenly gap-3 p-3 text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white'
-          >
-            <div className='avatar'>
-              <div className='w-12 rounded-full'>
-                <img className='img' src={sender.image} alt='img' />
-              </div>
+  // ********************************************************
+
+  const line = (sender: IUser, id: number) => {
+    return (
+      <Menu.Item key={id}>
+        <a
+          href='#'
+          className='flex static items-center justify-evenly gap-3 p-3 text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white'
+        >
+          <div className='avatar'>
+            <div className='w-12 rounded-full'>
+              <img className='img' src={sender.image} alt='img' />
             </div>
-            <span className='flex-1 ms-3 whitespace-nowrap static'>{sender.username}</span>
-            <RxCheckCircled
-              role='button'
-              onClick={() => selectOption(sender.id)}
-              size={20}
-              className='text-green-500 hover:w-6 hover:h-6'
-            />
-            <RxCrossCircled
-              role='button'
-              onClick={() => {
-                delNotification(sender.id)
-              }}
-              size={20}
-              className='text-red-500 hover:w-6 hover:h-6'
-            />
-          </a>
-        </Menu.Item>
-      )
-    }
+          </div>
+          <span className='flex-1 ms-3 whitespace-nowrap static'>{sender.username}</span>
+          <RxCheckCircled
+            role='button'
+            onClick={() => selectOption(sender.id)}
+            size={20}
+            className='text-green-500 hover:w-6 hover:h-6'
+          />
+          <RxCrossCircled
+            role='button'
+            onClick={() => {
+              delNotification(sender.id)
+            }}
+            size={20}
+            className='text-red-500 hover:w-6 hover:h-6'
+          />
+        </a>
+      </Menu.Item>
+    )
   }
 
   return (
@@ -135,7 +122,16 @@ const NotificationModal: React.FC<FriendsListModal> = ({
         >
           <div className='p-4 md:p-5 relative'>
             <div className='my-4 space-y-3'>
-              {friends && friends.length > 0 && friends.map((f) => line(getCorrectFriend(f, me)))}
+              {friends &&
+                friends.length > 0 &&
+                friends
+                  .filter((friend) => {
+                    return me.id !== friend.friendId
+                  })
+                  .filter((friend): friend is IFriends => friend.friend !== undefined)
+                  .map((friend, i) => {
+                    return line(friend.friend, i)
+                  })}
             </div>
           </div>
         </Menu.Items>
