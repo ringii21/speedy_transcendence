@@ -1,6 +1,6 @@
 import { Menu, Transition } from '@headlessui/react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import React, { Fragment, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import { RxCheckCircled, RxCrossCircled } from 'react-icons/rx'
 
 import { useSocket } from '../providers/SocketProvider'
@@ -23,60 +23,28 @@ const NotificationModal: React.FC<FriendsListModal> = ({
   me,
   removeNotification,
 }) => {
-  const { notificationSocket } = useSocket()
   const queryClient = useQueryClient()
-
-  const friendMutation = useMutation({
-    mutationKey: ['friends'],
-    mutationFn: createFriendRequest,
-  })
 
   const deleteFriendMutation = useMutation({
     mutationKey: ['friends'],
     mutationFn: removeFriend,
   })
 
-  const [isFriend, setIsFriend] = useState<IFriends[]>([])
-
   const friendAcceptedMutation = useMutation({
     mutationKey: ['friends'],
     mutationFn: acceptFriendRequest,
-    onSuccess: (data: IFriends) => {
-      setIsFriend((prevFriends: any) => [...prevFriends, data.confirmed])
-      console.log('Friend request accepted succesfully!', data)
-    },
-    onError: (error) => {
-      console.error('Error accepting friend request', error)
-    },
   })
 
   // ********************** REVOIR ************************** //
-  const selectOption = (id: number) => {
-    friendAcceptedMutation.mutate(id, {
-      onSuccess: async () => {
-        await queryClient.invalidateQueries({
-          queryKey: ['friends'],
-        })
-      },
-    })
-  }
 
-  const delNotification = async (id: number) => {
-    Promise.all([
-      deleteFriendMutation.mutate(id, {
-        onSuccess: async () => {
-          await queryClient.invalidateQueries({
-            queryKey: ['friends'],
-          })
-          console.log('DeleteNotificationMutation success')
-          notificationSocket.on(NotificationSocketEvent.DELETED, (data: any) => {
-            console.log('data: ', data)
-          })
-        },
-      }),
-      removeNotification(id.toString()),
-    ])
-  }
+  // const { friends, friendsSuccess, friendsError } = useNotification()
+
+  useEffect(() => {
+    // const notFriendYet = friends?.find((friend) => friend.confirmed === false)
+    // const isFriend = friends.find((friend) => friend.confirmed === true)
+
+    console.log(friends)
+  }, [friends])
 
   // ********************************************************
 
@@ -95,14 +63,33 @@ const NotificationModal: React.FC<FriendsListModal> = ({
           <span className='flex-1 ms-3 whitespace-nowrap static'>{sender.username}</span>
           <RxCheckCircled
             role='button'
-            onClick={() => selectOption(sender.id)}
+            onClick={() => {
+              friendAcceptedMutation.mutate(sender.id, {
+                onSuccess: async (data) => {
+                  console.log('Friend request accepted succesfully!', data)
+                  await queryClient.invalidateQueries({
+                    queryKey: ['friends'],
+                  })
+                },
+                onError: (error) => {
+                  console.error('Error accepting friend request', error)
+                },
+              })
+            }}
             size={20}
             className='text-green-500 hover:w-6 hover:h-6'
           />
           <RxCrossCircled
             role='button'
             onClick={() => {
-              delNotification(sender.id)
+              deleteFriendMutation.mutate(sender.id, {
+                onSuccess: async () => {
+                  await queryClient.invalidateQueries({
+                    queryKey: ['friends'],
+                  })
+                  removeNotification(id.toString())
+                },
+              })
             }}
             size={20}
             className='text-red-500 hover:w-6 hover:h-6'

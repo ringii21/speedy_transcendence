@@ -29,6 +29,8 @@ const Profile = () => {
   const [openModal, setOpenModal] = useState(false)
   const [isColor, setIsColor] = useState('btn-primary')
   const [isNotify, setIsNotify] = useState(false)
+  const [activeNotification, setActiveNotification] = useState<string[]>([])
+
   const queryClient = useQueryClient()
 
   const ref = useRef<HTMLDivElement>(null)
@@ -46,6 +48,18 @@ const Profile = () => {
       queryFn: getUser,
     }
   }
+
+  const removeNotification = (friendOfId: string) => {
+    setActiveNotification((prevActiveNotification) => {
+      if (!prevActiveNotification) return prevActiveNotification
+
+      const updatedNotification = prevActiveNotification.filter((id) => id !== friendOfId)
+      notificationSocket.emit(NotificationSocketEvent.DELETED, friendOfId)
+
+      return updatedNotification
+    })
+  }
+
   const { data: profileUser } = useQuery(queryConfig)
 
   const friendRequestMutation = useMutation({
@@ -121,12 +135,12 @@ const Profile = () => {
     if (!(notFriendYet || isFriend)) {
       followStatus = 'Follow'
       color = 'btn-primary'
+    } else if (isFriend) {
+      followStatus = isFriend ? 'Unfollow' : 'Follow'
+      color = isFriend ? 'btn-error' : 'btn-primary'
     } else if (notFriendYet) {
       followStatus = notFriendYet ? 'Discard' : 'Follow'
       color = notFriendYet ? 'btn-warning' : 'btn-primary'
-    } else if (isFriend) {
-      followStatus = 'Unfollow'
-      color = 'btn-error'
     }
     setIsFollow(followStatus)
     setIsColor(color)
@@ -147,10 +161,10 @@ const Profile = () => {
           >
             {isFollow}
           </button>
-          <button className='btn drop-shadow-xl rounded-lg'>
+          {/* <button className='btn drop-shadow-xl rounded-lg'>
             <FaPaperPlane className='mb-1' />
             Message
-          </button>
+          </button> */}
         </div>
       )
     } else {
@@ -192,7 +206,7 @@ const Profile = () => {
           padding: '10px',
         }}
       >
-        {ModalFriendsList({ openModal, setOpenModal, friends, me: user })}
+        {ModalFriendsList({ openModal, setOpenModal, friends, me: user, removeNotification })}
         <div className='hero-overlay bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 drop-shadow-md rounded-lg bg-opacity-60'></div>
         <div className='hero-content text-center text-neutral-content'>
           <div className='w-full'>

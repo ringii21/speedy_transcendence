@@ -1,8 +1,9 @@
 import { Menu, Transition } from '@headlessui/react'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import React, { Fragment } from 'react'
 import { RxCheckCircled, RxCrossCircled } from 'react-icons/rx'
 
+import { useNotification } from '../providers/NotificationProvider'
 import { IFriends, IUser } from '../types/User'
 import { removeFriend } from '../utils/friendService'
 
@@ -11,6 +12,7 @@ type NotificationListModal = {
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>
   friends?: IFriends[]
   me: IUser
+  removeNotification: (friendOfId: string) => void
 }
 
 const ModalFriendsList: React.FC<NotificationListModal> = ({
@@ -18,7 +20,10 @@ const ModalFriendsList: React.FC<NotificationListModal> = ({
   setOpenModal,
   friends,
   me,
+  removeNotification,
 }) => {
+  const queryClient = useQueryClient()
+
   const getCorrectFriend = (friend: IFriends, me: IUser) => {
     if (me.id === friend.friendId) return friend.friendOf
     return friend.friend
@@ -27,6 +32,17 @@ const ModalFriendsList: React.FC<NotificationListModal> = ({
     mutationKey: ['friends'],
     mutationFn: removeFriend,
   })
+
+  const delNotification = (id: number) => {
+    deleteFriendMutation.mutate(id, {
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({
+          queryKey: ['friends'],
+        })
+        removeNotification(id.toString())
+      },
+    })
+  }
 
   const line = (friend: IUser, index: number) => {
     if (!friend) return <></>
@@ -45,7 +61,7 @@ const ModalFriendsList: React.FC<NotificationListModal> = ({
           <RxCrossCircled
             role='button'
             onClick={() => {
-              deleteFriendMutation.mutate(friend.id)
+              delNotification(friend.id)
             }}
             size={20}
             className='text-red-500 hover:w-6 hover:h-6'

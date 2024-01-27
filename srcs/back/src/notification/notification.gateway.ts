@@ -1,31 +1,21 @@
-import { Logger, UseGuards } from '@nestjs/common'
+import { Logger } from '@nestjs/common'
 import { Socket, Server } from 'socket.io'
 import { JwtAuthService } from '../auth/jwt/jwt-auth.service'
 import { FriendsService } from '../friends/friends.service'
 import { UsersService } from 'src/users/users.service'
-import { NotificationService } from '../notification/notification.service'
-import { parse } from 'cookie'
-import { NotificationDto } from './dto/notification.dto'
-import { WsException } from '@nestjs/websockets'
 import { PrismaService } from 'src/prisma/prisma.service'
-import JwtTwoFaGuard from '../auth/jwt/jwt-2fa.guard'
 import { AuthService } from '../auth/auth.service'
 import { OnEvent } from '@nestjs/event-emitter'
-import { FriendRequestEvent } from './events/notification.event'
+import {
+  FriendRequestEvent,
+  FriendRequestAccepted,
+} from './events/notification.event'
 import {
   WebSocketGateway,
-  ConnectedSocket,
-  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  SubscribeMessage,
   WebSocketServer,
 } from '@nestjs/websockets'
-enum NotificationSocketEvent {
-  RECEIVED = 'notification_received',
-  DELETED = 'notification_deleted',
-  ERROR = 'notification_error',
-}
 
 @WebSocketGateway({
   namespace: 'notification',
@@ -46,7 +36,6 @@ export class NotificationGateway
   constructor(
     private readonly jwtAuthService: JwtAuthService,
     private readonly userService: UsersService,
-    private readonly notificationService: NotificationService,
     private readonly friendService: FriendsService,
     private readonly prisma: PrismaService,
     private readonly authService: AuthService,
@@ -54,8 +43,12 @@ export class NotificationGateway
 
   @OnEvent(FriendRequestEvent.name)
   async sentFriendRequest({ friendOfId }: FriendRequestEvent) {
-    console.log('Im here')
     this.getSocketByUserId(friendOfId)?.emit('refresh')
+  }
+
+  @OnEvent(FriendRequestAccepted.name)
+  async friendRequestAccepted({ friendOfId }: FriendRequestAccepted) {
+    this.getSocketByUserId(friendOfId)?.join('accepted')
   }
 
   async handleConnection(socket: Socket) {

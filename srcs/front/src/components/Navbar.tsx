@@ -45,21 +45,21 @@ const Navbar = () => {
 
   useEffect(() => {
     const notFriendYet = friends?.find((friend) => friend.confirmed === false)
-    const isFriend = friends.find((friend) => friend.confirmed === true)
+    const myNotif = friends.find((friend) => friend.friendOfId === user?.id)
 
     let followStatus = false
     let color = 'btn-ghost'
 
-    if (!(notFriendYet || isFriend)) {
+    if (!notFriendYet) {
       followStatus = false
       color = 'btn-ghost'
-    } else {
+    } else if (notFriendYet && myNotif) {
       followStatus = false
       color = 'text-blue-600'
     }
     const newActiveNotification = friends
-      .filter((friend: any) => friend.confirmed === false && friend.friendOfId)
-      .map((friend: any) => friend.friendOfId.toString())
+      .filter((friend) => friend.confirmed === false && friend.friendOfId)
+      .map((friend) => friend.friendOfId.toString())
     if (newActiveNotification.length > 0) {
       setActiveNotification((prevActiveNotification) => [
         ...(prevActiveNotification || []),
@@ -68,7 +68,7 @@ const Navbar = () => {
     }
     setOpenModal(followStatus)
     setBellColor(color)
-  }, [friends, setOpenModal, setActiveNotification, setBellColor, notificationSocket])
+  }, [friends, friendsSuccess, friendsError])
 
   useEffect(() => {
     const isOpen = (e: MouseEvent) => {
