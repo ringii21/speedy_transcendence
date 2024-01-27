@@ -3,10 +3,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import React, { Fragment, useEffect, useState } from 'react'
 import { RxCheckCircled, RxCrossCircled } from 'react-icons/rx'
 
+import { useNotification } from '../providers/NotificationProvider'
 import { useSocket } from '../providers/SocketProvider'
-import { NotificationSocketEvent } from '../types/Events'
 import { IFriends, IUser } from '../types/User'
-import { acceptFriendRequest, createFriendRequest, removeFriend } from '../utils/friendService'
+import { acceptFriendRequest, removeFriend } from '../utils/friendService'
+import { notificationSocket } from '../utils/socketService'
 
 type FriendsListModal = {
   openModal: boolean
@@ -35,19 +36,6 @@ const NotificationModal: React.FC<FriendsListModal> = ({
     mutationFn: acceptFriendRequest,
   })
 
-  // ********************** REVOIR ************************** //
-
-  // const { friends, friendsSuccess, friendsError } = useNotification()
-
-  useEffect(() => {
-    // const notFriendYet = friends?.find((friend) => friend.confirmed === false)
-    // const isFriend = friends.find((friend) => friend.confirmed === true)
-
-    console.log(friends)
-  }, [friends])
-
-  // ********************************************************
-
   const line = (sender: IUser, id: number) => {
     return (
       <Menu.Item key={id}>
@@ -65,8 +53,7 @@ const NotificationModal: React.FC<FriendsListModal> = ({
             role='button'
             onClick={() => {
               friendAcceptedMutation.mutate(sender.id, {
-                onSuccess: async (data) => {
-                  console.log('Friend request accepted succesfully!', data)
+                onSuccess: async () => {
                   await queryClient.invalidateQueries({
                     queryKey: ['friends'],
                   })

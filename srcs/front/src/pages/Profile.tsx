@@ -28,7 +28,6 @@ const Profile = () => {
   const [isFollow, setIsFollow] = useState('Follow')
   const [openModal, setOpenModal] = useState(false)
   const [isColor, setIsColor] = useState('btn-primary')
-  const [isNotify, setIsNotify] = useState(false)
   const [activeNotification, setActiveNotification] = useState<string[]>([])
 
   const queryClient = useQueryClient()
@@ -54,7 +53,6 @@ const Profile = () => {
       if (!prevActiveNotification) return prevActiveNotification
 
       const updatedNotification = prevActiveNotification.filter((id) => id !== friendOfId)
-      notificationSocket.emit(NotificationSocketEvent.DELETED, friendOfId)
 
       return updatedNotification
     })
@@ -99,7 +97,6 @@ const Profile = () => {
           await queryClient.invalidateQueries({
             queryKey: ['friends'],
           })
-          console.log('Mutation success')
         },
       })
     } else if (isFollow === 'Unfollow') {
@@ -108,7 +105,6 @@ const Profile = () => {
           await queryClient.invalidateQueries({
             queryKey: ['friends'],
           })
-          console.log('Mutation success')
         },
       })
     } else if (isFollow === 'Follow') {
@@ -117,16 +113,14 @@ const Profile = () => {
           await queryClient.invalidateQueries({
             queryKey: ['friends'],
           })
-          console.log('Mutation success')
         },
       })
     }
   }
 
   // *********************************************************
-
   useEffect(() => {
-    const notFriendYet = friends?.find((friend) => friend.confirmed === false)
+    const notFriendYet = friends.find((friend) => friend.confirmed === false)
     const isFriend = friends.find((friend) => friend.confirmed === true)
 
     let followStatus = 'Follow'
@@ -138,13 +132,13 @@ const Profile = () => {
     } else if (isFriend) {
       followStatus = isFriend ? 'Unfollow' : 'Follow'
       color = isFriend ? 'btn-error' : 'btn-primary'
-    } else if (notFriendYet) {
+    } else {
       followStatus = notFriendYet ? 'Discard' : 'Follow'
       color = notFriendYet ? 'btn-warning' : 'btn-primary'
     }
     setIsFollow(followStatus)
     setIsColor(color)
-  }, [friends, friendsSuccess, friendsError])
+  }, [friends, friendsSuccess, friendsError, setIsColor])
 
   const isUserId = () => {
     if (profileUser === undefined) {
@@ -155,7 +149,7 @@ const Profile = () => {
         <div className={`flex justify-evenly`}>
           <button
             onClick={() => {
-              changeFriendStatus(profileUser?.id)
+              changeFriendStatus(profileUser.id)
             }}
             className={`btn ${isColor} followColorButton drop-shadow-xl rounded-lg flex flex-row`}
           >

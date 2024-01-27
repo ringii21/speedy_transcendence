@@ -1,20 +1,16 @@
 // import './../styles/navbar.css'
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { FaBell } from 'react-icons/fa'
 import { Link, Navigate } from 'react-router-dom'
 
 import { useAuth } from '../providers/AuthProvider'
 import { useNotification } from '../providers/NotificationProvider'
-import { useSocket } from '../providers/SocketProvider'
-import { NotificationSocketEvent } from '../types/Events'
 import { notificationSocket as socket } from '../utils/socketService'
 import { NotificationModal } from './NotificationModal'
 
 const Navbar = () => {
   const { user, signout } = useAuth()
-  const queryClient = useQueryClient()
 
   const [activeNotification, setActiveNotification] = useState<string[]>([])
   const [openModal, setOpenModal] = useState(false)
@@ -28,8 +24,6 @@ const Navbar = () => {
     await signout()
   }
 
-  const [isState, setIsState] = useState(false)
-  const { notificationSocket } = useSocket()
   const { friends, friendsSuccess, friendsError } = useNotification()
 
   const removeNotification = (friendOfId: string) => {
@@ -37,14 +31,13 @@ const Navbar = () => {
       if (!prevActiveNotification) return prevActiveNotification
 
       const updatedNotification = prevActiveNotification.filter((id) => id !== friendOfId)
-      notificationSocket.emit(NotificationSocketEvent.DELETED, friendOfId)
+      console.log(updatedNotification)
 
       return updatedNotification
     })
   }
-
   useEffect(() => {
-    const notFriendYet = friends?.find((friend) => friend.confirmed === false)
+    const notFriendYet = friends.find((friend) => friend.confirmed === false)
     const myNotif = friends.find((friend) => friend.friendOfId === user?.id)
 
     let followStatus = false
