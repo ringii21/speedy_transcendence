@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import toast from 'react-hot-toast'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 
 import { useAuth } from '../../providers/AuthProvider'
 import { useSocket } from '../../providers/SocketProvider'
@@ -12,6 +12,12 @@ export const Play = () => {
   toast.success('Match making in Progress you can move until find opponent', {
     duration: 5000,
   })
+  const location = useLocation()
+  console.log(location.state)
+  const isInvite = location.state?.invite
+  if (isInvite) {
+    console.log('J ai ete inviter')
+  }
   const { gameSocket, isGameConnected } = useSocket()
   const [gameMode, setGameMode] = useState('')
   const queueModalRef = useRef<HTMLDialogElement>(null)
