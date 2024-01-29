@@ -15,3 +15,8 @@ export const getUser = async ({ queryKey }: { queryKey: QueryKey }) => {
   const { data } = await httpInstance().get<IUser>(`/api/users/${id}`)
   return data
 }
+export const postBlockUser = async (id: number) => httpInstance().post(`/api/users/${id}/block`)
+export const getBlockList = async () => {
+  const { data } = await httpInstance().get<number[]>(`/api/users/block`)
+  return data
+}

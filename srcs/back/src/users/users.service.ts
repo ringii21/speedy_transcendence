@@ -85,4 +85,28 @@ export class UsersService {
       data: { twoFaEnabled: true },
     })
   }
+
+  async blockUser(userId: number, blockedId: number) {
+    return this.prisma.blockList.upsert({
+      where: {
+        userId_blockedId: {
+          userId,
+          blockedId,
+        },
+      },
+      update: {},
+      create: {
+        userId,
+        blockedId,
+      },
+    })
+  }
+
+  async getBlockList(userId: number) {
+    return this.prisma.blockList.findMany({
+      where: {
+        userId,
+      },
+    })
+  }
 }
