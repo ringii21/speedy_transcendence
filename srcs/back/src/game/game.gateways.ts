@@ -92,6 +92,21 @@ import { AuthService } from 'src/auth/auth.service';
         mode: 'register',
       });
     }
+    @SubscribeMessage('createGamePerso')
+    handleCreateGamePerso(client: Socket) {
+        this.eventEmitter.emit('createGamePerso.start', {
+            client,
+            mode: 'register'
+        })
+    }
+
+    @SubscribeMessage('acceptGameInvite')
+    handleAcceptGameInvite(client: Socket, data: { partyNumber: string }) {
+        this.eventEmitter.emit('joinGamePerso', {
+            client,
+            partyNumber: data.partyNumber
+        })
+    }
   
     @SubscribeMessage('quitQueue')
     async handleQuitQueueEvent(client: Socket, data: { gameMode: string }) {
