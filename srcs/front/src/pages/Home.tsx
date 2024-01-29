@@ -9,11 +9,15 @@ import sasha from '../assets/nlorion.jpg' */
 import logo1 from '../assets/1.png'
 import logo2 from '../assets/2.png'
 import WordFlick from '../components/Pong/PongRuleFlick'
+import { RatingHistory } from '../components/RatingHistory'
 import { WithNavbar } from '../hoc/WithNavbar'
+import { useAuth } from '../providers/AuthProvider'
 import { useSocket } from '../providers/SocketProvider'
 
 const Home = () => {
   const { chatSocket } = useSocket()
+  const { user } = useAuth()
+
   chatSocket?.connect()
   return (
     <div className='w-screen'>
@@ -22,7 +26,7 @@ const Home = () => {
       <div className='pongRule'>
         <WordFlick />
       </div>
-      <div className='flex justify-center items-center'>
+      <div className='flex flex-col justify-center items-center'>
         <img className='one' src={logo1} alt='logo' />
         <Link to='/play'>
           <button
@@ -36,6 +40,7 @@ const Home = () => {
           </button>
         </Link>
         <img className='two' src={logo2} alt='paddle2' />
+        {user ? <RatingHistory user={user} /> : <></>}
       </div>
     </div>
   )

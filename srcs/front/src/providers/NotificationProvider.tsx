@@ -32,7 +32,7 @@ export const NotificationProvider = ({ children }: Props) => {
   })
 
   useEffect(() => {
-    if (!notificationSocket.connect() && user) {
+    if (!notificationSocket.connect()) {
       notificationSocket.connect()
     }
     notificationSocket.on('refresh', async () => {

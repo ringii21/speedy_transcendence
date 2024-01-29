@@ -1,7 +1,7 @@
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
 import { Socket } from 'socket.io-client'
 
-import { ChatSocketEvent, NotificationSocketEvent } from '../types/Events'
+import { ChatSocketEvent } from '../types/Events'
 import { chatSocket, gameSocket, notificationSocket } from '../utils/socketService'
 
 interface SocketContextData {

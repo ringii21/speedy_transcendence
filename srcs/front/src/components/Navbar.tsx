@@ -59,8 +59,10 @@ const Navbar = () => {
         ...newActiveNotification,
       ])
     }
-    setOpenModal(followStatus)
-    setBellColor(color)
+    if (myNotif) {
+      setOpenModal(followStatus)
+      setBellColor(color)
+    }
   }, [friends, friendsSuccess, friendsError])
 
   useEffect(() => {

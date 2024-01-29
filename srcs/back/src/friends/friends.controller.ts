@@ -76,24 +76,21 @@ export class FriendsController {
     )
   }
 
-  @Delete()
+  @Delete('remove')
   async removeFriend(
     @Req() req: RequestWithDbUser,
     @Body() friendshipRemovalDto: FriendshipRemovalDto,
   ) {
-    try {
-      const friend = await this.friendsService.deleteFriend(
-        req.user.id,
-        friendshipRemovalDto.friendOfId,
-      )
-      this.eventEmitter.emit(
-        FriendRequestEvent.name,
-        new FriendRequestEvent(friendshipRemovalDto.friendOfId),
-      )
-      return friend
-    } catch (e) {
-      console.error('Error deleting friend :', e)
-      throw e
-    }
+    if (req.user.id === friendshipRemovalDto.friendOfId)
+      throw new BadRequestException('You cannot delete yourself')
+    const friend = await this.friendsService.deleteFriend(
+      req.user.id,
+      friendshipRemovalDto.friendOfId,
+    )
+    this.eventEmitter.emit(
+      FriendRequestEvent.name,
+      new FriendRequestEvent(friendshipRemovalDto.friendOfId),
+    )
+    return friend
   }
 }

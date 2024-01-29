@@ -37,53 +37,60 @@ const NotificationModal: React.FC<FriendsListModal> = ({
   })
 
   const line = (sender: IUser, id: number) => {
-    return (
-      <Menu.Item key={id}>
-        <a
-          href='#'
-          className='flex static items-center justify-evenly gap-3 p-3 text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white'
-        >
-          <div className='avatar'>
-            <div className='w-12 rounded-full'>
-              <img className='img' src={sender.image} alt='img' />
+    console.log(sender.id)
+    const isFriend = friends.find((friend) => friend.confirmed === true)
+    if (isFriend || friends === undefined) return
+    else if (!isFriend) {
+      return (
+        <Menu.Item key={id}>
+          <a
+            href='#'
+            className='flex static items-center justify-evenly gap-3 p-3 text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white'
+          >
+            <div className='avatar'>
+              <div className='w-12 rounded-full'>
+                <img className='img' src={sender.image} alt='img' />
+              </div>
             </div>
-          </div>
-          <span className='flex-1 ms-3 whitespace-nowrap static'>{sender.username}</span>
-          <RxCheckCircled
-            role='button'
-            onClick={() => {
-              friendAcceptedMutation.mutate(sender.id, {
-                onSuccess: async () => {
-                  await queryClient.invalidateQueries({
-                    queryKey: ['friends'],
+            <span className='flex-1 ms-3 whitespace-nowrap static'>{sender.username}</span>
+            <RxCheckCircled
+              role='button'
+              onClick={() => {
+                friendAcceptedMutation.mutate(sender.id, {
+                  onSuccess: async () => {
+                    await queryClient.invalidateQueries({
+                      queryKey: ['friends'],
+                    })
+                  },
+                  onError: (error) => {
+                    console.error('Error accepting friend request', error)
+                  },
+                })
+              }}
+              size={20}
+              className='text-green-500 hover:w-6 hover:h-6'
+            />
+            <RxCrossCircled
+              role='button'
+              onClick={() => {
+                if (sender.id !== me?.id) {
+                  deleteFriendMutation.mutate(sender.id, {
+                    onSuccess: async () => {
+                      await queryClient.invalidateQueries({
+                        queryKey: ['friends'],
+                      })
+                      removeNotification(id.toString())
+                    },
                   })
-                },
-                onError: (error) => {
-                  console.error('Error accepting friend request', error)
-                },
-              })
-            }}
-            size={20}
-            className='text-green-500 hover:w-6 hover:h-6'
-          />
-          <RxCrossCircled
-            role='button'
-            onClick={() => {
-              deleteFriendMutation.mutate(sender.id, {
-                onSuccess: async () => {
-                  await queryClient.invalidateQueries({
-                    queryKey: ['friends'],
-                  })
-                  removeNotification(id.toString())
-                },
-              })
-            }}
-            size={20}
-            className='text-red-500 hover:w-6 hover:h-6'
-          />
-        </a>
-      </Menu.Item>
-    )
+                }
+              }}
+              size={20}
+              className='text-red-500 hover:w-6 hover:h-6'
+            />
+          </a>
+        </Menu.Item>
+      )
+    }
   }
 
   return (

@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import React, { useEffect, useRef, useState } from 'react'
-import { FaMinus, FaPaperPlane, FaPlus } from 'react-icons/fa'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 
 import { MatchHistory } from '../components/MatchHistory'
@@ -10,14 +9,11 @@ import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
 import { useNotification } from '../providers/NotificationProvider'
 import { useSocket } from '../providers/SocketProvider'
-import { NotificationSocketEvent } from '../types/Events'
-import { IFriends } from '../types/User'
-import { createFriendRequest, getFriends, removeFriend } from '../utils/friendService'
+import { createFriendRequest, removeFriend } from '../utils/friendService'
 import { fetchUser, getUser } from '../utils/userHttpRequests'
 
 const Profile = () => {
   const { user, signout } = useAuth()
-  const { notificationSocket, isNotificationConnected } = useSocket()
   const navigate = useNavigate()
   const { id } = useParams()
   if (!id) {
@@ -193,7 +189,7 @@ const Profile = () => {
   }
 
   return (
-    <div className='flex lg:flex-row flex-col items-center justify-center align-middle'>
+    <div className='flex lg:flex-row flex-col justify-center align-middle'>
       <div
         className='hero'
         style={{
@@ -203,7 +199,7 @@ const Profile = () => {
         {ModalFriendsList({ openModal, setOpenModal, friends, me: user, removeNotification })}
         <div className='hero-overlay bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 drop-shadow-md rounded-lg bg-opacity-60'></div>
         <div className='hero-content text-center text-neutral-content'>
-          <div className='w-full'>
+          <div className='w-full pt-4'>
             <h1 className='mb-5 text-5xl font-bold text-purple-100'>
               {profileUser && <span>{profileUser?.username}</span>}
             </h1>
@@ -235,14 +231,6 @@ const Profile = () => {
             <div>{isUserId()}</div>
           </div>
         </div>
-      </div>
-      <div
-        className='hero invisible lg:visible'
-        style={{
-          padding: '10px',
-        }}
-      >
-        <RatingHistory user={user} />
       </div>
       <div
         className='hero invisible lg:visible'

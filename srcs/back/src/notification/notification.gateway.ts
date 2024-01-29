@@ -1,14 +1,9 @@
 import { Logger } from '@nestjs/common'
 import { Socket, Server } from 'socket.io'
-import { JwtAuthService } from '../auth/jwt/jwt-auth.service'
-import { FriendsService } from '../friends/friends.service'
-import { UsersService } from 'src/users/users.service'
-import { PrismaService } from 'src/prisma/prisma.service'
 import { AuthService } from '../auth/auth.service'
 import { OnEvent } from '@nestjs/event-emitter'
 import {
   FriendRequestEvent,
-  FriendRequestAccepted,
 } from './events/notification.event'
 import {
   WebSocketGateway,
@@ -34,10 +29,6 @@ export class NotificationGateway
   socketUsers = new Map<string, number>()
 
   constructor(
-    private readonly jwtAuthService: JwtAuthService,
-    private readonly userService: UsersService,
-    private readonly friendService: FriendsService,
-    private readonly prisma: PrismaService,
     private readonly authService: AuthService,
   ) {}
 
@@ -46,20 +37,15 @@ export class NotificationGateway
     this.getSocketByUserId(friendOfId)?.emit('refresh')
   }
 
-  @OnEvent(FriendRequestAccepted.name)
-  async friendRequestAccepted({ friendOfId }: FriendRequestAccepted) {
-    this.getSocketByUserId(friendOfId)?.join('accepted')
-  }
-
   async handleConnection(socket: Socket) {
-    // const user = await this.authService.getSocketUser(socket)
-    // if (!user) {
-    //   socket.disconnect()
-    //   return
-    // }
-    // this.addSocketToUser(user.id, socket)
-    // this.logger.log(`Client connected: ${socket.id}`)
-    // console.log('Connection: ', this.socketUsers)
+    const user = await this.authService.getSocketUser(socket)
+    if (!user) {
+      socket.disconnect()
+      return
+    }
+    this.addSocketToUser(user.id, socket)
+    this.logger.log(`Client connected: ${socket.id}`)
+    console.log('Connection: ', this.socketUsers)
   }
 
   async handleDisconnect(socket: Socket) {
@@ -85,41 +71,4 @@ export class NotificationGateway
     this.userSockets.delete(userId)
     this.socketUsers.delete(socketId)
   }
-  // async updateNotification(userId: number, state: boolean) {
-  //   return this.prisma.friends.updateMany({
-  //     where: {
-  //       OR: [
-  //         {
-  //           friendId: userId,
-  //         },
-  //         {
-  //           friendOfId: userId,
-  //         },
-  //       ],
-  //     },
-  //     data: {
-  //       confirmed: state,
-  //     },
-  //     include: {
-  //       friend: true,
-  //       friendOf: true,
-  //     },
-  //   })
-  // }
-  // async handleDisconnect(socket: Socket) {
-  //   const user = await this.getNotification(socket)
-  //   if (!user) return
-  //   const friendRequest = await this.friendsService.getMyFriends(user.id)
-  //   await Promise.all(
-  //     friendRequest.map((friends) =>
-  //       socket
-  //         .to(friends.friend.id.toString())
-  //         .emit(FriendSocketEvent.DECLINED, {
-  //           username: user.username,
-  //           image: user.image,
-  //         }),
-  //     ),
-  //   )
-  //   this.logger.log(`Client declined a friend request: ${socket.id}`)
-  // }
 }

@@ -1,6 +1,4 @@
-import { Query, QueryKey } from '@tanstack/react-query'
-
-import { IFriends, IUser } from '../types/User'
+import { IFriends } from '../types/User'
 import httpInstance from './httpClient'
 
 export const createFriendRequest = async (friendOfId: number) => {
@@ -22,7 +20,7 @@ export const getMyNonFriends = async () =>
   (await httpInstance().get<IFriends[]>(`/api/friends/non_confirmed`)).data
 
 export const removeFriend = async (friendOfId: number) => {
-  await httpInstance().delete<IFriends>(`/api/friends`, {
+  await httpInstance().delete<IFriends>(`/api/friends/remove`, {
     data: {
       friendOfId,
     },

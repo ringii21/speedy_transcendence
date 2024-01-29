@@ -41,7 +41,6 @@ export class AuthService {
       return user
     } catch (e) {
       throw new WsException('Invalid token')
-      console.error('Error verifying JWT:', e);
     }
   }
 }
