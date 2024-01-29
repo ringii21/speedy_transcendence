@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { FaRocket } from 'react-icons/fa'
-import { MdSend } from 'react-icons/md'
+import { MdPartyMode, MdSend } from 'react-icons/md'
 
 import { useAuth } from '../../providers/AuthProvider'
 import { useSocket } from '../../providers/SocketProvider'
@@ -14,17 +14,32 @@ const ChatInput = ({
   channelId: string
   setMessage: React.Dispatch<React.SetStateAction<FrontEndMessage[]>>
 }) => {
-  const { chatSocket, isChatConnected } = useSocket()
+  const { chatSocket, isChatConnected, gameSocket, isGameConnected } = useSocket()
   const { user } = useAuth()
   const [inputMessage, setInputMessage] = useState<string>('')
 
   if (!user) return <></>
 
-  const sendMessage = (message: FrontEndMessage) => {
+  const sendMessage = async (message: FrontEndMessage) => {
     if (!isChatConnected) return
     console.log(chatSocket)
-    chatSocket.emit(ChatSocketEvent.MESSAGE, message)
-    setMessage((messages) => [...messages, message])
+    console.log(isGameConnected)
+    if (!isGameConnected) gameSocket.connect()
+    if (message.gameInvite && isGameConnected) {
+      gameSocket?.emit('createGamePerso')
+
+      const partyNumber = await new Promise<number>((resolve) => {
+        gameSocket?.once('gamePersoCreated', ({ partyNumber }) => {
+          resolve(partyNumber)
+        })
+      })
+      message.content = partyNumber.toString()
+      chatSocket.emit(ChatSocketEvent.MESSAGE, message)
+      setMessage((messages) => [...messages, message])
+    } else {
+      chatSocket.emit(ChatSocketEvent.MESSAGE, message)
+      setMessage((messages) => [...messages, message])
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

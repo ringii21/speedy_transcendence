@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
+import { useSocket } from '../../providers/SocketProvider'
 import { FrontEndMessage, IChannelMember } from '../../types/Chat'
 import { IUser } from '../../types/User'
 
@@ -12,6 +13,8 @@ type ChatMessageProps = {
 }
 
 const ChatMessage = ({ user, message, members }: ChatMessageProps) => {
+  const { gameSocket, isGameConnected } = useSocket()
+  if (!isGameConnected) gameSocket.connect()
   const sender = members.find((member) => member.userId === message.senderId)
   if (!sender) return <span>Error</span>
 
@@ -39,14 +42,26 @@ const ChatMessage = ({ user, message, members }: ChatMessageProps) => {
     ['order-1']: message.senderId !== user.id,
   })
 
+  const acceptGame = (partyNumber: string) => {
+    gameSocket?.emit('acceptGameInvite', { partyNumber: partyNumber })
+  }
+
   return (
     <div className={messageJustify}>
       <div className={messagePosition}>
         <div>
           {message.gameInvite && (
-            <Link className='link link-success' to={`/game/${message.content}`}>
+            <a
+              className='link-success'
+              href='#'
+              onClick={(e) => {
+                e.preventDefault() // Empêche le comportement par défaut du lien
+                // Ici, appelez votre fonction
+                acceptGame(message.content)
+              }}
+            >
               Play with me!
-            </Link>
+            </a>
           )}
           {!message.gameInvite && <span className={messageStyle}>{message.content}</span>}
         </div>

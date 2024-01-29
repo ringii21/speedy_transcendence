@@ -16,7 +16,7 @@ const Chat = () => {
   const { channelId } = useParams<{ channelId: string | undefined }>()
   const { user } = useAuth()
   const { allChannels } = useChat()
-  const { chatSocket } = useSocket()
+  const { chatSocket, gameSocket } = useSocket()
 
   const [isCreateModalOpen, setCreateModalOpen] = useState(false)
   const [isJoinModalOpen, setJoinModalOpen] = useState(false)
@@ -32,6 +32,9 @@ const Chat = () => {
   useEffect(() => {
     if (!chatSocket.connected) {
       chatSocket.connect()
+    }
+    if (!gameSocket.connected) {
+      gameSocket.connect()
     }
     return () => {
       chatSocket.disconnect()
