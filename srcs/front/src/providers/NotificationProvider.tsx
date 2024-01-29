@@ -32,18 +32,14 @@ export const NotificationProvider = ({ children }: Props) => {
   })
 
   useEffect(() => {
-    if (!notificationSocket.connect()) {
+    if (!notificationSocket.connect() && user) {
       notificationSocket.connect()
     }
     notificationSocket.on('refresh', async () => {
       await myFriendsQuery.refetch()
     })
-    notificationSocket.on('accepted', async () => {
-      await myFriendsQuery.refetch()
-    })
     return () => {
       notificationSocket.off('refresh')
-      notificationSocket.off('accepted')
       notificationSocket.disconnect()
     }
   }, [user])

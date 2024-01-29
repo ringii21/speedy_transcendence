@@ -52,14 +52,14 @@ export class NotificationGateway
   }
 
   async handleConnection(socket: Socket) {
-    const user = await this.authService.getSocketUser(socket)
-    if (!user) {
-      socket.disconnect()
-      return
-    }
-    this.addSocketToUser(user.id, socket)
-    this.logger.log(`Client connected: ${socket.id}`)
-    console.log('Connection: ', this.socketUsers)
+    // const user = await this.authService.getSocketUser(socket)
+    // if (!user) {
+    //   socket.disconnect()
+    //   return
+    // }
+    // this.addSocketToUser(user.id, socket)
+    // this.logger.log(`Client connected: ${socket.id}`)
+    // console.log('Connection: ', this.socketUsers)
   }
 
   async handleDisconnect(socket: Socket) {
