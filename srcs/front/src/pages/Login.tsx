@@ -23,9 +23,7 @@ const Login = () => {
     try {
       await httpInstance().post('/api/auth/dev')
       await signin()
-    } catch (e) {
-      console.log(e)
-    }
+    } catch (e) {}
   }
 
   return (
