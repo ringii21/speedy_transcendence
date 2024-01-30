@@ -26,8 +26,8 @@ const Home = () => {
       <div className='pongRule'>
         <WordFlick />
       </div>
-      <div className='flex flex-col items-center'>
-        <div className='flex flex-row items-center'>
+      <div className='flex flex-col sm:items-center justify-center'>
+        <div className='flex items-center ml-8 sm:ml-0'>
           <img className='one' src={logo1} alt='logo' />
           <Link to='/play'>
             <button
