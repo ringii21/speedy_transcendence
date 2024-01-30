@@ -3,6 +3,7 @@ import { Socket } from 'socket.io-client'
 
 import { ChatSocketEvent } from '../types/Events'
 import { chatSocket, gameSocket, notificationSocket } from '../utils/socketService'
+import { useAuth } from './AuthProvider'
 
 interface SocketContextData {
   chatSocket: Socket
@@ -33,6 +34,18 @@ export const SocketProvider = ({ children }: Props) => {
   const [isChatConnected, setChatIsConnected] = useState<boolean>(false)
   const [isGameConnected, setGameIsConnected] = useState<boolean>(false)
   const [isNotificationConnected, setisNotificationConnected] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (!isChatConnected) chatSocket.connect()
+  }, [isChatConnected])
+
+  useEffect(() => {
+    if (!isGameConnected) gameSocket.connect()
+  }, [isGameConnected])
+
+  useEffect(() => {
+    if (!isNotificationConnected) notificationSocket.connect()
+  }, [isNotificationConnected])
 
   useEffect(() => {
     chatSocket.on('connect', () => {
