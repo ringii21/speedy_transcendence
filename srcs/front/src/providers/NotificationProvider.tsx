@@ -1,24 +1,14 @@
-import { useQuery, UseQueryResult } from '@tanstack/react-query'
-import React, {
-  createContext,
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import { useQuery } from '@tanstack/react-query'
+import React, { createContext, ReactNode, useContext, useEffect } from 'react'
 
-import { INotification } from '../types/User'
-import { getNotification } from '../utils/notificationService'
-
+import { IFriends } from '../types/User'
+import { getMyFriends } from '../utils/friendService'
+import { notificationSocket } from '../utils/socketService'
+import { useAuth } from './AuthProvider'
 interface NotificationContextData {
-  notifier?: INotification[]
-  sendedNotification: number | null
-  setSendedNotification: Dispatch<SetStateAction<number | null>>
-  notification: { [key: string]: boolean }
-  setNotification: Dispatch<SetStateAction<{ [key: string]: boolean }>>
+  friends: IFriends[]
+  friendsSuccess: boolean
+  friendsError: boolean
 }
 
 type Props = {
@@ -26,54 +16,41 @@ type Props = {
 }
 
 const NotificationContext = createContext<NotificationContextData>({
-  notifier: undefined,
-  sendedNotification: null,
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  setSendedNotification: () => {},
-  notification: {},
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  setNotification: () => {},
+  friends: [],
+  friendsSuccess: false,
+  friendsError: false,
 })
 
 export const NotificationProvider = ({ children }: Props) => {
-  const [sendedNotification, setSendedNotification] = useState<number | null>(null)
-  const [notification, setNotification] = useState<{ [key: string]: boolean }>({})
+  const { user } = useAuth()
 
-  const {
-    data: notifier,
-    isError: isErrorNotifier,
-    isLoading: isLoadingNotifier,
-  } = useQuery<INotification[]>({
-    queryKey: ['notification'],
-    queryFn: getNotification,
+  const myFriendsQuery = useQuery({
+    queryKey: ['friends'],
+    queryFn: getMyFriends,
+    initialData: [],
+    enabled: !!user,
   })
 
-  // const getNotificationData = useMemo(() => getNotificationQuery.data, [getNotificationQuery.data])
-
   useEffect(() => {
-    if (!notifier) return undefined
-    notifier.forEach((not) => {
-      setNotification((prevNot) => {
-        const updatedNotification = { ...prevNot }
-        return {
-          ...updatedNotification,
-          [not.receivedId.toString()]: not.state,
-        }
-      })
-    })
-  }, [setNotification])
-
-  const memoedValue = useMemo<NotificationContextData>(() => {
-    return {
-      notifier,
-      sendedNotification,
-      setSendedNotification,
-      notification: notification,
-      setNotification,
+    if (!notificationSocket.connect()) {
+      notificationSocket.connect()
     }
-  }, [sendedNotification, notification, notifier])
+    notificationSocket.on('refresh', async () => {
+      await myFriendsQuery.refetch()
+    })
+    return () => {
+      notificationSocket.off('refresh')
+      notificationSocket.disconnect()
+    }
+  }, [user])
 
-  return <NotificationContext.Provider value={memoedValue}>{children}</NotificationContext.Provider>
+  const values = {
+    friends: myFriendsQuery.data,
+    friendsSuccess: myFriendsQuery.isSuccess,
+    friendsError: myFriendsQuery.isError,
+  }
+
+  return <NotificationContext.Provider value={values}>{children}</NotificationContext.Provider>
 }
 
 export const useNotification = () => useContext(NotificationContext)

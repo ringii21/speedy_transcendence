@@ -1,6 +1,5 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import React, { useEffect, useRef, useState } from 'react'
-import { FaMinus, FaPaperPlane, FaPlus } from 'react-icons/fa'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 
 import { MatchHistory } from '../components/MatchHistory'
@@ -9,8 +8,8 @@ import { RatingHistory } from '../components/RatingHistory'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
 import { useNotification } from '../providers/NotificationProvider'
-import { getFriends, removeFriend } from '../utils/friendService'
-import { createNotification, deleteNotification } from '../utils/notificationService'
+import { useSocket } from '../providers/SocketProvider'
+import { createFriendRequest, removeFriend } from '../utils/friendService'
 import { fetchUser, getUser } from '../utils/userHttpRequests'
 
 const Profile = () => {
@@ -25,7 +24,9 @@ const Profile = () => {
   const [isFollow, setIsFollow] = useState('Follow')
   const [openModal, setOpenModal] = useState(false)
   const [isColor, setIsColor] = useState('btn-primary')
-  const [isNotify, setIsNotify] = useState(false)
+  const [activeNotification, setActiveNotification] = useState<string[]>([])
+
+  const queryClient = useQueryClient()
 
   const ref = useRef<HTMLDivElement>(null)
   if (!user) return <Navigate to='/login' state={{ from: location }} replace />
@@ -43,21 +44,21 @@ const Profile = () => {
     }
   }
 
-  const { data: friends } = useQuery({
-    queryKey: ['friends'],
-    queryFn: getFriends,
-  })
+  const removeNotification = (friendOfId: string) => {
+    setActiveNotification((prevActiveNotification) => {
+      if (!prevActiveNotification) return prevActiveNotification
+
+      const updatedNotification = prevActiveNotification.filter((id) => id !== friendOfId)
+
+      return updatedNotification
+    })
+  }
 
   const { data: profileUser } = useQuery(queryConfig)
 
-  const notificationMutation = useMutation({
-    mutationKey: ['notification'],
-    mutationFn: createNotification,
-  })
-
-  const deleteNotificationMutation = useMutation({
+  const friendRequestMutation = useMutation({
     mutationKey: ['friends'],
-    mutationFn: deleteNotification,
+    mutationFn: createFriendRequest,
   })
 
   const deleteFriendMutation = useMutation({
@@ -83,60 +84,57 @@ const Profile = () => {
     await signout()
   }
 
-  const followColorButton = () => {
-    if (isFollow === 'Unfollow') setIsColor('btn-warning')
-    else if (isFollow === 'Discard') setIsColor('btn-warning')
-    else setIsColor('btn-primary')
-  }
+  const { friends, friendsSuccess, friendsError } = useNotification()
 
   const changeFriendStatus = (id: number) => {
-    try {
-      if (isFollow === 'Discard' && !isNotify) {
-        console.log('status: ', 1)
-        deleteNotificationMutation.mutate(id)
-        return
-      } else if (isFollow === 'Unfollow' && !isNotify) {
-        console.log('status: ', 2)
-        setIsNotify(false)
-        deleteFriendMutation.mutate(id)
-        return
-      } else {
-        console.log('status: ', 3)
-        setIsNotify(true)
-        notificationMutation.mutate(id)
-        return
-      }
-    } catch (e) {
-      console.error('Error during mutations: ', e)
+    if (isFollow === 'Discard') {
+      deleteFriendMutation.mutate(id, {
+        onSuccess: async () => {
+          await queryClient.invalidateQueries({
+            queryKey: ['friends'],
+          })
+        },
+      })
+    } else if (isFollow === 'Unfollow') {
+      deleteFriendMutation.mutate(id, {
+        onSuccess: async () => {
+          await queryClient.invalidateQueries({
+            queryKey: ['friends'],
+          })
+        },
+      })
+    } else if (isFollow === 'Follow') {
+      friendRequestMutation.mutate(id, {
+        onSuccess: async () => {
+          await queryClient.invalidateQueries({
+            queryKey: ['friends'],
+          })
+        },
+      })
     }
   }
 
   // *********************************************************
-  const { notifier } = useNotification()
-
   useEffect(() => {
-    if (!(friends && friends.forEach)) return undefined
-    friends.forEach((friend) => {
-      if (friend.confirmed === true) {
-        setIsFollow('Unfollow')
-        followColorButton()
-      }
-    })
+    const notFriendYet = friends.find((friend) => friend.confirmed === false)
+    const isFriend = friends.find((friend) => friend.confirmed === true)
 
-    if (!notifier) return undefined
-    notifier.forEach((data: any) => {
-      if (isNotify === true) {
-        setIsFollow('Discard')
-        followColorButton()
-        return
-      }
-      if (data.state === true) {
-        setIsFollow('Discard')
-        followColorButton()
-        return
-      }
-    })
-  }, [setIsFollow, isFollow, friends, isNotify, setIsColor])
+    let followStatus = 'Follow'
+    let color = 'btn-primary'
+
+    if (!(notFriendYet || isFriend)) {
+      followStatus = 'Follow'
+      color = 'btn-primary'
+    } else if (isFriend) {
+      followStatus = isFriend ? 'Unfollow' : 'Follow'
+      color = isFriend ? 'btn-error' : 'btn-primary'
+    } else {
+      followStatus = notFriendYet ? 'Discard' : 'Follow'
+      color = notFriendYet ? 'btn-warning' : 'btn-primary'
+    }
+    setIsFollow(followStatus)
+    setIsColor(color)
+  }, [friends, friendsSuccess, friendsError, setIsColor])
 
   const isUserId = () => {
     if (profileUser === undefined) {
@@ -146,16 +144,17 @@ const Profile = () => {
       return (
         <div className={`flex justify-evenly`}>
           <button
-            onClick={() => changeFriendStatus(profileUser?.id)}
+            onClick={() => {
+              changeFriendStatus(profileUser.id)
+            }}
             className={`btn ${isColor} followColorButton drop-shadow-xl rounded-lg flex flex-row`}
           >
-            {isFollow === 'Follow' ? <FaPlus className='mb-0.5' /> : <FaMinus className='mb-0.5' />}
             {isFollow}
           </button>
-          <button className='btn drop-shadow-xl rounded-lg'>
+          {/* <button className='btn drop-shadow-xl rounded-lg'>
             <FaPaperPlane className='mb-1' />
             Message
-          </button>
+          </button> */}
         </div>
       )
     } else {
@@ -180,18 +179,27 @@ const Profile = () => {
     }
   }
 
+  const numberFriends = () => {
+    if (friends) {
+      if (friends.find((friend) => friend.confirmed === true))
+        return <>{Math.round(friends.length - 1)}</>
+      return <>0</>
+    }
+    return <>0</>
+  }
+
   return (
-    <div className='flex lg:flex-row flex-col items-center justify-center align-middle'>
+    <div className='flex lg:flex-row flex-col justify-center align-middle'>
       <div
         className='hero'
         style={{
           padding: '10px',
         }}
       >
-        {ModalFriendsList({ openModal, setOpenModal, friends, me: user })}
+        {ModalFriendsList({ openModal, setOpenModal, friends, me: user, removeNotification })}
         <div className='hero-overlay bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 drop-shadow-md rounded-lg bg-opacity-60'></div>
         <div className='hero-content text-center text-neutral-content'>
-          <div className='w-full'>
+          <div className='w-full pt-4'>
             <h1 className='mb-5 text-5xl font-bold text-purple-100'>
               {profileUser && <span>{profileUser?.username}</span>}
             </h1>
@@ -216,21 +224,13 @@ const Profile = () => {
               <div className='grid-cols-2 space-x-0 rounded-lg  shadow-xl'>
                 <p className='font-bold drop-shadow-md'>Friends</p>
                 <p className='px-10 text-black rounded-b-lg backdrop-opacity-10 backdrop-invert bg-white/50'>
-                  {friends && friends.length}
+                  {numberFriends()}
                 </p>
               </div>
             </div>
             <div>{isUserId()}</div>
           </div>
         </div>
-      </div>
-      <div
-        className='hero invisible lg:visible'
-        style={{
-          padding: '10px',
-        }}
-      >
-        <RatingHistory user={user} />
       </div>
       <div
         className='hero invisible lg:visible'

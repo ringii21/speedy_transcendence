@@ -1,74 +1,48 @@
 import { Menu, Transition } from '@headlessui/react'
-import { useMutation } from '@tanstack/react-query'
-import React, { Fragment, useState } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import React, { Fragment, useEffect, useState } from 'react'
 import { RxCheckCircled, RxCrossCircled } from 'react-icons/rx'
 
-import { IFriends, INotification, IUser } from '../types/User'
-import { acceptFriendRequest, createFriendRequest } from '../utils/friendService'
-import { deleteNotification } from '../utils/notificationService'
+import { useNotification } from '../providers/NotificationProvider'
+import { useSocket } from '../providers/SocketProvider'
+import { IFriends, IUser } from '../types/User'
+import { acceptFriendRequest, removeFriend } from '../utils/friendService'
+import { notificationSocket } from '../utils/socketService'
 
 type FriendsListModal = {
   openModal: boolean
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>
-  notifier?: INotification[]
+  friends: IFriends[]
   me: IUser
+  removeNotification: (friendOfId: string) => void
 }
 
 const NotificationModal: React.FC<FriendsListModal> = ({
   openModal,
   setOpenModal,
-  notifier,
+  friends,
   me,
+  removeNotification,
 }) => {
-  const getCorrectFriend = (notifier: INotification, me: IUser | undefined) => {
-    if (!notifier || !me) return undefined
-    if (me.id === notifier.senderId) return
-    return notifier.sender
-  }
+  const queryClient = useQueryClient()
 
-  const friendMutation = useMutation({
+  const deleteFriendMutation = useMutation({
     mutationKey: ['friends'],
-    mutationFn: createFriendRequest,
+    mutationFn: removeFriend,
   })
-
-  const deleteNotificationMutation = useMutation({
-    mutationKey: ['friends'],
-    mutationFn: deleteNotification,
-  })
-
-  const [isFriend, setIsFriend] = useState<IFriends[]>([])
 
   const friendAcceptedMutation = useMutation({
     mutationKey: ['friends'],
     mutationFn: acceptFriendRequest,
-    onSuccess: (data: IFriends) => {
-      setIsFriend((prevFriends: any) => [...prevFriends, data.confirmed])
-      console.log('Friend request accepted succesfully!', data)
-    },
-    onError: (error) => {
-      console.error('Error accepting friend request', error)
-    },
   })
 
-  const selectOption = async (id: number) => {
-    try {
-      await Promise.all([
-        friendMutation.mutateAsync(id),
-        friendAcceptedMutation.mutateAsync(id),
-        deleteNotificationMutation.mutateAsync(id),
-      ])
-    } catch (e) {
-      console.error('Error during mutations: ', e)
-    }
-  }
-
-  const line = (sender: IUser | undefined) => {
-    if (sender === undefined) return <></>
-    if (!sender) {
-      return `<div key={index}></div>`
-    } else {
+  const line = (sender: IUser, id: number) => {
+    console.log(sender.id)
+    const isFriend = friends.find((friend) => friend.confirmed === true)
+    if (isFriend || friends === undefined) return
+    else if (!isFriend) {
       return (
-        <Menu.Item key={sender.id}>
+        <Menu.Item key={id}>
           <a
             href='#'
             className='flex static items-center justify-evenly gap-3 p-3 text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white'
@@ -81,14 +55,34 @@ const NotificationModal: React.FC<FriendsListModal> = ({
             <span className='flex-1 ms-3 whitespace-nowrap static'>{sender.username}</span>
             <RxCheckCircled
               role='button'
-              onClick={() => selectOption(sender.id)}
+              onClick={() => {
+                friendAcceptedMutation.mutate(sender.id, {
+                  onSuccess: async () => {
+                    await queryClient.invalidateQueries({
+                      queryKey: ['friends'],
+                    })
+                  },
+                  onError: (error) => {
+                    console.error('Error accepting friend request', error)
+                  },
+                })
+              }}
               size={20}
               className='text-green-500 hover:w-6 hover:h-6'
             />
             <RxCrossCircled
               role='button'
               onClick={() => {
-                deleteNotificationMutation.mutate(sender.id)
+                if (sender.id !== me?.id) {
+                  deleteFriendMutation.mutate(sender.id, {
+                    onSuccess: async () => {
+                      await queryClient.invalidateQueries({
+                        queryKey: ['friends'],
+                      })
+                      removeNotification(id.toString())
+                    },
+                  })
+                }
               }}
               size={20}
               className='text-red-500 hover:w-6 hover:h-6'
@@ -109,9 +103,16 @@ const NotificationModal: React.FC<FriendsListModal> = ({
         >
           <div className='p-4 md:p-5 relative'>
             <div className='my-4 space-y-3'>
-              {notifier &&
-                notifier.length > 0 &&
-                notifier.map((f) => line(getCorrectFriend(f, me)))}
+              {friends &&
+                friends.length > 0 &&
+                friends
+                  .filter((friend) => {
+                    return me.id !== friend.friendId
+                  })
+                  .filter((friend): friend is IFriends => friend.friend !== undefined)
+                  .map((friend, i) => {
+                    return line(friend.friend, i)
+                  })}
             </div>
           </div>
         </Menu.Items>

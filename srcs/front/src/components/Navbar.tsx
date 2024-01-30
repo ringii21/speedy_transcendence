@@ -1,13 +1,12 @@
 // import './../styles/navbar.css'
 
-import { useQuery } from '@tanstack/react-query'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { FaBell } from 'react-icons/fa'
 import { Link, Navigate } from 'react-router-dom'
 
 import { useAuth } from '../providers/AuthProvider'
 import { useNotification } from '../providers/NotificationProvider'
-import { useSocket } from '../providers/SocketProvider'
+import { notificationSocket as socket } from '../utils/socketService'
 import { NotificationModal } from './NotificationModal'
 
 const Navbar = () => {
@@ -15,6 +14,7 @@ const Navbar = () => {
 
   const [activeNotification, setActiveNotification] = useState<string[]>([])
   const [openModal, setOpenModal] = useState(false)
+  const [bellColor, setBellColor] = useState('btn-ghost')
 
   if (!user) return <Navigate to='/login' state={{ from: location }} replace />
 
@@ -24,23 +24,48 @@ const Navbar = () => {
     await signout()
   }
 
-  const [isState, setIsState] = useState(false)
-  const { notifier } = useNotification()
+  const { friends, friendsSuccess, friendsError } = useNotification()
+
+  const removeNotification = (friendOfId: string) => {
+    setActiveNotification((prevActiveNotification) => {
+      if (!prevActiveNotification) return prevActiveNotification
+
+      const updatedNotification = prevActiveNotification.filter((id) => id !== friendOfId)
+      console.log(updatedNotification)
+
+      return updatedNotification
+    })
+  }
+  useEffect(() => {
+    const notFriendYet = friends.find((friend) => friend.confirmed === false)
+    const myNotif = friends.find((friend) => friend.friendOfId === user?.id)
+
+    let followStatus = false
+    let color = 'btn-ghost'
+
+    if (!notFriendYet) {
+      followStatus = false
+      color = 'btn-ghost'
+    } else if (notFriendYet && myNotif) {
+      followStatus = false
+      color = 'text-blue-600'
+    }
+    const newActiveNotification = friends
+      .filter((friend) => friend.confirmed === false && friend.friendOfId)
+      .map((friend) => friend.friendOfId.toString())
+    if (newActiveNotification.length > 0) {
+      setActiveNotification((prevActiveNotification) => [
+        ...(prevActiveNotification || []),
+        ...newActiveNotification,
+      ])
+    }
+    if (myNotif) {
+      setOpenModal(followStatus)
+      setBellColor(color)
+    }
+  }, [friends, friendsSuccess, friendsError])
 
   useEffect(() => {
-    if (!notifier) return undefined
-
-    notifier.forEach((not: any) => {
-      if (not.state === true && not.receivedId) {
-        setOpenModal(false)
-
-        setActiveNotification((prevActiveNotification) => [
-          ...prevActiveNotification,
-          not.receivedId.toString(),
-        ])
-      }
-    })
-
     const isOpen = (e: MouseEvent) => {
       const el = e.target as HTMLDivElement
       if (ref.current && !ref.current.contains(el)) {
@@ -52,12 +77,10 @@ const Navbar = () => {
     return () => {
       document.removeEventListener('click', isOpen)
     }
-  }, [notifier])
+  }, [friends])
 
   const notificationLine = () => {
-    if (!setIsState) return <></>
-
-    const isNotificationActive = activeNotification.includes(user?.id.toString())
+    const notificationActive = activeNotification.includes(user?.id.toString())
 
     return (
       <div ref={ref} className='right-0'>
@@ -67,13 +90,14 @@ const Navbar = () => {
             e.preventDefault()
             e.stopPropagation()
             setOpenModal(!openModal)
+            setBellColor('btn-ghost')
           }}
           className={`btn btn-ghost changeBellColor`}
         >
           <FaBell
             tabIndex={0}
             size={20}
-            className={`${isNotificationActive ? 'text-blue-500' : ''}`}
+            className={`${notificationActive && user?.id ? bellColor : 'btn-ghost'}`}
           />
         </button>
       </div>
@@ -82,12 +106,15 @@ const Navbar = () => {
 
   return (
     <div className='navbar nav relative bg-gray-900'>
-      <NotificationModal
-        openModal={openModal}
-        setOpenModal={setOpenModal}
-        notifier={notifier}
-        me={user}
-      />
+      {friends && (
+        <NotificationModal
+          openModal={openModal}
+          setOpenModal={setOpenModal}
+          friends={friends}
+          me={user}
+          removeNotification={removeNotification}
+        />
+      )}
       <div className='navbar-start'>
         <div className='dropdown'>
           <div tabIndex={0} role='button' className='btn btn-ghost lg:hidden'>

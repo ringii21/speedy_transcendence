@@ -91,7 +91,7 @@ const Channel = ({ channel, selectedChannel, mutate, user }: ChannelProps) => {
               e.preventDefault()
               setInviteModalOpen(true)
             }}
-            className='btn btn-ghost btn-sm'
+            className='text-black hover:text-red-600 pl-3'
           >
             <FaPlus />
           </button>

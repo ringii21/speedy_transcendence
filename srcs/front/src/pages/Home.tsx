@@ -9,11 +9,15 @@ import sasha from '../assets/nlorion.jpg' */
 import logo1 from '../assets/1.png'
 import logo2 from '../assets/2.png'
 import WordFlick from '../components/Pong/PongRuleFlick'
+import { RatingHistory } from '../components/RatingHistory'
 import { WithNavbar } from '../hoc/WithNavbar'
+import { useAuth } from '../providers/AuthProvider'
 import { useSocket } from '../providers/SocketProvider'
 
 const Home = () => {
   const { chatSocket } = useSocket()
+  const { user } = useAuth()
+
   chatSocket?.connect()
   return (
     <div className='w-screen'>
@@ -22,20 +26,23 @@ const Home = () => {
       <div className='pongRule'>
         <WordFlick />
       </div>
-      <div className='flex justify-center items-center'>
-        <img className='one' src={logo1} alt='logo' />
-        <Link to='/play'>
-          <button
-            data-modal-target='static-modal'
-            data-modal-toggle='static-modal'
-            className='relative inline-flex items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-green-500 to-pink-500 group-hover:from-purple-500 group-hover:to-pink-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800'
-          >
-            <span className='relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0'>
-              START GAME
-            </span>
-          </button>
-        </Link>
-        <img className='two' src={logo2} alt='paddle2' />
+      <div className='flex flex-col sm:items-center justify-center'>
+        <div className='flex items-center ml-8 sm:ml-0'>
+          <img className='one' src={logo1} alt='logo' />
+          <Link to='/play'>
+            <button
+              data-modal-target='static-modal'
+              data-modal-toggle='static-modal'
+              className='relative inline-flex items-center justify-center mb-2 me-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-green-500 to-pink-500 group-hover:from-purple-500 group-hover:to-pink-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-purple-200 dark:focus:ring-purple-800'
+            >
+              <span className='relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0'>
+                START GAME
+              </span>
+            </button>
+          </Link>
+          <img className='two' src={logo2} alt='paddle2' />
+        </div>
+        {user ? <RatingHistory user={user} /> : <></>}
       </div>
     </div>
   )

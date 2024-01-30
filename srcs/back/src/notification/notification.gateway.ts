@@ -1,29 +1,16 @@
-import { Logger, UseGuards, ValidationPipe } from '@nestjs/common'
-import { Socket } from 'socket.io'
-import { JwtAuthService } from '../auth/jwt/jwt-auth.service'
-import { FriendsService } from '../friends/friends.service'
-import { UsersService } from 'src/users/users.service'
-import { NotificationService } from '../notification/notification.service'
-import { parse } from 'cookie'
-import { NotificationDto } from './dto/notification.dto'
-import { WsException } from '@nestjs/websockets'
-import { PrismaService } from 'src/prisma/prisma.service'
-import { Prisma } from '@prisma/client'
-import JwtTwoFaGuard from '../auth/jwt/jwt-2fa.guard'
+import { Logger } from '@nestjs/common'
+import { Socket, Server } from 'socket.io'
+import { AuthService } from '../auth/auth.service'
+import { OnEvent } from '@nestjs/event-emitter'
+import {
+  FriendRequestEvent,
+} from './events/notification.event'
 import {
   WebSocketGateway,
-  ConnectedSocket,
-  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  SubscribeMessage,
+  WebSocketServer,
 } from '@nestjs/websockets'
-
-enum NotificationSocketEvent {
-  RECEIVED = 'notification_received',
-  ACCEPTED = 'notification_accepted',
-  DECLINED = 'notification_declined',
-}
 
 @WebSocketGateway({
   namespace: 'notification',
@@ -36,152 +23,52 @@ export class NotificationGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
   private readonly logger = new Logger('NotificationGateway')
+
+  @WebSocketServer() socket: Server
+  userSockets = new Map<number, Socket>()
+  socketUsers = new Map<string, number>()
+
   constructor(
-    private readonly jwtAuthService: JwtAuthService,
-    private readonly usersService: UsersService,
-    private readonly notificationService: NotificationService,
-    private readonly friendService: FriendsService,
-    private readonly prisma: PrismaService,
+    private readonly authService: AuthService,
   ) {}
 
-  @SubscribeMessage(NotificationSocketEvent.RECEIVED)
-  @UseGuards(JwtTwoFaGuard)
-  async handleNotification(
-    @ConnectedSocket() socket: Socket,
-    @MessageBody(new ValidationPipe()) notificationDto: NotificationDto,
-  ) {
-    try {
-      const notification = await this.getNotification(socket)
-      if (!notification) {
-        socket.disconnect()
-        return
-      }
-      const friend = await this.notificationService.getNonConfirmedFriends(
-        notification.receivedId,
-      )
-      if (!friend) return
-      console.log('Friend: ', friend)
-      socket
-        .to(notificationDto.receivedId.toString())
-        .emit(NotificationSocketEvent.RECEIVED, friend)
-
-      const confirmationEvent = await this.waitForClientConfirmation(socket)
-
-      if (confirmationEvent) {
-        console.log(
-          'NotificationGateway - ConfirmationEvent:',
-          confirmationEvent,
-        )
-        await this.getNotification(socket)
-      } else {
-        console.log(`Didn't receive the client validation`)
-      }
-      this.logger.log(`Client sent a friend request: ${socket.id}`)
-    } catch (e) {
-      this.logger.error(`Error handling notification: ${e}`)
-      throw new WsException(
-        'An error occurred while processing the notification',
-      )
-    }
-  }
-
-  private async waitForClientConfirmation(socket: Socket): Promise<boolean> {
-    return new Promise((resolve) => {
-      socket.once('clientNotificationConfirmation', (state: boolean) => {
-        resolve(state)
-      })
-    })
+  @OnEvent(FriendRequestEvent.name)
+  async sentFriendRequest({ friendOfId }: FriendRequestEvent) {
+    this.getSocketByUserId(friendOfId)?.emit('refresh')
   }
 
   async handleConnection(socket: Socket) {
-    const notification = await this.getNotification(socket)
-    if (!notification) {
+    const user = await this.authService.getSocketUser(socket)
+    if (!user) {
       socket.disconnect()
       return
     }
-    const friendNotification = await this.friendService.getMyFriends(
-      notification.senderId,
-    )
-    socket.join(
-      friendNotification.map((friend: any) => friend.senderId.toString()),
-    )
-    socket
-      .to(friendNotification.map((friend: any) => friend.receivedId.toString()))
-      .emit(NotificationSocketEvent.ACCEPTED, {
-        senderId: notification.senderId,
-      })
+    this.addSocketToUser(user.id, socket)
+    this.logger.log(`Client connected: ${socket.id}`)
+    console.log('Connection: ', this.socketUsers)
   }
 
   async handleDisconnect(socket: Socket) {
-    const notification = await this.getNotification(socket)
-    if (!notification) return
-    const friendNotification = await this.friendService.getMyFriends(
-      notification.senderId,
-    )
-    await Promise.all(
-      friendNotification.map((friend) =>
-        socket
-          .to(friend.friendOfId.toString())
-          .emit(NotificationSocketEvent.DECLINED, {
-            senderId: notification.senderId,
-          }),
-      ),
-    )
+    const user = await this.authService.getSocketUser(socket)
+    if (!user) {
+      socket.disconnect()
+      return
+    }
+    this.removeSocketFromUser(user.id, socket.id)
     this.logger.log(`Client disconnected: ${socket.id}`)
   }
 
-  async getNotification(socket: Socket) {
-    const jwtCookie = socket.handshake.headers.cookie
-    if (!jwtCookie) return null
-    const parsed = parse(jwtCookie)
-    if (!parsed.jwt) return null
-    try {
-      const jwt = await this.jwtAuthService.verify(parsed.jwt)
-      if (!jwt || !jwt.sub) return null
-      const whereUniqueInput: Prisma.NotificationWhereUniqueInput = {
-        senderId_receivedId: {
-          receivedId: jwt.sub,
-          senderId: jwt.sub,
-        },
-        state: true,
-      }
-      const notification = await this.notificationService.find(whereUniqueInput)
-      if (!notification) return null
-      return notification
-    } catch (e) {
-      throw new WsException('Invalid token')
-    }
+  getSocketByUserId(userId: number) {
+    return this.userSockets.get(userId)
   }
-  // async handleDisconnect(socket: Socket) {
-  //   const user = await this.getNotification(socket)
-  //   if (!user) return
-  //   const friendRequest = await this.friendsService.getMyFriends(user.id)
-  //   await Promise.all(
-  //     friendRequest.map((friends) =>
-  //       socket
-  //         .to(friends.friend.id.toString())
-  //         .emit(FriendSocketEvent.DECLINED, {
-  //           username: user.username,
-  //           image: user.image,
-  //         }),
-  //     ),
-  //   )
-  //   this.logger.log(`Client declined a friend request: ${socket.id}`)
-  // }
 
-  // async getNotification(socket: Socket) {
-  //   const jwtCookie = socket.handshake.headers.cookie
-  //   if (!jwtCookie) return null
-  //   const parsed = parse(jwtCookie)
-  //   if (!parsed.jwt) return null
-  //   try {
-  //     const jwt = await this.jwtAuthService.verify(parsed.jwt)
-  //     if (!jwt || !jwt.sub) return null
-  //     const user = await this.notificationService.find({ senderId: jwt.sub })
-  //     if (!user) return null
-  //     return user
-  //   } catch (e) {
-  //     throw new WsException('Invalid token')
-  //   }
-  // }
+  private addSocketToUser(userId: number, socket: Socket) {
+    this.userSockets.set(userId, socket)
+    this.socketUsers.set(socket.id, userId)
+  }
+
+  private removeSocketFromUser(userId: number, socketId: string) {
+    this.userSockets.delete(userId)
+    this.socketUsers.delete(socketId)
+  }
 }

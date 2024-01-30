@@ -12,7 +12,7 @@ export class AuthService {
   constructor(
     private readonly userService: UsersService,
     private readonly jwtAuthService: JwtAuthService,
-  ) {}
+  ) { }
 
   async getUser(user: IMe | User, accessToken: string, refreshToken: string) {
     if ('id' in user) return this.userService.find({ id: user.id })
