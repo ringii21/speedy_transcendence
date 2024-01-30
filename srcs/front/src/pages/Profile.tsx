@@ -182,7 +182,7 @@ const Profile = () => {
   const numberFriends = () => {
     if (friends) {
       if (friends.find((friend) => friend.confirmed === true))
-        return <>{Math.round(friends.length / 2)}</>
+        return <>{Math.round(friends.length - 1)}</>
       return <>0</>
     }
     return <>0</>
