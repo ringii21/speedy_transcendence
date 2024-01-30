@@ -153,14 +153,14 @@ const Navbar = () => {
         <ul className='menu menu-horizontal px-1 flex gap-40'>
           <li>
             <button type='button' className='btn-menu btn-one letterMove'>
-              <Link className='font-bold text-white' to='/chat'>
+              <Link className='font-bold text-white ' to='/chat'>
                 Chat
               </Link>
             </button>
           </li>
           <li>
             <button type='button' className='btn-menu btn-one letterMove'>
-              <Link className='text-base-content' to='/play'>
+              <Link className='font-bold text-white tracking-widest' to='/play'>
                 Game
               </Link>
             </button>

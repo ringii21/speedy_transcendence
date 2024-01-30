@@ -46,13 +46,14 @@ const ChatInput = ({
 
   return (
     <div className='relative flex'>
+      <div className='border-t mt-6'></div>
       <input
         type='text'
         value={inputMessage}
         onKeyDown={handleKeyDown}
         onChange={(e) => setInputMessage(e.target.value)}
         placeholder='Message'
-        className='input input-bordered input-primary w-full'
+        className='input ring-2 w-full'
       />
       <div className='absolute right-0 items-center inset-y-0 flex'>
         <button
@@ -76,8 +77,8 @@ const ChatInput = ({
           className='btn btn-primary'
           disabled={!inputMessage.trim()}
         >
-          <span className='font-bold text-primary-content'>Send</span>
-          <MdSend className='text-primary-content text-lg' />
+          <span className='font-bold'>Send</span>
+          <MdSend className='text-lg' />
         </button>
       </div>
     </div>

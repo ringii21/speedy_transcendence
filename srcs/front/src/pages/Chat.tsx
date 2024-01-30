@@ -67,13 +67,13 @@ const Chat = () => {
     <div className='container mx-auto'>
       {CreateChannelModal({ isCreateModalOpen, setCreateModalOpen })}
       {JoinChannelModal({ isJoinModalOpen, setJoinModalOpen })}
-      <div className='gap-6 mt-4 border-b pb-4'>
+      <div className='gap-6 mt-4 pb-4'>
         <div className='flex justify-center align-middle items-center w-full h-5'>
           {getChannelName()}
         </div>
       </div>
       <div className='flex flex-row'>
-        <div className='w-3/12'>
+        <div className='w-3/12 bg-gray-200 h-screen rounded-tl-lg drop-shadow-md'>
           <div className='flex flex-col gap-2 border-b p-4'>
             <button
               onClick={(e) => {
@@ -105,7 +105,7 @@ const Chat = () => {
             <div className='w-6/12'>
               <ChatConversation currentChannel={currentChannel} me={user} />
             </div>
-            <div className='w-3/12'>
+            <div className='w-3/12 bg-gray-200 rounded-tr-lg drop-shadow-md'>
               <ChatUsers channel={currentChannel} />
             </div>
           </>

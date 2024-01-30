@@ -44,7 +44,7 @@ const ChatConversation = ({ currentChannel, me }: ChatChannelProps) => {
   return (
     <main
       data-component-name='chat-conv'
-      className='flex-1 p:2 pb-36 justify-between flex flex-col h-screen'
+      className='flex-1 p:2 pb-36 justify-between flex flex-col h-screen border-t'
     >
       <div
         ref={currentRef}
