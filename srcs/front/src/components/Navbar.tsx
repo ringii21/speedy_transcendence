@@ -1,17 +1,15 @@
-// import './../styles/navbar.css'
-
+import clsx from 'clsx'
 import React, { useEffect, useRef, useState } from 'react'
 import { FaBell } from 'react-icons/fa'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 
 import { useAuth } from '../providers/AuthProvider'
 import { useNotification } from '../providers/NotificationProvider'
-import { notificationSocket as socket } from '../utils/socketService'
 import { NotificationModal } from './NotificationModal'
 
 const Navbar = () => {
   const { user, signout } = useAuth()
-
+  const { pathname } = useLocation()
   const [activeNotification, setActiveNotification] = useState<string[]>([])
   const [openModal, setOpenModal] = useState(false)
   const [bellColor, setBellColor] = useState('btn-ghost')
@@ -36,6 +34,7 @@ const Navbar = () => {
       return updatedNotification
     })
   }
+
   useEffect(() => {
     const notFriendYet = friends.find((friend) => friend.confirmed === false)
     const myNotif = friends.find((friend) => friend.friendOfId === user?.id)
@@ -50,6 +49,7 @@ const Navbar = () => {
       followStatus = false
       color = 'text-blue-600'
     }
+
     const newActiveNotification = friends
       .filter((friend) => friend.confirmed === false && friend.friendOfId)
       .map((friend) => friend.friendOfId.toString())
@@ -79,6 +79,12 @@ const Navbar = () => {
     }
   }, [friends])
 
+  const selectItemClass = (pathname: string, expectedPath: string) =>
+    clsx({
+      'font-bold': true,
+      'text-base-content': pathname === expectedPath,
+    })
+
   const notificationLine = () => {
     const notificationActive = activeNotification.includes(user?.id.toString())
 
@@ -105,7 +111,7 @@ const Navbar = () => {
   }
 
   return (
-    <div className='navbar nav relative bg-gray-900'>
+    <div className='navbar nav relative bg-base-300'>
       {friends && (
         <NotificationModal
           openModal={openModal}
@@ -120,7 +126,7 @@ const Navbar = () => {
           <div tabIndex={0} role='button' className='btn btn-ghost lg:hidden'>
             <svg
               xmlns='http://www.w3.org/2000/svg'
-              className='h-5 w-5 text-white'
+              className='h-5 w-5 text-base-content'
               fill='none'
               viewBox='0 0 24 24'
               stroke='currentColor'
@@ -135,35 +141,43 @@ const Navbar = () => {
           </div>
           <ul className='menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52'>
             <li>
-              <Link to='/'>Home</Link>
+              <Link className={selectItemClass(pathname, '/')} to='/'>
+                Home
+              </Link>
             </li>
             <li>
-              <Link to='/chat'>Chat</Link>
+              <Link className={selectItemClass(pathname, '/chat')} to='/chat'>
+                Chat
+              </Link>
             </li>
             <li>
-              <Link to='/play'>Game</Link>
+              <Link className={selectItemClass(pathname, '/play')} to='/play'>
+                Game
+              </Link>
             </li>
           </ul>
         </div>
-        <Link to={'/'} className='btn btn-ghost text-white text-xl pongBtn invisible lg:visible'>
+        <Link to={'/'} className='btn btn-ghost text-xl pongBtn invisible lg:visible'>
           Pong
         </Link>
       </div>
       <div className='navbar-center hidden lg:flex'>
         <ul className='menu menu-horizontal px-1 flex gap-40'>
           <li>
-            <button type='button' className='btn-menu btn-one letterMove'>
-              <Link className='font-bold text-white' to='/chat'>
-                Chat
-              </Link>
-            </button>
+            <Link
+              className={selectItemClass(pathname, '/chat') + 'btn-menu btn-one letterMove'}
+              to='/chat'
+            >
+              Chat
+            </Link>
           </li>
           <li>
-            <button type='button' className='btn-menu btn-one letterMove'>
-              <Link className='text-base-content' to='/play'>
-                Game
-              </Link>
-            </button>
+            <Link
+              className={selectItemClass(pathname, '/play') + 'btn-menu btn-one letterMove'}
+              to='/play'
+            >
+              Game
+            </Link>
           </li>
         </ul>
       </div>
@@ -181,15 +195,19 @@ const Navbar = () => {
             className='menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52'
           >
             <li>
-              <Link className='justify-between' to='/profile/me'>
+              <Link className='text-base-content' to='/profile/me'>
                 Profile
               </Link>
             </li>
             <li>
-              <Link to='/settings'>Settings</Link>
+              <Link className='text-base-content' to='/settings'>
+                Settings
+              </Link>
             </li>
             <li>
-              <a onClick={onButtonClick}>Logout</a>
+              <a className='text-base-content' onClick={onButtonClick}>
+                Logout
+              </a>
             </li>
           </ul>
         </div>

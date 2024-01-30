@@ -1,15 +1,19 @@
-import { useMutation } from '@tanstack/react-query'
+import { UseMutateFunction, useMutation, useQueryClient } from '@tanstack/react-query'
+import { AxiosResponse } from 'axios'
 import clsx from 'clsx'
 import React, { useEffect, useState } from 'react'
 import { FC, HTMLAttributes } from 'react'
 import { FaCrown, FaGavel, FaUser } from 'react-icons/fa'
+import { MdBlock } from 'react-icons/md'
 import { PiSwordFill } from 'react-icons/pi'
 import { Link } from 'react-router-dom'
 
 import { useAuth } from '../../providers/AuthProvider'
+import { ChatQueryKey, useChat } from '../../providers/ChatProvider'
 import { EChannelType, IChannel, IChannelMember } from '../../types/Chat'
 import { IUser } from '../../types/User'
 import { createPm } from '../../utils/chatHttpRequests'
+import { postBlockUser } from '../../utils/userHttpRequests'
 import { UserActionModal } from './Modals/UserActionModal'
 
 type UserProps = HTMLAttributes<HTMLDivElement> & {
@@ -20,6 +24,18 @@ type UserProps = HTMLAttributes<HTMLDivElement> & {
   setSelectedUser: React.Dispatch<React.SetStateAction<IUser | null>>
   showActionModal: boolean
   user: IUser
+  userBlocked: boolean
+  blockMutate: UseMutateFunction<
+    AxiosResponse<
+      {
+        blockedId: number
+      }[],
+      Error
+    >,
+    Error,
+    number,
+    unknown
+  >
 }
 
 const User: FC<UserProps> = ({
@@ -30,12 +46,15 @@ const User: FC<UserProps> = ({
   setSelectedUser,
   showActionModal,
   user,
+  userBlocked,
+  blockMutate,
 }) => {
   const userStyle = clsx({
     'flex justify-between cursor-pointer hover:bg-accent hover:text-accent-content text-base-content':
       true,
     'bg-base-100': index % 2 === 0,
     'bg-base-200': index % 2 === 1,
+    'bg-error': userBlocked,
   })
 
   const { mutate } = useMutation({
@@ -61,8 +80,19 @@ const User: FC<UserProps> = ({
         {member.user.username}
       </div>
       <div className='flex items-center gap-2'>
+        {member.user.id !== user?.id && (
+          <button
+            className='btn btn-xs btn-primary'
+            onClick={(e) => {
+              e.preventDefault()
+              blockMutate(member.user.id)
+            }}
+          >
+            <MdBlock />
+          </button>
+        )}
         {showActionModal && (
-          <button onClick={onClickAction} className='btn btn-xs btn-error'>
+          <button onClick={onClickAction} className='btn btn-xs btn-warning'>
             <FaGavel />
           </button>
         )}
@@ -76,7 +106,25 @@ const User: FC<UserProps> = ({
   )
 }
 
-const directMessageChannelRender = (user: IUser, channel: IChannel) => {
+const directMessageChannelRender = ({
+  user,
+  channel,
+  blockMutate,
+}: {
+  user: IUser
+  channel: IChannel
+  blockMutate: UseMutateFunction<
+    AxiosResponse<
+      {
+        blockedId: number
+      }[],
+      Error
+    >,
+    Error,
+    number,
+    unknown
+  >
+}) => {
   const notMe = channel.members.find((m) => m.user.id !== user?.id)
   if (!notMe) return <></>
   return (
@@ -87,6 +135,15 @@ const directMessageChannelRender = (user: IUser, channel: IChannel) => {
         </div>
       </Link>
       <span className='text-lg'>{notMe.user.username}</span>
+      <Link
+        to={'/chat'}
+        onClick={() => {
+          blockMutate(notMe.user.id)
+        }}
+        className='btn btn-outline'
+      >
+        Block
+      </Link>
     </div>
   )
 }
@@ -97,14 +154,30 @@ const userRender = ({
   setModalOpen,
   setSelectedUser,
   showActionModal,
+  blockedUsers,
   isModalOpen,
+  blockMutate,
 }: {
   user: IUser
   channel: IChannel
   setModalOpen: React.Dispatch<React.SetStateAction<boolean>>
   setSelectedUser: React.Dispatch<React.SetStateAction<IUser | null>>
   showActionModal: (member: IChannelMember) => boolean
+  blockedUsers: {
+    blockedId: number
+  }[]
   isModalOpen: boolean
+  blockMutate: UseMutateFunction<
+    AxiosResponse<
+      {
+        blockedId: number
+      }[],
+      Error
+    >,
+    Error,
+    number,
+    unknown
+  >
 }) => {
   return (
     <div>
@@ -115,6 +188,7 @@ const userRender = ({
           .sort((a, b) => (a.user.username > b.user.username ? 1 : -1))
           .map((member, i) => (
             <User
+              blockMutate={blockMutate}
               key={i}
               member={member}
               index={i}
@@ -122,6 +196,7 @@ const userRender = ({
               modalOpen={isModalOpen}
               setSelectedUser={setSelectedUser}
               user={user}
+              userBlocked={!!blockedUsers.find(({ blockedId }) => blockedId === member.user.id)}
               showActionModal={showActionModal(member)}
             />
           ))}
@@ -135,6 +210,7 @@ const ChatUsers = ({ channel }: { channel: IChannel }) => {
   const [userChannelList, setUserChannelList] = useState(true)
   const [isModalOpen, setModalOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null)
+  const { blockedUsers } = useChat()
 
   useEffect(() => {
     if (userChannelList) setUserChannelList(false)
@@ -142,6 +218,17 @@ const ChatUsers = ({ channel }: { channel: IChannel }) => {
 
   const findRole = (userId: number, members?: IChannelMember[]) =>
     members?.find((member) => member.userId === userId)?.role
+
+  const queryClient = useQueryClient()
+
+  const { mutate: blockMutate } = useMutation({
+    mutationFn: postBlockUser,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: [ChatQueryKey.BLOCK_LIST],
+      })
+    },
+  })
 
   const showActionModal = (member: IChannelMember) => {
     if (userRole === 'user') return false
@@ -163,14 +250,16 @@ const ChatUsers = ({ channel }: { channel: IChannel }) => {
         />
       )}
       {channel.type === EChannelType.direct
-        ? directMessageChannelRender(user, channel)
+        ? directMessageChannelRender({ user, channel, blockMutate })
         : userRender({
             user,
             channel,
+            blockedUsers,
             setModalOpen,
             setSelectedUser,
             showActionModal,
             isModalOpen,
+            blockMutate,
           })}
     </div>
   )

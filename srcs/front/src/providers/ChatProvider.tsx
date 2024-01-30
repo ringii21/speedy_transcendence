@@ -5,12 +5,16 @@ import { useNavigate } from 'react-router-dom'
 import { IChannel, IChannelMember } from '../types/Chat'
 import { ChatSocketEvent } from '../types/Events'
 import { getChannel, getMyChannels } from '../utils/chatHttpRequests'
+import { getBlockList } from '../utils/userHttpRequests'
 import { useAuth } from './AuthProvider'
 import { useSocket } from './SocketProvider'
 
 interface ChatContextData {
   myChannels: Pick<IChannel, 'id'>[]
   allChannels: IChannel[]
+  blockedUsers: {
+    blockedId: number
+  }[]
 }
 
 type Props = {
@@ -22,15 +26,17 @@ export enum ChatQueryKey {
   CHANNEL_NOT_JOINED = 'channels-not-joined',
   CHANNEL = 'channels',
   USER_LIST = 'user-list',
+  BLOCK_LIST = 'block-list',
 }
 
 export const ChatContext = createContext<ChatContextData>({
   myChannels: [],
   allChannels: [],
+  blockedUsers: [],
 })
 
 export const ChatProvider = ({ children }: Props) => {
-  const { chatSocket } = useSocket()
+  const { chatSocket, isChatConnected } = useSocket()
   const { user } = useAuth()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -46,7 +52,15 @@ export const ChatProvider = ({ children }: Props) => {
     queries: myChannelQuery.data.map((channel) => ({
       queryKey: [channel.id],
       queryFn: () => getChannel(channel.id),
+      enabled: !!user,
     })),
+  })
+
+  const blockListQuery = useQuery({
+    queryKey: [ChatQueryKey.BLOCK_LIST],
+    queryFn: getBlockList,
+    initialData: [],
+    enabled: !!user,
   })
 
   useEffect(() => {
@@ -91,13 +105,14 @@ export const ChatProvider = ({ children }: Props) => {
       chatSocket.off(ChatSocketEvent.JOIN_CHANNEL)
       chatSocket.off(ChatSocketEvent.LEAVE_CHANNEL)
     }
-  }, [user])
+  }, [isChatConnected, user])
 
   const values = {
     allChannels: channelsQuery
       .map((channel) => channel.data)
       .filter((channel): channel is IChannel => channel !== undefined),
     myChannels: myChannelQuery.data,
+    blockedUsers: blockListQuery.data,
   }
 
   return <ChatContext.Provider value={values}>{children}</ChatContext.Provider>

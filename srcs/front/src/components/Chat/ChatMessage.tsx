@@ -9,9 +9,10 @@ type ChatMessageProps = {
   user: IUser
   message: FrontEndMessage
   members: IChannelMember[]
+  blocked: boolean
 }
 
-const ChatMessage = ({ user, message, members }: ChatMessageProps) => {
+const ChatMessage = ({ user, message, members, blocked }: ChatMessageProps) => {
   const sender = members.find((member) => member.userId === message.senderId)
   if (!sender) return <span>Error</span>
 
@@ -40,21 +41,27 @@ const ChatMessage = ({ user, message, members }: ChatMessageProps) => {
   })
 
   return (
-    <div className={messageJustify}>
-      <div className={messagePosition}>
-        <div>
-          {message.gameInvite && (
-            <Link className='link link-success' to={`/game/${message.content}`}>
-              Play with me!
-            </Link>
-          )}
-          {!message.gameInvite && <span className={messageStyle}>{message.content}</span>}
+    <>
+      {blocked ? (
+        <div className={messageJustify}>
+          <div className={messagePosition}>
+            <div>
+              {message.gameInvite && (
+                <Link className='link link-success' to={`/game/${message.content}`}>
+                  Play with me!
+                </Link>
+              )}
+              {!message.gameInvite && <span className={messageStyle}>{message.content}</span>}
+            </div>
+          </div>
+          <Link to={`/profile/${sender.userId}`}>
+            <img src={sender.user.image} alt='My profile' className={imageStyle} />
+          </Link>
         </div>
-      </div>
-      <Link to={`/profile/${sender.userId}`}>
-        <img src={sender.user.image} alt='My profile' className={imageStyle} />
-      </Link>
-    </div>
+      ) : (
+        <></>
+      )}
+    </>
   )
 }
 
