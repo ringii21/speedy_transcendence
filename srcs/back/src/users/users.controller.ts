@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   ClassSerializerInterceptor,
   Controller,
@@ -34,6 +35,22 @@ export class UsersController {
     private readonly configService: ConfigService,
   ) {}
 
+  @Get('blocked')
+  async getBlockList(@Req() req: RequestWithDbUser) {
+    const blockList = await this.usersService.getBlockList(req.user.id)
+    return blockList
+  }
+
+  @Post('block')
+  async blockUser(
+    @Req() req: RequestWithDbUser,
+    @Body() blockUserDto: BlockUserDto,
+  ) {
+    if (req.user.id === blockUserDto.userId)
+      throw new BadRequestException('cannot block yourself')
+    return this.usersService.blockUser(req.user.id, blockUserDto.userId)
+  }
+
   @Get()
   async getUsers(@Query() queryUsersDto: QueryUsersDto) {
     const users = await this.usersService.findMany(queryUsersDto)
@@ -46,7 +63,7 @@ export class UsersController {
     return new UserEntity(req.user)
   }
 
-  @Get(':id')
+  @Get('/:id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const user = await this.usersService.findUserById(id)
     if (!user) return new NotFoundException('user not found')

@@ -20,9 +20,18 @@ type ChannelProps = {
   selectedChannel?: string
   mutate: UseMutateFunction<IChannelMember, Error, string, unknown>
   user: IUser
+  blockedUsers: {
+    blockedId: number
+  }[]
 }
 
-const DirectMessageChannel = ({ channel, selectedChannel, mutate, user }: ChannelProps) => {
+const DirectMessageChannel = ({
+  channel,
+  selectedChannel,
+  mutate,
+  user,
+  blockedUsers,
+}: ChannelProps) => {
   const notMe = channel.members.find((m) => m.user.id !== user?.id)
   const queryClient = useQueryClient()
   const wrapperClass = clsx({
@@ -31,6 +40,8 @@ const DirectMessageChannel = ({ channel, selectedChannel, mutate, user }: Channe
   })
 
   if (!notMe) return <></>
+  const blocked = !blockedUsers.find(({ blockedId }) => notMe.user.id === blockedId)
+  if (!blocked) return <></>
   return (
     <div className={wrapperClass}>
       <div>
@@ -134,7 +145,7 @@ type ChatSelectionProps = {
 }
 
 const ChatSelection = ({ channelId }: ChatSelectionProps) => {
-  const { allChannels } = useChat()
+  const { allChannels, blockedUsers } = useChat()
   const { user } = useAuth()
   const { mutate } = useMutation({
     mutationFn: (channelId: string) => leaveChannel(channelId),
@@ -147,6 +158,7 @@ const ChatSelection = ({ channelId }: ChatSelectionProps) => {
       if (channel.type === EChannelType.direct) {
         return (
           <DirectMessageChannel
+            blockedUsers={blockedUsers}
             channel={channel}
             key={channel.id}
             selectedChannel={channelId}
@@ -157,6 +169,7 @@ const ChatSelection = ({ channelId }: ChatSelectionProps) => {
       }
       return (
         <Channel
+          blockedUsers={blockedUsers}
           channel={channel}
           key={channel.id}
           selectedChannel={channelId}

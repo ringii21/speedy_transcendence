@@ -12,7 +12,9 @@ import { useSocket } from './SocketProvider'
 interface ChatContextData {
   myChannels: Pick<IChannel, 'id'>[]
   allChannels: IChannel[]
-  blockedUsers: number[]
+  blockedUsers: {
+    blockedId: number
+  }[]
 }
 
 type Props = {
@@ -34,7 +36,7 @@ export const ChatContext = createContext<ChatContextData>({
 })
 
 export const ChatProvider = ({ children }: Props) => {
-  const { chatSocket } = useSocket()
+  const { chatSocket, isChatConnected } = useSocket()
   const { user } = useAuth()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -73,11 +75,13 @@ export const ChatProvider = ({ children }: Props) => {
       async (data: { channelId: string; userId: number; background: boolean }) => {
         if (data.userId === user?.id) {
           await myChannelQuery.refetch()
-          if (!data.background) navigate(`/chat/${data.channelId}`)
-          else
-            await queryClient.invalidateQueries({
-              queryKey: [data.channelId],
-            })
+          if (!data.background) {
+            navigate(`/chat/${data.channelId}`)
+          }
+        } else {
+          await queryClient.invalidateQueries({
+            queryKey: [data.channelId],
+          })
         }
       },
     )
@@ -101,7 +105,7 @@ export const ChatProvider = ({ children }: Props) => {
       chatSocket.off(ChatSocketEvent.JOIN_CHANNEL)
       chatSocket.off(ChatSocketEvent.LEAVE_CHANNEL)
     }
-  }, [user])
+  }, [isChatConnected, user])
 
   const values = {
     allChannels: channelsQuery
