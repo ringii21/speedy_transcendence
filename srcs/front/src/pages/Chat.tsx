@@ -9,14 +9,12 @@ import { JoinChannelModal } from '../components/Chat/Modals/JoinChannelModal'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
 import { useChat } from '../providers/ChatProvider'
-import { useSocket } from '../providers/SocketProvider'
 import { IChannel } from '../types/Chat'
 
 const Chat = () => {
   const { channelId } = useParams<{ channelId: string | undefined }>()
   const { user } = useAuth()
   const { allChannels } = useChat()
-  const { chatSocket } = useSocket()
 
   const [isCreateModalOpen, setCreateModalOpen] = useState(false)
   const [isJoinModalOpen, setJoinModalOpen] = useState(false)
@@ -28,15 +26,6 @@ const Chat = () => {
     const currChannel = allChannels.find((channel) => channel.id === channelId)
     setCurrentChannel(currChannel)
   }, [channelId, allChannels])
-
-  useEffect(() => {
-    if (!chatSocket.connected) {
-      chatSocket.connect()
-    }
-    return () => {
-      chatSocket.disconnect()
-    }
-  }, [])
 
   const getChannelName = () => {
     if (currentChannel) {

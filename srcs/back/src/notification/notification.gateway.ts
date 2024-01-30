@@ -2,9 +2,7 @@ import { Logger } from '@nestjs/common'
 import { Socket, Server } from 'socket.io'
 import { AuthService } from '../auth/auth.service'
 import { OnEvent } from '@nestjs/event-emitter'
-import {
-  FriendRequestEvent,
-} from './events/notification.event'
+import { FriendRequestEvent } from './events/notification.event'
 import {
   WebSocketGateway,
   OnGatewayConnection,
@@ -28,9 +26,7 @@ export class NotificationGateway
   userSockets = new Map<number, Socket>()
   socketUsers = new Map<string, number>()
 
-  constructor(
-    private readonly authService: AuthService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @OnEvent(FriendRequestEvent.name)
   async sentFriendRequest({ friendOfId }: FriendRequestEvent) {
@@ -45,7 +41,6 @@ export class NotificationGateway
     }
     this.addSocketToUser(user.id, socket)
     this.logger.log(`Client connected: ${socket.id}`)
-    console.log('Connection: ', this.socketUsers)
   }
 
   async handleDisconnect(socket: Socket) {

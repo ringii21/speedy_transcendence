@@ -3,22 +3,15 @@ import './../styles/home.css'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-/* import abonard from '../assets/abonard.jpg'
-import ebouvier from '../assets/ebouvier.jpg'
-import sasha from '../assets/nlorion.jpg' */
 import logo1 from '../assets/1.png'
 import logo2 from '../assets/2.png'
 import WordFlick from '../components/Pong/PongRuleFlick'
 import { RatingHistory } from '../components/RatingHistory'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
-import { useSocket } from '../providers/SocketProvider'
 
 const Home = () => {
-  const { chatSocket } = useSocket()
   const { user } = useAuth()
-
-  chatSocket?.connect()
   return (
     <div className='w-screen'>
       <b></b>
