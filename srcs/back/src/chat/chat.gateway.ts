@@ -93,6 +93,30 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`Client sent message: ${socket.id}`)
   }
 
+  @SubscribeMessage(ChatSocketEvent.UPDATE)
+  async handleUpdateMessage(
+    @ConnectedSocket() socket: SocketWithUser,
+    data: { messageId: number, channelId: string },
+  ) {
+    console.log('----------------------COUCOU-------------')
+    try {
+        // Suppression du message dans la base de données
+        const deletionResult = await this.messageService.deleteMessage(data.messageId);
+    
+        if (deletionResult) {
+          // Si le message a été supprimé avec succès
+          // Envoyer une notification ou un message de succès aux clients concernés
+          socket.to(data.channelId).emit(ChatSocketEvent.MESSAGE_DELETED, { messageId: data.messageId });
+          this.logger.log(`Message deleted: ${data.messageId}`);
+        } else {
+          // Gérer le cas où la suppression n'a pas fonctionné
+          this.logger.error(`Failed to delete message: ${data.messageId}`);
+        }
+      } catch (error) {
+        // Gérer les exceptions
+        this.logger.error(`Error deleting message: ${data.messageId}`, error);
+      }
+  }
   @OnEvent(ChannelJoinedEvent.name)
   emitUserJoinChannel({ channelId, userId, background }: ChannelJoinedEvent) {
     this.getSocketByUserId(userId)?.join(channelId)

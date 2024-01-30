@@ -98,9 +98,12 @@ export class GameService {
           this.queueGamePerso.push([newGame]);
           client.emit('gamePersoCreated', { partyNumber: newGame.partyNumber })
     } else if (data.mode === 'unregister') {
-        const client = data.client;
+        const client = data.client; //moi?
         client.data.user = await this.authService.getSocketUser(client);
-        /* JE SAIS PAS ENCORE */
+        //if (si je quitte la page?)
+          //le lien nest plus valide
+        /* Le cas ou je lance la partie mais que je quitte le chat
+        */
       }
   }
 
@@ -115,6 +118,14 @@ export class GameService {
       for (const gameArray of this.queueGamePerso) {
         const game = gameArray.find(game => game.partyNumber.toString() === data.partyNumber);
         if (game) {
+            console.log('J ai trouver la partie')
+          if (game.userData?.id == client.data.user.id)
+            return;
+          if (game.socket.disconnected)
+          {
+            client.emit('errorPartyPerso', { msgError: 'Cannot join the party, the sender left the conversation!' })
+            return ;
+          }
           game.opponentData = client.data.user; // Mettre à jour uniquement opponentData
           game.socketOpponent = client;
           two_players = [

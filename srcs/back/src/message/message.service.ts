@@ -48,4 +48,19 @@ export class MessageService {
       },
     })
   }
+
+  async deleteMessage(messageId: number): Promise<boolean> {
+    try {
+      const deleteMessage = await this.prisma.channelMessage.delete({
+        where: {
+            id: messageId,
+        },
+      });
+      return true
+    } catch (error) {
+      // Gérer les erreurs, par exemple en enregistrant dans les logs
+      console.error('Error occurred while deleting message:', error);
+      throw error;
+    }
+  }
 }

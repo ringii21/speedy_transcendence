@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 
 import { useSocket } from '../../providers/SocketProvider'
 import { FrontEndMessage, IChannelMember } from '../../types/Chat'
+import { ChatSocketEvent } from '../../types/Events'
 import { IUser } from '../../types/User'
 
 type ChatMessageProps = {
@@ -13,11 +14,13 @@ type ChatMessageProps = {
 }
 
 const ChatMessage = ({ user, message, members }: ChatMessageProps) => {
-  const { gameSocket, isGameConnected } = useSocket()
+  const { gameSocket, isGameConnected, chatSocket, isChatConnected } = useSocket()
   if (!isGameConnected) gameSocket.connect()
   const sender = members.find((member) => member.userId === message.senderId)
   if (!sender) return <span>Error</span>
-
+  gameSocket.on('errorPartyPerso', (errorMessage: string) => {
+    console.log('oups desole ya plus personne')
+  })
   const messagePosition = clsx({
     ['flex space-y-2 text-xs max-w-xs mx-2']: true,
     ['order-1 items-end']: message.senderId === user.id,
@@ -42,8 +45,12 @@ const ChatMessage = ({ user, message, members }: ChatMessageProps) => {
     ['order-1']: message.senderId !== user.id,
   })
 
-  const acceptGame = (partyNumber: string) => {
-    gameSocket?.emit('acceptGameInvite', { partyNumber: partyNumber })
+  const acceptGame = (message: any) => {
+    chatSocket?.emit(ChatSocketEvent.UPDATE, {
+      messageId: message.id,
+      channelId: message.channelId,
+    })
+    gameSocket?.emit('acceptGameInvite', { partyNumber: message.content })
   }
 
   return (
@@ -57,7 +64,7 @@ const ChatMessage = ({ user, message, members }: ChatMessageProps) => {
               onClick={(e) => {
                 e.preventDefault() // Empêche le comportement par défaut du lien
                 // Ici, appelez votre fonction
-                acceptGame(message.content)
+                acceptGame(message)
               }}
             >
               Play with me!

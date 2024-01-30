@@ -1,5 +1,6 @@
 export enum ChatSocketEvent {
   MESSAGE = 'message',
+  UPDATE = 'update',
   JOIN_CHANNEL = 'join_channel',
   LEAVE_CHANNEL = 'leave_channel',
   CONNECTED = 'connected',

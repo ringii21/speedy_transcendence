@@ -51,6 +51,7 @@ import { AuthService } from 'src/auth/auth.service';
     }
   
     async handleDisconnect(client: Socket) {
+      console.log('Je passe dans le handleDisconnect')
       const user = await this.authService.getSocketUser(client)
       if (!user) {
         client.disconnect()

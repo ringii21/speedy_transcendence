@@ -7,11 +7,8 @@ import logo1 from '../assets/1.png'
 import logo2 from '../assets/2.png'
 import WordFlick from '../components/Pong/PongRuleFlick'
 import { WithNavbar } from '../hoc/WithNavbar'
-import { useSocket } from '../providers/SocketProvider'
 
 const Home = () => {
-  const { chatSocket } = useSocket()
-  chatSocket?.connect()
   return (
     <div className='w-screen'>
       <b></b>
