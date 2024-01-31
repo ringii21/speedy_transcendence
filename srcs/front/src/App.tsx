@@ -8,7 +8,7 @@ import { GameWithNavbar } from './components/Pong/Pong'
 import { RequireAuth } from './components/RequireAuth'
 import { NotFound } from './pages/404'
 import { ChatWithNavbar } from './pages/Chat'
-import { Footer } from './pages/Footer'
+import { FriendsWithNavbar } from './pages/Friends'
 import { HomeWithNavbar } from './pages/Home'
 import Login from './pages/Login'
 import { PlayWithNavbar } from './pages/Pong'
@@ -88,12 +88,19 @@ const App = () => {
                     </RequireAuth>
                   }
                 />
+                <Route
+                  path='/friends'
+                  element={
+                    <RequireAuth>
+                      <FriendsWithNavbar />
+                    </RequireAuth>
+                  }
+                />
                 {/* non authenticated */}
                 <Route path='/login' element={<Login />} />
                 <Route path='/login/2fa' element={<TwoFactorSignin />} />
                 <Route path='*' element={<NotFound />} />
               </Routes>
-              {/* <Footer /> */}
             </NotificationProvider>
           </SocketProvider>
         </ChatProvider>

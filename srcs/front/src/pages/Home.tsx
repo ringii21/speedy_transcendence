@@ -14,7 +14,6 @@ const Home = () => {
   const { user } = useAuth()
   return (
     <div className='w-screen'>
-      <b></b>
       <h1 className='text-center text-4xl uppercase welcome md:text-7xl'>FT_TRANSCENDENCE</h1>
       <div className='pongRule'>
         <WordFlick />

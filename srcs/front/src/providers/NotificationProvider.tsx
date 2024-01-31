@@ -1,50 +1,31 @@
-import { useQuery } from '@tanstack/react-query'
 import React, { createContext, ReactNode, useContext, useEffect } from 'react'
 
-import { IFriends } from '../types/User'
-import { getMyFriends } from '../utils/friendService'
+import { useGetFriends } from '../components/hook/Friends.hook'
 import { notificationSocket } from '../utils/socketService'
-import { useAuth } from './AuthProvider'
-interface NotificationContextData {
-  friends: IFriends[]
-  friendsSuccess: boolean
-  friendsError: boolean
-}
 
 type Props = {
   children: ReactNode
 }
 
-const NotificationContext = createContext<NotificationContextData>({
-  friends: [],
-  friendsSuccess: false,
-  friendsError: false,
-})
+export enum NotificationEvent {
+  REFRESH = 'refresh',
+}
+
+const NotificationContext = createContext({})
 
 export const NotificationProvider = ({ children }: Props) => {
-  const { user } = useAuth()
-
-  const myFriendsQuery = useQuery({
-    queryKey: ['friends'],
-    queryFn: getMyFriends,
-    initialData: [],
-    enabled: !!user,
-  })
+  const getFriendQuery = useGetFriends()
 
   useEffect(() => {
-    notificationSocket.on('refresh', async () => {
-      await myFriendsQuery.refetch()
+    notificationSocket.on(NotificationEvent.REFRESH, async () => {
+      await getFriendQuery.refetch()
     })
     return () => {
-      notificationSocket.off('refresh')
+      notificationSocket.off(NotificationEvent.REFRESH)
     }
-  }, [user])
+  }, [])
 
-  const values = {
-    friends: myFriendsQuery.data,
-    friendsSuccess: myFriendsQuery.isSuccess,
-    friendsError: myFriendsQuery.isError,
-  }
+  const values = {}
 
   return <NotificationContext.Provider value={values}>{children}</NotificationContext.Provider>
 }
