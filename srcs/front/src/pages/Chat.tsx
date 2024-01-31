@@ -27,53 +27,12 @@ const Chat = () => {
     setCurrentChannel(currChannel)
   }, [channelId, allChannels])
 
-  const getChannelName = () => {
-    if (currentChannel) {
-      if (currentChannel.type === 'public') {
-        return (
-          <div className='flex items-center'>
-            <FaHashtag className='mr-2' />
-            {currentChannel.name}
-          </div>
-        )
-      }
-      if (currentChannel.type === 'private') {
-        return (
-          <div className='flex items-center'>
-            <IoEyeOffSharp className='mr-2' />
-            {currentChannel.name}
-          </div>
-        )
-      }
-      if (currentChannel.type === 'protected') {
-        return (
-          <div className='flex items-center'>
-            <FaLock className='mr-2' />
-            {currentChannel.name}
-          </div>
-        )
-      }
-      if (currentChannel.type === 'direct') {
-        return (
-          <div className='flex items-center'>
-            {currentChannel.members.find((member) => member.userId !== user.id)?.user.username}
-          </div>
-        )
-      }
-    }
-  }
-
   return (
     <div className='container mx-auto'>
       {CreateChannelModal({ isCreateModalOpen, setCreateModalOpen })}
       {JoinChannelModal({ isJoinModalOpen, setJoinModalOpen })}
-      <div className='gap-6 mt-4 border-b pb-4'>
-        <div className='flex justify-center align-middle items-center w-full h-5'>
-          {getChannelName()}
-        </div>
-      </div>
       <div className='flex flex-row'>
-        <div className='w-3/12'>
+        <div className='w-3/12 bg-gray-200 h-screen rounded-tl-lg drop-shadow-md'>
           <div className='flex flex-col gap-2 border-b p-4'>
             <button
               onClick={(e) => {
@@ -105,7 +64,7 @@ const Chat = () => {
             <div className='w-6/12'>
               <ChatConversation currentChannel={currentChannel} me={user} />
             </div>
-            <div className='w-3/12'>
+            <div className='w-3/12 dark:bg-gray-200 bg-gray-900 rounded-tr-lg drop-shadow-md'>
               <ChatUsers channel={currentChannel} />
             </div>
           </>

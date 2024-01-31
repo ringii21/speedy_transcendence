@@ -23,7 +23,7 @@ const ChatMessage = ({ user, message, members, blocked }: ChatMessageProps) => {
   })
 
   const messageJustify = clsx({
-    ['flex items-end mb-4']: true,
+    ['flex items-end mb-4 pt-2']: true,
     ['justify-end mr-6']: message.senderId === user.id,
     ['justify-start ml-6']: message.senderId !== user.id,
   })

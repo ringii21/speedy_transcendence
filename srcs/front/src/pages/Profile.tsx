@@ -2,15 +2,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import React, { useEffect, useRef, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 
-import { MatchHistory } from '../components/MatchHistory'
 import { ModalFriendsList } from '../components/ModalFriendsList'
-import { RatingHistory } from '../components/RatingHistory'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
 import { useNotification } from '../providers/NotificationProvider'
-import { useSocket } from '../providers/SocketProvider'
 import { createFriendRequest, removeFriend } from '../utils/friendService'
 import { fetchUser, getUser } from '../utils/userHttpRequests'
+import { RatingHistory } from './../components/RatingHistory'
 
 const Profile = () => {
   const { user, signout } = useAuth()
@@ -233,12 +231,12 @@ const Profile = () => {
         </div>
       </div>
       <div
-        className='hero invisible lg:visible'
+        className='hero'
         style={{
           padding: '10px',
         }}
       >
-        <MatchHistory user={user} />
+        <RatingHistory user={user} />
       </div>
     </div>
   )

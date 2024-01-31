@@ -5,8 +5,8 @@ import { Link } from 'react-router-dom'
 
 import logo1 from '../assets/1.png'
 import logo2 from '../assets/2.png'
+import { MatchHistory } from '../components/MatchHistory'
 import WordFlick from '../components/Pong/PongRuleFlick'
-import { RatingHistory } from '../components/RatingHistory'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
 
@@ -19,7 +19,7 @@ const Home = () => {
       <div className='pongRule'>
         <WordFlick />
       </div>
-      <div className='flex flex-col sm:items-center justify-center'>
+      <div className='flex flex-col items-center justify-center'>
         <div className='flex items-center ml-8 sm:ml-0'>
           <img className='one' src={logo1} alt='logo' />
           <Link to='/play'>
@@ -35,7 +35,7 @@ const Home = () => {
           </Link>
           <img className='two' src={logo2} alt='paddle2' />
         </div>
-        {user ? <RatingHistory user={user} /> : <></>}
+        {user ? <MatchHistory user={user} /> : <></>}
       </div>
     </div>
   )
