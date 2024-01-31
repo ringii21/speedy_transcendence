@@ -13,7 +13,6 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { FriendsService } from './friends.service'
 import { FriendshipRemovalDto } from './dto/friend-removal.dto'
-// import { FriendshipSearchDto } from './dto/friend-search.dto'
 import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard'
 import { FriendEntity } from './entity/friends.entity'
 import { RequestWithDbUser } from '../types/Request'
@@ -70,10 +69,15 @@ export class FriendsController {
   ) {
     if (req.user.id === friendsRequestDto.friendOfId)
       throw new BadRequestException('You cannot be friend with yourself')
-    return this.friendsService.addFriends(
+    const friend = await this.friendsService.addFriends(
       req.user.id,
       friendsRequestDto.friendOfId,
     )
+    this.eventEmitter.emit(
+      FriendRequestEvent.name,
+      new FriendRequestEvent(friendsRequestDto.friendOfId),
+    )
+    return friend
   }
 
   @Delete('remove')

@@ -6,12 +6,12 @@ const WithNavbar = <P extends object>(Component: ComponentType<P>) => {
   const displayName = Component.displayName || Component.name || 'Component'
   const ComponentWithNavbar: React.FC<P> = (props: P) => {
     return (
-      <div className='w-screen'>
+      <>
         <Navbar />
-        <main className='h-screen'>
+        <main className='mt-20'>
           <Component {...props} />
         </main>
-      </div>
+      </>
     )
   }
   ComponentWithNavbar.displayName = `WithNavbar(${displayName})`

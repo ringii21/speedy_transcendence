@@ -3,7 +3,6 @@ import { Socket } from 'socket.io-client'
 
 import { ChatSocketEvent } from '../types/Events'
 import { chatSocket, gameSocket, notificationSocket } from '../utils/socketService'
-import { useAuth } from './AuthProvider'
 
 interface SocketContextData {
   chatSocket: Socket
