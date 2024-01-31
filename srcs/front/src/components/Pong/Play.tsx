@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import { Navigate, useLocation } from 'react-router-dom'
 
@@ -6,21 +6,34 @@ import { useAuth } from '../../providers/AuthProvider'
 import { useSocket } from '../../providers/SocketProvider'
 import { QueueWaitModal } from './QueueModal'
 
+/* const createGame = async () => {
+ 
+} */
+
 export const Play = () => {
   const { user } = useAuth()
   if (!user) return <Navigate to='/login' replace />
   toast.success('Match making in Progress you can move until find opponent', {
     duration: 5000,
   })
-  const location = useLocation()
-  console.log(location.state)
-  const isInvite = location.state?.invite
-  if (isInvite) {
-    console.log('J ai ete inviter')
-  }
   const { gameSocket, isGameConnected } = useSocket()
   const [gameMode, setGameMode] = useState('')
   const queueModalRef = useRef<HTMLDialogElement>(null)
+  const location = useLocation()
+  console.log(location.state)
+  /* const isInvite = location.state?.isInvite
+  const senderInvite = location.state?.senderInvite
+  useEffect(() => {
+    if (senderInvite) {
+      console.log('COUCOU')
+      gameSocket?.emit('startGame', { gameMode: 'classic' })
+      setGameMode('classic')
+      queueModalRef.current?.showModal()
+    }
+    if (isInvite) {
+      console.log('J ai ete inviter')
+    }
+  }, [senderInvite, isInvite]) */
   const subscribeToGame = async () => {
     try {
       gameSocket?.emit('startGame', { gameMode: 'classic' })
@@ -33,6 +46,7 @@ export const Play = () => {
       toast.error('can not start game')
     }
   }
+
   const subscribeToGameExtra = async () => {
     try {
       gameSocket?.emit('startGame', { gameMode: 'extra' })

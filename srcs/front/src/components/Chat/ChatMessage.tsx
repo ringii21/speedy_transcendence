@@ -46,6 +46,7 @@ const ChatMessage = ({ user, message, members }: ChatMessageProps) => {
   })
 
   const acceptGame = (message: any) => {
+    console.log('message.id and message.channelId: ', message.id, message.channelId, message)
     chatSocket?.emit(ChatSocketEvent.UPDATE, {
       messageId: message.id,
       channelId: message.channelId,

@@ -96,9 +96,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage(ChatSocketEvent.UPDATE)
   async handleUpdateMessage(
     @ConnectedSocket() socket: SocketWithUser,
-    data: { messageId: number, channelId: string },
+    @MessageBody() data: { messageId: number, channelId: string },
   ) {
-    console.log('----------------------COUCOU-------------')
     try {
         // Suppression du message dans la base de données
         const deletionResult = await this.messageService.deleteMessage(data.messageId);
