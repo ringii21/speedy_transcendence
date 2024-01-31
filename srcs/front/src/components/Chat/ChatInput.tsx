@@ -46,16 +46,15 @@ const ChatInput = ({
 
   return (
     <div className='relative flex'>
-      <div className='border-t mt-6'></div>
       <input
         type='text'
         value={inputMessage}
         onKeyDown={handleKeyDown}
         onChange={(e) => setInputMessage(e.target.value)}
         placeholder='Message'
-        className='input ring-2 w-full'
+        className='input ring-offset-1 ring-2 ring-gray-900 w-full focus:ring-2 bg-white shadow-2xl'
       />
-      <div className='absolute right-0 items-center inset-y-0 flex'>
+      <div className='absolute right-0 items-center inset-y-0 flex flex-row'>
         <button
           type='button'
           onClick={() => {

@@ -67,8 +67,8 @@ const Channel = ({ channel, selectedChannel, mutate, user }: ChannelProps) => {
   const queryClient = useQueryClient()
 
   const wrapperClass = clsx({
-    ['flex hover:bg-base-100 items-center justify-between p-1 rounded border']: true,
-    ['bg-base-100']: channel.id === selectedChannel,
+    ['flex hover:bg-gray-400 items-center justify-between p-1 rounded border']: true,
+    ['bg-white']: channel.id === selectedChannel,
   })
 
   if (!me) return <></>
@@ -86,11 +86,19 @@ const Channel = ({ channel, selectedChannel, mutate, user }: ChannelProps) => {
         }}
       >
         <div className='flex items-center mr-6 gap-4'>
-          {channel.type === 'private' && <FaEyeSlash size={10} className='font-bold' />}
-          {channel.type === 'protected' && <FaLock size={10} className='font-bold' />}
-          {channel.type === 'public' && <FaHashtag size={10} className='font-bold' />}
-          <span className='ml-2 font-normal overflow-ellipsis font-bold'>{channel.name}</span>
-          {channel.members.filter((m) => m.present).length ?? 0}
+          {channel.type === 'private' && (
+            <FaEyeSlash size={10} className='font-bold text-green-600 mt-1 ml-2' />
+          )}
+          {channel.type === 'protected' && (
+            <FaLock size={10} className='font-bold font-bold text-green-600 mt-1 ml-2' />
+          )}
+          {channel.type === 'public' && (
+            <FaHashtag size={10} className='font-bold font-bold text-green-600 mt-1 ml-2' />
+          )}
+          <span className='overflow-ellipsis text-black font-bold'>{channel.name}</span>
+          <span className='mt-1 pb-1 text-black'>
+            {channel.members.filter((m) => m.present).length ?? 0}
+          </span>
         </div>
       </Link>
       <div className='mr-2'>
@@ -170,7 +178,7 @@ const ChatSelection = ({ channelId }: ChatSelectionProps) => {
   return (
     <div className='items-center gap-12'>
       <div className='p-2'>
-        <h2 className='text-center text-base-content text-lg'>Channels</h2>
+        <h2 className='text-center text-gray-900 text-lg font-bold'>Channels</h2>
         <div className='m-2 overflow-y-auto max-h-screen'>{renderChannels(allChannels)}</div>
       </div>
     </div>
