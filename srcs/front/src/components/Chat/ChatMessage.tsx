@@ -46,10 +46,11 @@ const ChatMessage = ({ user, message, members }: ChatMessageProps) => {
   })
 
   const acceptGame = (message: any) => {
-    console.log('message.id and message.channelId: ', message.id, message.channelId, message)
+    console.log(message.content)
     chatSocket?.emit(ChatSocketEvent.UPDATE, {
       messageId: message.id,
       channelId: message.channelId,
+      content: message.content,
     })
     gameSocket?.emit('acceptGameInvite', { partyNumber: message.content })
   }

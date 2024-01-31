@@ -4,13 +4,14 @@ import { User } from '@prisma/client';
 import { Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthService } from 'src/auth/auth.service';
+import * as crypto from 'crypto';
 
 interface WaitingPlayerGameCustom {
   socket: Socket;
   userData: Partial<User> | null;
   socketOpponent: Socket,
   opponentData: Partial<User> | null;
-  partyNumber: number;
+  partyNumber: string;
 }
 @Injectable()
 export class GameService {
@@ -86,12 +87,13 @@ export class GameService {
         if (client.data.user) {
            const userId = client.data.user.id
         }
+        const partyNumber = crypto.randomBytes(16).toString('hex');
         const newGame: WaitingPlayerGameCustom = {
             socket: client,
             userData: client.data.user,
             socketOpponent: client,
             opponentData: null, // L'adversaire sera ajouté plus tard
-            partyNumber: this.nextPartyNumber++
+            partyNumber: partyNumber
           };
         
           // Ajouter ce jeu à une nouvelle ligne dans le tableau en deux dimensions
@@ -115,28 +117,32 @@ export class GameService {
       let two_players
       const client = data.client;
       client.data.user = await this.authService.getSocketUser(client);
-      for (const gameArray of this.queueGamePerso) {
-        const game = gameArray.find(game => game.partyNumber.toString() === data.partyNumber);
+      for (let i = 0; i < this.queueGamePerso.length; i++) {
+        const game = this.queueGamePerso[i].find(game => game.partyNumber === data.partyNumber);
         if (game) {
-            console.log('J ai trouver la partie')
+          console.log('J ai trouver la partie');
           if (game.userData?.id == client.data.user.id)
             return;
-          if (game.socket.disconnected)
-          {
-            client.emit('errorPartyPerso', { msgError: 'Cannot join the party, the sender left the conversation!' })
-            return ;
+          if (game.socket.disconnected) {
+            client.emit('errorPartyPerso', { msgError: 'Cannot join the party, the sender left the conversation!' });
+            return;
           }
-          game.opponentData = client.data.user; // Mettre à jour uniquement opponentData
+          game.opponentData = client.data.user;
           game.socketOpponent = client;
           two_players = [
             { socket: game.socket, userData: game.userData },
             { socket: game.socketOpponent, userData: game.opponentData }
           ];
           
-          break; // Sortir de la boucle si le jeu est trouvé et mis à jour
+          // Émettre l'événement game.launched
+          this.eventEmitter.emit('game.launched', two_players, 'classic');
+    
+          // Supprimer la partie du tableau
+          this.queueGamePerso.splice(i, 1);
+          console.log('Tableau apres avoir supprimer la partie:', this.queueGamePerso)
+          break;
         }
       }
-      this.eventEmitter.emit('game.launched', two_players, 'classic');
   }
   //NOTE: add game modes here
   private launchGame() {

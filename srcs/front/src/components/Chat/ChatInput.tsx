@@ -28,18 +28,15 @@ const ChatInput = ({
     if (message.gameInvite && isGameConnected) {
       gameSocket?.emit('createGamePerso')
 
-      const partyNumber = await new Promise<number>((resolve) => {
+      const partyNumber = await new Promise<string>((resolve) => {
         gameSocket?.once('gamePersoCreated', ({ partyNumber }) => {
           resolve(partyNumber)
         })
       })
-      message.content = partyNumber.toString()
-      chatSocket.emit(ChatSocketEvent.MESSAGE, message)
-      setMessage((messages) => [...messages, message])
-    } else {
-      chatSocket.emit(ChatSocketEvent.MESSAGE, message)
-      setMessage((messages) => [...messages, message])
+      message.content = partyNumber
     }
+    chatSocket.emit(ChatSocketEvent.MESSAGE, message)
+    setMessage((messages) => [...messages, message])
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

@@ -96,7 +96,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage(ChatSocketEvent.UPDATE)
   async handleUpdateMessage(
     @ConnectedSocket() socket: SocketWithUser,
-    @MessageBody() data: { messageId: number, channelId: string },
+    @MessageBody() data: { messageId: number, channelId: string, content: string },
   ) {
     try {
         // Suppression du message dans la base de données
@@ -105,7 +105,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         if (deletionResult) {
           // Si le message a été supprimé avec succès
           // Envoyer une notification ou un message de succès aux clients concernés
-          socket.to(data.channelId).emit(ChatSocketEvent.MESSAGE_DELETED, { messageId: data.messageId });
+          socket.to(data.channelId).emit(ChatSocketEvent.MESSAGE_DELETED, { content: data.content, channelId: data.channelId });
           this.logger.log(`Message deleted: ${data.messageId}`);
         } else {
           // Gérer le cas où la suppression n'a pas fonctionné
