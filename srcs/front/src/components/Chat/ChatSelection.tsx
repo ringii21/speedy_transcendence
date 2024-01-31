@@ -78,7 +78,8 @@ const Channel = ({ channel, selectedChannel, mutate, user }: ChannelProps) => {
   const queryClient = useQueryClient()
 
   const wrapperClass = clsx({
-    ['flex hover:bg-gray-400 items-center justify-between p-1 rounded border']: true,
+    ['flex hover:bg-gray-400 items-center justify-between p-1 rounded border flex-col md:flex-row']:
+      true,
     ['bg-white']: channel.id === selectedChannel,
   })
 
