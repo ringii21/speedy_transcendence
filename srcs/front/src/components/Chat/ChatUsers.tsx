@@ -50,7 +50,7 @@ const User: FC<UserProps> = ({
   blockMutate,
 }) => {
   const userStyle = clsx({
-    'flex justify-between cursor-pointer hover:bg-accent hover:text-accent-content text-base-content':
+    'flex justify-between cursor-pointer hover:bg-accent hover:text-accent-content text-base-content my-2 rounded-lg py-2':
       true,
     'bg-base-100': index % 2 === 0,
     'bg-base-200': index % 2 === 1,
@@ -73,16 +73,16 @@ const User: FC<UserProps> = ({
 
   return (
     <div className={userStyle}>
-      <div onClick={onClickOnUserInList} className='flex items-center'>
-        {member.role == 'owner' && <FaCrown className='text-error mt-1 m-1' />}
-        {member.role == 'admin' && <PiSwordFill className='text-warning mt-1 m-1' />}
-        {member.role == 'user' && <FaUser className='text-base mt-1 m-1' />}
-        {member.user.username}
+      <div onClick={onClickOnUserInList} className='flex items-center relative ml-1'>
+        {member.role == 'owner' && <FaCrown className='text-error mt-1 m-1 mr-4' />}
+        {member.role == 'admin' && <PiSwordFill className='text-warning mt-1 m-1 mr-4' />}
+        {member.role == 'user' && <FaUser className='text-base mt-1 m-1 mr-4' />}
+        <p className='hyphens-auto md:hyphens-none absolute pl-8'>{member.user.username}</p>
       </div>
-      <div className='flex items-center gap-2'>
+      <div className='flex items-center gap-2 mr-2'>
         {member.user.id !== user?.id && (
           <button
-            className='btn btn-xs btn-primary'
+            className='btn btn-xs btn-primary invisible lg:visible'
             onClick={(e) => {
               e.preventDefault()
               blockMutate(member.user.id)
@@ -92,12 +92,15 @@ const User: FC<UserProps> = ({
           </button>
         )}
         {showActionModal && (
-          <button onClick={onClickAction} className='btn btn-xs btn-warning'>
+          <button onClick={onClickAction} className='btn btn-xs btn-warning invisible lg:visible'>
             <FaGavel />
           </button>
         )}
         {member.user.id !== user?.id && (
-          <Link className='btn btn-xs btn-primary' to={`/profile/${member.user.id}`}>
+          <Link
+            className='btn btn-xs btn-primary invisible md:visible'
+            to={`/profile/${member.user.id}`}
+          >
             <FaUser />
           </Link>
         )}
@@ -181,8 +184,11 @@ const userRender = ({
 }) => {
   return (
     <div>
-      <h1 className='text-lg text-base-content text-center'>Users</h1>
-      <div className='p-2'>
+      <div className='flex flex-col items-center'>
+        <h1 className='text-lg text-gray-900 text-center pt-1 font-bold mb-10 md:mt-0'>Users</h1>
+        <hr className='w-32 h-0.5 mx-auto bg-gray-300 border-0 rounded  md:my-0'></hr>
+      </div>
+      <div className='p-2 '>
         {channel.members
           .filter((member) => member.present)
           .sort((a, b) => (a.user.username > b.user.username ? 1 : -1))
