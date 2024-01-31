@@ -28,6 +28,10 @@ const ChatInput = ({
     if (message.gameInvite && isGameConnected) {
       gameSocket?.emit('createGamePerso')
 
+      gameSocket?.once('gamePersoAlreadyCreated', (response) => {
+        alert(response.message)
+      })
+
       const partyNumber = await new Promise<string>((resolve) => {
         gameSocket?.once('gamePersoCreated', ({ partyNumber }) => {
           resolve(partyNumber)

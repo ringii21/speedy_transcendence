@@ -84,9 +84,17 @@ export class GameService {
     if (data.mode === 'register') {
         const client = data.client;
         client.data.user = await this.authService.getSocketUser(client);
-        if (client.data.user) {
-           const userId = client.data.user.id
+        
+        const existingGame = this.queueGamePerso.find(gameArray =>
+          gameArray.some(game => game.userData?.id === client.data.user.id)
+        );
+      
+        if (existingGame) {
+          // Informer le client qu'il a déjà créé une partie
+          client.emit('gamePersoAlreadyCreated', { message: 'You have already created a game.' });
+          return;
         }
+        
         const partyNumber = crypto.randomBytes(16).toString('hex');
         const newGame: WaitingPlayerGameCustom = {
             socket: client,
