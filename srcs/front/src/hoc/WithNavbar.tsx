@@ -8,7 +8,7 @@ const WithNavbar = <P extends object>(Component: ComponentType<P>) => {
     return (
       <>
         <Navbar />
-        <main className='mt-20'>
+        <main>
           <Component {...props} />
         </main>
       </>
