@@ -6,6 +6,7 @@ import { useAuth } from '../../providers/AuthProvider'
 import { useSocket } from '../../providers/SocketProvider'
 import { FrontEndMessage } from '../../types/Chat'
 import { ChatSocketEvent } from '../../types/Events'
+import { NotificationPartyPersoModal } from '../NotificationPartyPerso'
 
 const ChatInput = ({
   channelId,
@@ -17,6 +18,8 @@ const ChatInput = ({
   const { chatSocket, isChatConnected, gameSocket, isGameConnected } = useSocket()
   const { user } = useAuth()
   const [inputMessage, setInputMessage] = useState<string>('')
+  const [messageNotification, setMessageNotification] = useState('')
+  const [showNotificationPartyModal, setShowNotificationPartyModal] = useState(false)
 
   if (!user) return <></>
 
@@ -29,7 +32,8 @@ const ChatInput = ({
       gameSocket?.emit('createGamePerso')
 
       gameSocket?.once('gamePersoAlreadyCreated', (response) => {
-        alert(response.message)
+        setMessageNotification(response.message)
+        setShowNotificationPartyModal(true)
       })
 
       const partyNumber = await new Promise<string>((resolve) => {
@@ -96,6 +100,11 @@ const ChatInput = ({
           <MdSend className='text-primary-content text-lg' />
         </button>
       </div>
+      <NotificationPartyPersoModal
+        openModal={showNotificationPartyModal}
+        setOpenModal={setShowNotificationPartyModal}
+        errorMessage={messageNotification}
+      />
     </div>
   )
 }
