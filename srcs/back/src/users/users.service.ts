@@ -85,4 +85,53 @@ export class UsersService {
       data: { twoFaEnabled: true },
     })
   }
+
+  async blockUser(userId: number, blockedId: number) {
+    const exists = await this.prisma.blockList.findUnique({
+      where: {
+        userId_blockedId: {
+          userId,
+          blockedId,
+        },
+      },
+    })
+    if (exists)
+      return this.prisma.blockList.delete({
+        where: {
+          userId_blockedId: {
+            userId: exists.userId,
+            blockedId: exists.blockedId,
+          },
+        },
+      })
+    return this.prisma.blockList.create({
+      data: {
+        userId,
+        blockedId,
+      },
+    })
+  }
+
+  async getBlockList(userId: number) {
+    return this.prisma.blockList.findMany({
+      select: {
+        blockedId: true,
+      },
+      where: {
+        userId,
+      },
+    })
+  }
+
+  async isBlocked(userId: number, blockedId: number) {
+    const exists = await this.prisma.blockList.findUnique({
+      where: {
+        userId_blockedId: {
+          userId,
+          blockedId,
+        },
+      },
+    })
+    return !!exists
+  }
 }

@@ -12,9 +12,10 @@ type ChatMessageProps = {
   user: IUser
   message: FrontEndMessage
   members: IChannelMember[]
+  blocked: boolean
 }
 
-const ChatMessage = ({ user, message, members }: ChatMessageProps) => {
+const ChatMessage = ({ user, message, members, blocked }: ChatMessageProps) => {
   const { gameSocket, isGameConnected, chatSocket, isChatConnected } = useSocket()
   if (!isGameConnected) gameSocket.connect()
   const sender = members.find((member) => member.userId === message.senderId)
@@ -39,7 +40,7 @@ const ChatMessage = ({ user, message, members }: ChatMessageProps) => {
   })
 
   const messageJustify = clsx({
-    ['flex items-end mb-4']: true,
+    ['flex items-end mb-4 pt-2']: true,
     ['justify-end mr-6']: message.senderId === user.id,
     ['justify-start ml-6']: message.senderId !== user.id,
   })
@@ -79,10 +80,12 @@ const ChatMessage = ({ user, message, members }: ChatMessageProps) => {
   }
 
   return (
-    <div className={messageJustify}>
-      <div className={messagePosition}>
-        <div>
-          {message.gameInvite && (
+    <>
+      {blocked ? (
+        <div className={messageJustify}>
+          <div className={messagePosition}>
+            <div>
+            {message.gameInvite && (
             <a
               className='link-success'
               href='#'
@@ -95,13 +98,17 @@ const ChatMessage = ({ user, message, members }: ChatMessageProps) => {
               Play with me!
             </a>
           )}
-          {!message.gameInvite && <span className={messageStyle}>{message.content}</span>}
+              {!message.gameInvite && <span className={messageStyle}>{message.content}</span>}
+            </div>
+          </div>
+          <Link to={`/profile/${sender.userId}`}>
+            <img src={sender.user.image} alt='My profile' className={imageStyle} />
+          </Link>
         </div>
-      </div>
-      <Link to={`/profile/${sender.userId}`}>
-        <img src={sender.user.image} alt='My profile' className={imageStyle} />
-      </Link>
-    </div>
+      ) : (
+        <></>
+      )}
+    </>
   )
 }
 

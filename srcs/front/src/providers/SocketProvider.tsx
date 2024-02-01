@@ -2,13 +2,15 @@ import React, { createContext, ReactNode, useContext, useEffect, useState } from
 import { Socket } from 'socket.io-client'
 
 import { ChatSocketEvent } from '../types/Events'
-import { chatSocket, gameSocket } from '../utils/socketService'
+import { chatSocket, gameSocket, notificationSocket } from '../utils/socketService'
 
 interface SocketContextData {
   chatSocket: Socket
   gameSocket: Socket
+  notificationSocket: Socket
   isChatConnected: boolean
   isGameConnected: boolean
+  isNotificationConnected: boolean
 }
 
 type Props = {
@@ -18,8 +20,10 @@ type Props = {
 export const SocketContext = createContext<SocketContextData>({
   chatSocket,
   gameSocket,
+  notificationSocket,
   isChatConnected: false,
   isGameConnected: false,
+  isNotificationConnected: false,
 })
 
 export const logSocketEvent = (socket: Socket, event: string) =>
@@ -28,6 +32,19 @@ export const logSocketEvent = (socket: Socket, event: string) =>
 export const SocketProvider = ({ children }: Props) => {
   const [isChatConnected, setChatIsConnected] = useState<boolean>(false)
   const [isGameConnected, setGameIsConnected] = useState<boolean>(false)
+  const [isNotificationConnected, setisNotificationConnected] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (!isChatConnected) chatSocket.connect()
+  }, [isChatConnected])
+
+  useEffect(() => {
+    if (!isGameConnected) gameSocket.connect()
+  }, [isGameConnected])
+
+  useEffect(() => {
+    if (!isNotificationConnected) notificationSocket.connect()
+  }, [isNotificationConnected])
 
   useEffect(() => {
     chatSocket.on('connect', () => {
@@ -64,15 +81,39 @@ export const SocketProvider = ({ children }: Props) => {
       console.warn('Connection error', e)
     })
 
+    notificationSocket.on('connect', () => {
+      logSocketEvent(notificationSocket, 'connect')
+      console.log('NotificationSocket connect')
+      setisNotificationConnected(true)
+    })
+    notificationSocket.on('disconnect', () => {
+      logSocketEvent(notificationSocket, 'disconnect')
+      console.log('NotificationSocket disconnect')
+      setisNotificationConnected(false)
+    })
+    notificationSocket.on('connect_error', (e: Error) => {
+      logSocketEvent(notificationSocket, 'connect_error')
+      console.warn('Connection error', e)
+    })
+
     return () => {
       chatSocket.removeAllListeners()
       chatSocket.disconnect()
       gameSocket.removeAllListeners()
       gameSocket.disconnect()
+      notificationSocket.removeAllListeners()
+      notificationSocket.disconnect()
     }
   }, [])
 
-  const values = { chatSocket, isChatConnected, isGameConnected, gameSocket }
+  const values = {
+    chatSocket,
+    isChatConnected,
+    isGameConnected,
+    gameSocket,
+    isNotificationConnected,
+    notificationSocket,
+  }
   return <SocketContext.Provider value={values}>{children}</SocketContext.Provider>
 }
 

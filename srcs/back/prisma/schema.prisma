@@ -30,39 +30,26 @@ model User {
   actions  ChannelAction[]
   messages ChannelMessage[]
 
-  friend    Friends[] @relation("friend")
-  friendOf  Friends[] @relation("friendOf")
+  friend   Friends[] @relation("friend")
+  friendOf Friends[] @relation("friendOf")
 
-  sender    Notification[]    @relation("sender")
-  received  Notification[]    @relation("received")
-
-  participant1  Game[]        @relation("participant1")
-  participant2  Game[]        @relation("participant2")
+  participant1 Game[]      @relation("participant1")
+  participant2 Game[]      @relation("participant2")
+  blocker      BlockList[] @relation("user_block")
+  blocked      BlockList[] @relation("user_blocked")
 
   @@map("users")
 }
 
-model Notification {
-  sender      User      @relation("sender", fields: [senderId], references: [id])
-  received    User      @relation("received", fields: [receivedId], references: [id])
-  senderId    Int       @map("sender_id")
-  receivedId  Int       @map("received_id")
-  state       Boolean   @default(false)
-  createdAt   DateTime  @default(now()) @map("created_at")
-
-  @@id([senderId, receivedId])
-  @@map("notification")
-}
-
 model Friends {
-  friend       User      @relation("friend", fields: [friendId], references: [id])
-  friendId     Int       @map("friend_id")
-  friendOf       User      @relation("friendOf", fields: [friendOfId], references: [id])
-  friendOfId     Int       @map("friend_of_id")
-  confirmed Boolean @default(false)
-  createdAt DateTime    @default(now()) @map("created_at")
-  updatedAt DateTime    @updatedAt @map("updated_at")
-  deletedAt DateTime?   @map("deleted_at")
+  friend     User      @relation("friend", fields: [friendId], references: [id])
+  friendId   Int       @map("friend_id")
+  friendOf   User      @relation("friendOf", fields: [friendOfId], references: [id])
+  friendOfId Int       @map("friend_of_id")
+  confirmed  Boolean   @default(false)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
 
   @@id([friendId, friendOfId])
   @@map("friends")
@@ -102,6 +89,19 @@ model Channel {
   @@map("channels")
 }
 
+model BlockList {
+  user      User      @relation("user_block", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    Int       @map("user_id")
+  blocked   User      @relation("user_blocked", fields: [blockedId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  blockedId Int       @map("blocked_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@id([userId, blockedId])
+  @@map("block_list")
+}
+
 model ChannelMember {
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId    Int       @map("user_id")
@@ -138,10 +138,10 @@ model Game {
   participant1Id Int
   participant2Id Int
   winner_id      Int?
-  scoreP1         Int?
-  scoreP2         Int?
+  scoreP1        Int?
+  scoreP2        Int?
   gametype       String?
-  exchangeCount Int       @default(0) @map("exchange_count")
+  exchangeCount  Int     @default(0) @map("exchange_count")
   participant1   User    @relation("participant1", fields: [participant1Id], references: [id], onDelete: Cascade)
   participant2   User    @relation("participant2", fields: [participant2Id], references: [id], onDelete: Cascade)
 

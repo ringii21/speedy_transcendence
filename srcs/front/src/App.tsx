@@ -9,7 +9,7 @@ import { GameWithNavbar } from './components/Pong/Pong'
 import { RequireAuth } from './components/RequireAuth'
 import { NotFound } from './pages/404'
 import { ChatWithNavbar } from './pages/Chat'
-import { Footer } from './pages/Footer'
+import { FriendsWithNavbar } from './pages/Friends'
 import { HomeWithNavbar } from './pages/Home'
 import Login from './pages/Login'
 import { PlayWithNavbar } from './pages/Pong'
@@ -98,7 +98,7 @@ const App = () => {
           </SocketProvider>
         </ChatProvider>
       </AuthProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
+      <ReactQueryDevtools initialIsOpen={true} />
     </QueryClientProvider>
   )
 }

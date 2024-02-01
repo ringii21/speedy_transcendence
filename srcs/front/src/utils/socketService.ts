@@ -11,3 +11,8 @@ export const gameSocket = io(URL + '/game', {
   withCredentials: true,
   autoConnect: false,
 })
+
+export const notificationSocket = io(URL + '/notification', {
+  withCredentials: true,
+  autoConnect: false,
+})

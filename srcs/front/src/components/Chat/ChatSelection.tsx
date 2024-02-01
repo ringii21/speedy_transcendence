@@ -20,9 +20,18 @@ type ChannelProps = {
   selectedChannel?: string
   mutate: UseMutateFunction<IChannelMember, Error, string, unknown>
   user: IUser
+  blockedUsers: {
+    blockedId: number
+  }[]
 }
 
-const DirectMessageChannel = ({ channel, selectedChannel, mutate, user }: ChannelProps) => {
+const DirectMessageChannel = ({
+  channel,
+  selectedChannel,
+  mutate,
+  user,
+  blockedUsers,
+}: ChannelProps) => {
   const notMe = channel.members.find((m) => m.user.id !== user?.id)
   const queryClient = useQueryClient()
   const wrapperClass = clsx({
@@ -31,6 +40,8 @@ const DirectMessageChannel = ({ channel, selectedChannel, mutate, user }: Channe
   })
 
   if (!notMe) return <></>
+  const blocked = !blockedUsers.find(({ blockedId }) => notMe.user.id === blockedId)
+  if (!blocked) return <></>
   return (
     <div className={wrapperClass}>
       <div>
@@ -67,8 +78,9 @@ const Channel = ({ channel, selectedChannel, mutate, user }: ChannelProps) => {
   const queryClient = useQueryClient()
 
   const wrapperClass = clsx({
-    ['flex hover:bg-base-300 items-center justify-between p-1 rounded']: true,
-    ['bg-base-300']: channel.id === selectedChannel,
+    ['flex hover:bg-gray-400 items-center justify-between p-1 rounded border flex-col md:flex-row']:
+      true,
+    ['bg-white']: channel.id === selectedChannel,
   })
 
   if (!me) return <></>
@@ -76,38 +88,6 @@ const Channel = ({ channel, selectedChannel, mutate, user }: ChannelProps) => {
     <div className={wrapperClass}>
       {EditChannelModal({ isEditChannelModalOpen, setEditChannelModalOpen, channel })}
       {InviteChannelModal({ isInviteModalOpen, setInviteModalOpen, channel })}
-      <div>
-        <button
-          onClick={() => {
-            mutate(channel.id)
-          }}
-          className='btn btn-ghost btn-sm'
-        >
-          <IoCloseSharp />
-        </button>
-        {(me.role === 'admin' || me.role === 'owner') && (
-          <button
-            onClick={(e) => {
-              e.preventDefault()
-              setInviteModalOpen(true)
-            }}
-            className='btn btn-ghost btn-sm'
-          >
-            <FaPlus />
-          </button>
-        )}
-        {me.role === 'owner' && (
-          <button
-            onClick={(e) => {
-              e.preventDefault()
-              setEditChannelModalOpen(true)
-            }}
-            className='btn btn-ghost btn-sm'
-          >
-            <HiDotsVertical />
-          </button>
-        )}
-      </div>
       <Link
         to={`/chat/${channel.id}`}
         className='flex cursor-pointer'
@@ -117,14 +97,54 @@ const Channel = ({ channel, selectedChannel, mutate, user }: ChannelProps) => {
           })
         }}
       >
-        <div className='flex items-center mr-4'>
-          {channel.type === 'private' && <FaEyeSlash size={12} className='text-base-content' />}
-          {channel.type === 'protected' && <FaLock size={12} className='text-base-content' />}
-          {channel.type === 'public' && <FaHashtag size={12} className='text-base-content' />}
-          <span className='ml-2 font-normal overflow-ellipsis'>{channel.name}</span>
+        <div className='flex items-center mr-6 gap-4'>
+          {channel.type === 'private' && (
+            <FaEyeSlash size={10} className='font-bold text-green-600 mt-1 ml-2' />
+          )}
+          {channel.type === 'protected' && (
+            <FaLock size={10} className='font-bold font-bold text-green-600 mt-1 ml-2' />
+          )}
+          {channel.type === 'public' && (
+            <FaHashtag size={10} className='font-bold font-bold text-green-600 mt-1 ml-2' />
+          )}
+          <span className='overflow-ellipsis text-black font-bold'>{channel.name}</span>
+          <span className='mt-1 pb-1 text-black'>
+            {channel.members.filter((m) => m.present).length ?? 0}
+          </span>
         </div>
-        <div>{channel.members.filter((m) => m.present).length ?? 0}</div>
       </Link>
+      <div className='mr-2'>
+        {(me.role === 'admin' || me.role === 'owner') && (
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              setInviteModalOpen(true)
+            }}
+            className='text-black hover:text-green-600 pl-3'
+          >
+            <FaPlus size={12} />
+          </button>
+        )}
+        {me.role === 'owner' && (
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              setEditChannelModalOpen(true)
+            }}
+            className='text-black hover:text-blue-600 pl-3'
+          >
+            <HiDotsVertical size={12} />
+          </button>
+        )}
+        <button
+          onClick={() => {
+            mutate(channel.id)
+          }}
+          className='text-black hover:text-red-600 pl-3'
+        >
+          <IoCloseSharp size={12} />
+        </button>
+      </div>
     </div>
   )
 }
@@ -134,7 +154,7 @@ type ChatSelectionProps = {
 }
 
 const ChatSelection = ({ channelId }: ChatSelectionProps) => {
-  const { allChannels } = useChat()
+  const { allChannels, blockedUsers } = useChat()
   const { user } = useAuth()
   const { mutate } = useMutation({
     mutationFn: (channelId: string) => leaveChannel(channelId),
@@ -147,6 +167,7 @@ const ChatSelection = ({ channelId }: ChatSelectionProps) => {
       if (channel.type === EChannelType.direct) {
         return (
           <DirectMessageChannel
+            blockedUsers={blockedUsers}
             channel={channel}
             key={channel.id}
             selectedChannel={channelId}
@@ -157,6 +178,7 @@ const ChatSelection = ({ channelId }: ChatSelectionProps) => {
       }
       return (
         <Channel
+          blockedUsers={blockedUsers}
           channel={channel}
           key={channel.id}
           selectedChannel={channelId}
@@ -170,7 +192,7 @@ const ChatSelection = ({ channelId }: ChatSelectionProps) => {
   return (
     <div className='items-center gap-12'>
       <div className='p-2'>
-        <h2 className='text-center text-base-content text-lg'>Channels</h2>
+        <h2 className='text-center text-gray-900 text-lg font-bold'>Channels</h2>
         <div className='m-2 overflow-y-auto max-h-screen'>{renderChannels(allChannels)}</div>
       </div>
     </div>

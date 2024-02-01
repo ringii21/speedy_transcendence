@@ -19,6 +19,5 @@ export enum FriendsSocketEvent {
 
 export enum NotificationSocketEvent {
   RECEIVED = 'notification_received',
-  ACCEPTED = 'notication_accepted',
-  DECLINED = 'notification_declined',
+  DELETED = 'notification_deleted',
 }

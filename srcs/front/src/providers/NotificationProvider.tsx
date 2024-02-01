@@ -1,79 +1,33 @@
-import { useQuery, UseQueryResult } from '@tanstack/react-query'
-import React, {
-  createContext,
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import React, { createContext, ReactNode, useContext, useEffect } from 'react'
 
-import { INotification } from '../types/User'
-import { getNotification } from '../utils/notificationService'
-
-interface NotificationContextData {
-  notifier?: INotification[]
-  sendedNotification: number | null
-  setSendedNotification: Dispatch<SetStateAction<number | null>>
-  notification: { [key: string]: boolean }
-  setNotification: Dispatch<SetStateAction<{ [key: string]: boolean }>>
-}
+import { useGetFriends } from '../components/hook/Friends.hook'
+import { notificationSocket } from '../utils/socketService'
 
 type Props = {
   children: ReactNode
 }
 
-const NotificationContext = createContext<NotificationContextData>({
-  notifier: undefined,
-  sendedNotification: null,
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  setSendedNotification: () => {},
-  notification: {},
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  setNotification: () => {},
-})
+export enum NotificationEvent {
+  REFRESH = 'refresh',
+}
+
+const NotificationContext = createContext({})
 
 export const NotificationProvider = ({ children }: Props) => {
-  const [sendedNotification, setSendedNotification] = useState<number | null>(null)
-  const [notification, setNotification] = useState<{ [key: string]: boolean }>({})
-
-  const {
-    data: notifier,
-    isError: isErrorNotifier,
-    isLoading: isLoadingNotifier,
-  } = useQuery<INotification[]>({
-    queryKey: ['notification'],
-    queryFn: getNotification,
-  })
-
-  // const getNotificationData = useMemo(() => getNotificationQuery.data, [getNotificationQuery.data])
+  const getFriendQuery = useGetFriends()
 
   useEffect(() => {
-    if (!notifier) return undefined
-    notifier.forEach((not) => {
-      setNotification((prevNot) => {
-        const updatedNotification = { ...prevNot }
-        return {
-          ...updatedNotification,
-          [not.receivedId.toString()]: not.state,
-        }
-      })
+    notificationSocket.on(NotificationEvent.REFRESH, async () => {
+      await getFriendQuery.refetch()
     })
-  }, [setNotification])
-
-  const memoedValue = useMemo<NotificationContextData>(() => {
-    return {
-      notifier,
-      sendedNotification,
-      setSendedNotification,
-      notification: notification,
-      setNotification,
+    return () => {
+      notificationSocket.off(NotificationEvent.REFRESH)
     }
-  }, [sendedNotification, notification, notifier])
+  }, [])
 
-  return <NotificationContext.Provider value={memoedValue}>{children}</NotificationContext.Provider>
+  const values = {}
+
+  return <NotificationContext.Provider value={values}>{children}</NotificationContext.Provider>
 }
 
 export const useNotification = () => useContext(NotificationContext)

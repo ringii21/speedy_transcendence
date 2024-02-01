@@ -3,8 +3,6 @@ import {
   BaseWsExceptionFilter,
   ConnectedSocket,
   MessageBody,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -42,7 +40,7 @@ type SocketWithUser = Socket & { handshake: { user: User } }
 })
 @UseGuards(JwtTwoFaGuard)
 @UseFilters(new BaseWsExceptionFilter())
-export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class ChatGateway {
   private readonly logger = new Logger('ChatGateway')
 
   @WebSocketServer() socket: Server
@@ -181,26 +179,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     })
     socket.emit(ChatSocketEvent.DISCONNECTED, { userId: user.id })
     this.removeSocketFromUser(user.id, socket.id)
-  }
-
-  /**
-   * Handles a new connection from a socket.
-   * Retrieves the user associated with the socket and performs necessary actions.
-   * @param socket The socket object representing the connection.
-   * @returns Promise<void>
-   */
-  async handleConnection(socket: Socket) {
-    this.logger.log(`Client connected: ${socket.id}`)
-  }
-
-  /**
-   * Handles the disconnection of a socket.
-   * Removes the socket from the user's channels and emits a DISCONNECTED event to the channels the user was connected to.
-   * @param socket - The socket that disconnected.
-   * @returns Promise<void>
-   */
-  async handleDisconnect(socket: Socket) {
-    this.logger.log(`Client disconnected: ${socket.id}`)
   }
 
   /**

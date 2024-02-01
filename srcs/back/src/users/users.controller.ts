@@ -17,12 +17,13 @@ import {
 import { UsersService } from './users.service'
 import { UserEntity } from './entity/user.entity'
 import { PatchUserDto } from './dto/patch-user.dto'
-import { QueryFindUsersDto, QueryUsersDto } from './dto/query-users.dto'
+import { QueryUsersDto } from './dto/query-users.dto'
 import JwtTwoFaGuard from '../auth/jwt/jwt-2fa.guard'
 import { UploadUserImage } from './decorator/file-upload.decorator'
 import { ConfigService } from '@nestjs/config'
 import { RequestWithDbUser } from '../types/Request'
 import { NotFoundException } from '@nestjs/common'
+import { BlockUserDto } from './dto/block-user.dto'
 
 @Controller('users')
 @UseGuards(JwtTwoFaGuard)
@@ -33,6 +34,22 @@ export class UsersController {
     private readonly usersService: UsersService,
     private readonly configService: ConfigService,
   ) {}
+
+  @Get('blocked')
+  async getBlockList(@Req() req: RequestWithDbUser) {
+    const blockList = await this.usersService.getBlockList(req.user.id)
+    return blockList
+  }
+
+  @Post('block')
+  async blockUser(
+    @Req() req: RequestWithDbUser,
+    @Body() blockUserDto: BlockUserDto,
+  ) {
+    if (req.user.id === blockUserDto.userId)
+      throw new BadRequestException('cannot block yourself')
+    return this.usersService.blockUser(req.user.id, blockUserDto.userId)
+  }
 
   @Get()
   async getUsers(@Query() queryUsersDto: QueryUsersDto) {
@@ -46,7 +63,7 @@ export class UsersController {
     return new UserEntity(req.user)
   }
 
-  @Get(':id')
+  @Get('/:id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const user = await this.usersService.findUserById(id)
     if (!user) return new NotFoundException('user not found')

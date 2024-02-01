@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common'
-import { FriendsControler } from './friends.controler'
+import { FriendsController } from './friends.controller'
 import { FriendsService } from './friends.service'
 import { PrismaService } from '../prisma/prisma.service'
 import { JwtAuthModule } from '../auth/jwt/jwt-auth.module'
@@ -9,7 +9,7 @@ import { UsersService } from '../users/users.service'
 @Module({
   providers: [FriendsService, PrismaService, UsersService],
   exports: [FriendsService],
-  controllers: [FriendsControler],
+  controllers: [FriendsController],
   imports: [JwtAuthModule, UsersModule],
 })
 export class FriendsModule {}
