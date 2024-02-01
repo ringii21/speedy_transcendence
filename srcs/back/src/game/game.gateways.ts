@@ -7,6 +7,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io'
+import {} from '@nestjs/platform-socket.io'
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { Game } from 'src/game/game'
@@ -42,7 +43,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.disconnect()
       return
     }
-    console.log('Je suis dans le HandleConnection')
+    // For reset socket in partyPerso tabs
     this.eventEmitter.emit('resetSocketPartyPerso', {
       client,
     })
@@ -65,6 +66,20 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       gameMode: 'extra',
       mode: 'unregister',
     })
+  }
+
+  @SubscribeMessage('status')
+  async handleStatusEvent(@MessageBody() data: any) {
+    const userId = data.userId
+    const userSockets = await this.server.in(`User:${userId}`).fetchSockets()
+    let inGame = false
+    for await (const socket of userSockets) {
+      if (socket.data.user.inGame) {
+        inGame = true
+        break
+      }
+    }
+    return { /* status,  */ inGame }
   }
 
   @SubscribeMessage('startGame')
@@ -108,20 +123,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     })
   }
 
-  @SubscribeMessage('status')
-  async handleStatusEvent(@MessageBody() data: any) {
-    const userId = data.userId
-    const userSockets = await this.server.in(`User:${userId}`).fetchSockets()
-    let inGame = false
-    for await (const socket of userSockets) {
-      if (socket.data.user.inGame) {
-        inGame = true
-        break
-      }
-    }
-    return { /* status,  */ inGame }
-  }
-
   @SubscribeMessage('game.stop')
   async handleGameStop(
     client: Socket,
@@ -141,7 +142,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @OnEvent('game.launched')
   async handleGameLaunchedEvent(clients: any, mode: string) {
     // Create id of the game
-    const game_channel = crypto.randomUUID()
+    const game_channel = crypto.randomBytes(16).toString('hex')
 
     clients.forEach((client: any) => {
       client.socket.join(game_channel)
@@ -233,5 +234,15 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       userId: data.p2Data.id,
       newStatus: this.statusService.getStatus(data.p2Data.id),
     })
+  }
+
+  @SubscribeMessage('PingOnline')
+  async handlePingOnlineEvent(client: Socket, data: any) {
+    const friendId = data.friendId
+    if (this.server.sockets.adapter.rooms.get(`User:${friendId}`)?.size) {
+      client.emit('friendOnline', friendId)
+    } else {
+      client.emit('friendOffline', friendId)
+    }
   }
 }
