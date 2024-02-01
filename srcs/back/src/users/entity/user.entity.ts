@@ -9,6 +9,7 @@ export class UserEntity implements UserPrisma {
   createdAt: Date
   updatedAt: Date
   twoFaEnabled: boolean
+  elo: number
 
   @Exclude()
   deletedAt: Date | null

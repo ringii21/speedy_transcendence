@@ -212,4 +212,24 @@ export class GameService {
   
     return { victories, defeats };
   }
+
+  async getMatchHistory(userId: number) {
+    const game = await this.prisma.game.findFirst({
+        where: {
+            OR: [
+                { participant1Id: userId },
+                { participant2Id: userId }
+            ],
+        },
+        orderBy: {
+            createdAt: 'desc',
+        },
+        include: {
+            participant1: true,
+            participant2: true,
+            // Incluez d'autres relations ici si nécessaire
+        },
+    });
+    return game;
+    }
 }

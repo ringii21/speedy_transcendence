@@ -293,6 +293,13 @@ import { AuthService } from 'src/auth/auth.service';
             scoreP2: data.p2Score,
           },
         });
+        const winner_id = (data.p1Score > data.p2Score
+            ? data.p1Data.id
+            : data.p2Data.id)
+        const loser_id = (data.p1Score < data.p2Score
+            ? data.p1Data.id
+            : data.p2Data.id)
+        await this.usersService.updateElo(winner_id, loser_id)
       } else if (data.resign === 1) {
         await this.prisma.game.create({
           data: {
@@ -303,6 +310,7 @@ import { AuthService } from 'src/auth/auth.service';
             scoreP2: 5,
           },
         });
+        await this.usersService.updateElo(data.p2Data.id, data.p1Data.id)
       } else if (data.resign === 2) {
         await this.prisma.game.create({
           data: {
@@ -313,6 +321,7 @@ import { AuthService } from 'src/auth/auth.service';
             scoreP2: 0,
           },
         });
+        await this.usersService.updateElo(data.p1Data.id, data.p2Data.id)
       }
     }
   
