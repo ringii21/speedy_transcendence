@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import clsx from 'clsx'
 import React from 'react'
+import { FaGamepad } from 'react-icons/fa'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 
 import { useDeleteFriends, useGetFriends } from '../components/hook/Friends.hook'
@@ -124,9 +125,18 @@ const Profile = () => {
         <div className='hero-overlay bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 drop-shadow-md rounded-lg bg-opacity-60'></div>
         <div className='hero-content text-center text-neutral-content'>
           <div className='w-full pt-4'>
-            <h1 className='mb-5 text-5xl font-bold text-purple-100'>
-              {profileUser && <span>{profileUser?.username}</span>}
-            </h1>
+            <div className='flex flex-row justify-center'>
+              <h1 className='mb-5 text-5xl font-bold text-purple-100'>
+                {profileUser && <span>{profileUser?.username}</span>}
+              </h1>
+              {
+                // ************** Display game pad if the user is actually in game ********
+                // <div>
+                //   <FaGamepad size={32} className='relative text-gray-900 left-8 top-2' />
+                // </div>
+                // ************************************************************************
+              }
+            </div>
             <div className='avatar flex flex-row justify-center'>
               <div
                 className={`w-36 borderAvatar rounded-full drop-shadow-lg hover:drop-shadow-xl justify-self-start border-4`}
