@@ -23,6 +23,18 @@ type ChannelProps = {
   blockedUsers: {
     blockedId: number
   }[]
+  setInviteModalOpen: React.Dispatch<
+    React.SetStateAction<{
+      isOpen: boolean
+      channel?: IChannel
+    }>
+  >
+  setEditChannelModalOpen: React.Dispatch<
+    React.SetStateAction<{
+      isOpen: boolean
+      channel?: IChannel
+    }>
+  >
 }
 
 const DirectMessageChannel = ({
@@ -71,10 +83,15 @@ const DirectMessageChannel = ({
   )
 }
 
-const Channel = ({ channel, selectedChannel, mutate, user }: ChannelProps) => {
+const Channel = ({
+  channel,
+  selectedChannel,
+  mutate,
+  user,
+  setEditChannelModalOpen,
+  setInviteModalOpen,
+}: ChannelProps) => {
   const me = channel.members.find((m) => m.user.id === user?.id)
-  const [isInviteModalOpen, setInviteModalOpen] = React.useState(false)
-  const [isEditChannelModalOpen, setEditChannelModalOpen] = React.useState(false)
   const queryClient = useQueryClient()
 
   const wrapperClass = clsx({
@@ -86,8 +103,6 @@ const Channel = ({ channel, selectedChannel, mutate, user }: ChannelProps) => {
   if (!me) return <></>
   return (
     <div className={wrapperClass}>
-      {EditChannelModal({ isEditChannelModalOpen, setEditChannelModalOpen, channel })}
-      {InviteChannelModal({ isInviteModalOpen, setInviteModalOpen, channel })}
       <Link
         to={`/chat/${channel.id}`}
         className='flex cursor-pointer'
@@ -102,10 +117,10 @@ const Channel = ({ channel, selectedChannel, mutate, user }: ChannelProps) => {
             <FaEyeSlash size={10} className='font-bold text-green-600 mt-1 ml-2' />
           )}
           {channel.type === 'protected' && (
-            <FaLock size={10} className='font-bold font-bold text-green-600 mt-1 ml-2' />
+            <FaLock size={10} className='font-bold text-green-600 mt-1 ml-2' />
           )}
           {channel.type === 'public' && (
-            <FaHashtag size={10} className='font-bold font-bold text-green-600 mt-1 ml-2' />
+            <FaHashtag size={10} className='font-bold text-green-600 mt-1 ml-2' />
           )}
           <span className='overflow-ellipsis text-black font-bold'>{channel.name}</span>
           <span className='mt-1 pb-1 text-black'>
@@ -118,7 +133,10 @@ const Channel = ({ channel, selectedChannel, mutate, user }: ChannelProps) => {
           <button
             onClick={(e) => {
               e.preventDefault()
-              setInviteModalOpen(true)
+              setInviteModalOpen({
+                isOpen: true,
+                channel,
+              })
             }}
             className='text-black hover:text-green-600 pl-3'
           >
@@ -129,7 +147,10 @@ const Channel = ({ channel, selectedChannel, mutate, user }: ChannelProps) => {
           <button
             onClick={(e) => {
               e.preventDefault()
-              setEditChannelModalOpen(true)
+              setEditChannelModalOpen({
+                isOpen: true,
+                channel,
+              })
             }}
             className='text-black hover:text-blue-600 pl-3'
           >
@@ -159,41 +180,58 @@ const ChatSelection = ({ channelId }: ChatSelectionProps) => {
   const { mutate } = useMutation({
     mutationFn: (channelId: string) => leaveChannel(channelId),
   })
-
+  const [isInviteModalOpen, setInviteModalOpen] = React.useState<{
+    isOpen: boolean
+    channel?: IChannel
+  }>({
+    isOpen: false,
+    channel: undefined,
+  })
+  const [isEditChannelModalOpen, setEditChannelModalOpen] = React.useState<{
+    isOpen: boolean
+    channel?: IChannel
+  }>({
+    isOpen: false,
+    channel: undefined,
+  })
   if (!user) return <></>
-
-  const renderChannels = (channels: IChannel[]) => {
-    return channels.map((channel) => {
-      if (channel.type === EChannelType.direct) {
-        return (
-          <DirectMessageChannel
-            blockedUsers={blockedUsers}
-            channel={channel}
-            key={channel.id}
-            selectedChannel={channelId}
-            mutate={mutate}
-            user={user}
-          />
-        )
-      }
-      return (
-        <Channel
-          blockedUsers={blockedUsers}
-          channel={channel}
-          key={channel.id}
-          selectedChannel={channelId}
-          mutate={mutate}
-          user={user}
-        />
-      )
-    })
-  }
 
   return (
     <div className='items-center gap-12'>
+      {EditChannelModal({ isEditChannelModalOpen, setEditChannelModalOpen })}
+      {InviteChannelModal({ isInviteModalOpen, setInviteModalOpen })}
       <div className='p-2'>
         <h2 className='text-center text-gray-900 text-lg font-bold'>Channels</h2>
-        <div className='m-2 overflow-y-auto max-h-screen'>{renderChannels(allChannels)}</div>
+        <div className='m-2 overflow-y-auto max-h-screen'>
+          {allChannels.map((channel) => {
+            if (channel.type === EChannelType.direct) {
+              return (
+                <DirectMessageChannel
+                  blockedUsers={blockedUsers}
+                  channel={channel}
+                  key={channel.id}
+                  selectedChannel={channelId}
+                  setEditChannelModalOpen={setEditChannelModalOpen}
+                  setInviteModalOpen={setInviteModalOpen}
+                  mutate={mutate}
+                  user={user}
+                />
+              )
+            }
+            return (
+              <Channel
+                blockedUsers={blockedUsers}
+                channel={channel}
+                key={channel.id}
+                selectedChannel={channelId}
+                setEditChannelModalOpen={setEditChannelModalOpen}
+                setInviteModalOpen={setInviteModalOpen}
+                mutate={mutate}
+                user={user}
+              />
+            )
+          })}
+        </div>
       </div>
     </div>
   )

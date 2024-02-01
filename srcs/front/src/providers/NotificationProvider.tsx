@@ -9,23 +9,52 @@ type Props = {
 
 export enum NotificationEvent {
   REFRESH = 'refresh',
+  STATUS_CHANGE = 'status_change',
+  GET_STATUS = 'get_status',
 }
 
-const NotificationContext = createContext({})
+export enum Status {
+  IN_GAME = 'in_game',
+  ONLINE = 'online',
+  OFFLINE = 'offline',
+}
+
+const NotificationContext = createContext({
+  statuses: {} as Record<number, Status>,
+})
 
 export const NotificationProvider = ({ children }: Props) => {
   const getFriendQuery = useGetFriends()
+  const [statuses, setStatuses] = React.useState<Record<number, Status>>({})
+
+  useEffect(() => {
+    notificationSocket.emit(NotificationEvent.GET_STATUS)
+  }, [])
 
   useEffect(() => {
     notificationSocket.on(NotificationEvent.REFRESH, async () => {
       await getFriendQuery.refetch()
     })
+
+    notificationSocket.on(
+      NotificationEvent.STATUS_CHANGE,
+      (data: { userId: number; status: Status }) => {
+        setStatuses((prevStatus) => {
+          const newStatus = { ...prevStatus }
+          newStatus[data.userId] = data.status
+          return newStatus
+        })
+      },
+    )
     return () => {
       notificationSocket.off(NotificationEvent.REFRESH)
+      notificationSocket.off(NotificationEvent.STATUS_CHANGE)
     }
   }, [])
 
-  const values = {}
+  const values = {
+    statuses,
+  }
 
   return <NotificationContext.Provider value={values}>{children}</NotificationContext.Provider>
 }

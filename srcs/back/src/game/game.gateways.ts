@@ -5,7 +5,6 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-  WsException,
 } from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io'
 import {} from '@nestjs/platform-socket.io'
@@ -15,6 +14,9 @@ import { Game } from 'src/game/game'
 import * as crypto from 'crypto'
 import { UsersService } from 'src/users/users.service'
 import { AuthService } from 'src/auth/auth.service'
+import { StatusChangeEvent } from 'src/notification/events/notification.event'
+import { Status } from 'src/status/types/Status'
+import { StatusService } from 'src/status/status.service'
 
 interface GameInvite {
   inviter: string
@@ -37,6 +39,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly eventEmitter: EventEmitter2,
     private readonly usersService: UsersService,
     private readonly authService: AuthService,
+    private readonly statusService: StatusService,
   ) {}
 
   @WebSocketServer() private server: Server
@@ -252,6 +255,17 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     new_game.start(game_channel)
     this.games_map.set(game_channel, new_game)
     this.server.to(game_channel).emit('game.launched', game_channel)
+    // Set status of the players
+    this.statusService.setStatus(clients[0].userData.id, Status.IN_GAME)
+    this.statusService.setStatus(clients[1].userData.id, Status.IN_GAME)
+    this.eventEmitter.emit(StatusChangeEvent.name, {
+      userId: clients[0].userData.id,
+      newStatus: this.statusService.getStatus(clients[0].userData.id),
+    })
+    this.eventEmitter.emit(StatusChangeEvent.name, {
+      userId: clients[1].userData.id,
+      newStatus: this.statusService.getStatus(clients[1].userData.id),
+    })
   }
 
   @OnEvent('game.end')
@@ -295,6 +309,16 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         },
       })
     }
+    this.statusService.setStatus(data.p1Data.id, Status.ONLINE)
+    this.statusService.setStatus(data.p2Data.id, Status.ONLINE)
+    this.eventEmitter.emit(StatusChangeEvent.name, {
+      userId: data.p1Data.id,
+      newStatus: this.statusService.getStatus(data.p1Data.id),
+    })
+    this.eventEmitter.emit(StatusChangeEvent.name, {
+      userId: data.p2Data.id,
+      newStatus: this.statusService.getStatus(data.p2Data.id),
+    })
   }
 
   @SubscribeMessage('PingOnline')

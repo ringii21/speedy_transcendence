@@ -7,12 +7,13 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useDeleteFriends, useGetFriends } from '../components/hook/Friends.hook'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
+import { Status, useNotification } from '../providers/NotificationProvider'
 import { createFriendRequest } from '../utils/friendService'
 import { fetchUser, getUser } from '../utils/userHttpRequests'
 import { RatingHistory } from './../components/RatingHistory'
 
 const Profile = () => {
-  const { user, signout, signin } = useAuth()
+  const { user, signout } = useAuth()
   const navigate = useNavigate()
   const { id } = useParams()
   const { mutate: deleteFriend } = useDeleteFriends()
@@ -22,7 +23,7 @@ const Profile = () => {
     navigate('*')
     return <></>
   }
-
+  const { statuses } = useNotification()
   const queryClient = useQueryClient()
 
   if (!user) return <Navigate to='/login' state={{ from: location }} replace />
@@ -61,14 +62,15 @@ const Profile = () => {
     0,
   )
   if (!profileUser) return <></>
+  if (!profileUser.id) return <Navigate to='/404' replace />
 
   // Regle css. User offline/online
-  // const userIsConnect = clsx({
-  //   ['border-4']: true,
-  //   ['border-green-600']: ,
-  //   ['border-red-600']: ,
-  // })
-  // ***************************
+  const userIsConnect = clsx({
+    ['w-36 rounded-full drop-shadow-lg hover:drop-shadow-xl justify-self-start border-4']: true,
+    ['border-green-600']: statuses[profileUser.id] === Status.ONLINE,
+    ['border-yellow-600']: statuses[profileUser.id] === Status.IN_GAME,
+    ['border-red-600']: statuses[profileUser.id] === Status.OFFLINE,
+  })
 
   // profile not in friends-> not friend
   // profile in friends but not confirmed -> pending
@@ -129,18 +131,14 @@ const Profile = () => {
               <h1 className='mb-5 text-5xl font-bold text-purple-100'>
                 {profileUser && <span>{profileUser?.username}</span>}
               </h1>
-              {
-                // ************** Display game pad if the user is actually in game ********
-                // <div>
-                //   <FaGamepad size={32} className='relative text-gray-900 left-8 top-2' />
-                // </div>
-                // ************************************************************************
-              }
+              {statuses[profileUser.id] === Status.IN_GAME && (
+                <div>
+                  <FaGamepad size={32} className='relative text-gray-900 left-8 top-2' />
+                </div>
+              )}
             </div>
             <div className='avatar flex flex-row justify-center'>
-              <div
-                className={`w-36 borderAvatar rounded-full drop-shadow-lg hover:drop-shadow-xl justify-self-start border-4`}
-              >
+              <div className={userIsConnect}>
                 <img src={profileUser?.image} alt='avatar' />
               </div>
             </div>

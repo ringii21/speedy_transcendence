@@ -8,6 +8,7 @@ import { LoggerModule } from 'nestjs-pino'
 import { EventEmitterModule } from '@nestjs/event-emitter'
 import { FriendsModule } from './friends/friends.module'
 import { NotificationModule } from './notification/notification.module'
+import { StatusService } from './status/status.service';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -22,7 +23,7 @@ import { NotificationModule } from './notification/notification.module'
     NotificationModule,
     GameModule,
   ],
-  providers: [Logger],
+  providers: [Logger, StatusService],
 })
 export class AppModule {
   constructor(configService: ConfigService) {

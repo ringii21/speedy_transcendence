@@ -38,12 +38,17 @@ export const createChannel = async (name: string, type: EChannelType, password?:
   return data
 }
 
-export const editChannel = async (
-  id: string,
-  name: string,
-  type: EChannelType,
-  password?: string,
-) => {
+export const editChannel = async ({
+  id,
+  name,
+  type,
+  password,
+}: {
+  id: string
+  name: string
+  type: EChannelType
+  password?: string
+}) => {
   const { data } = await httpInstance().patch<IChannel>('/api/chat/channels', {
     id,
     name,

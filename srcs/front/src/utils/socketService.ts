@@ -16,3 +16,9 @@ export const notificationSocket = io(URL + '/notification', {
   withCredentials: true,
   autoConnect: false,
 })
+
+export const disconnectAll = () => {
+  chatSocket.disconnect()
+  gameSocket.disconnect()
+  notificationSocket.disconnect()
+}
