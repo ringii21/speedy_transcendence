@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import clsx from 'clsx'
 import React from 'react'
+import { FaGamepad } from 'react-icons/fa'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 
 import { useDeleteFriends, useGetFriends } from '../components/hook/Friends.hook'
@@ -10,7 +12,7 @@ import { fetchUser, getUser } from '../utils/userHttpRequests'
 import { RatingHistory } from './../components/RatingHistory'
 
 const Profile = () => {
-  const { user, signout } = useAuth()
+  const { user, signout, signin } = useAuth()
   const navigate = useNavigate()
   const { id } = useParams()
   const { mutate: deleteFriend } = useDeleteFriends()
@@ -59,6 +61,14 @@ const Profile = () => {
     0,
   )
   if (!profileUser) return <></>
+
+  // Regle css. User offline/online
+  // const userIsConnect = clsx({
+  //   ['border-4']: true,
+  //   ['border-green-600']: ,
+  //   ['border-red-600']: ,
+  // })
+  // ***************************
 
   // profile not in friends-> not friend
   // profile in friends but not confirmed -> pending
@@ -115,11 +125,22 @@ const Profile = () => {
         <div className='hero-overlay bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 drop-shadow-md rounded-lg bg-opacity-60'></div>
         <div className='hero-content text-center text-neutral-content'>
           <div className='w-full pt-4'>
-            <h1 className='mb-5 text-5xl font-bold text-purple-100'>
-              {profileUser && <span>{profileUser?.username}</span>}
-            </h1>
-            <div className='avatar'>
-              <div className='w-36 rounded-full drop-shadow-lg hover:drop-shadow-xl justify-self-start'>
+            <div className='flex flex-row justify-center'>
+              <h1 className='mb-5 text-5xl font-bold text-purple-100'>
+                {profileUser && <span>{profileUser?.username}</span>}
+              </h1>
+              {
+                // ************** Display game pad if the user is actually in game ********
+                // <div>
+                //   <FaGamepad size={32} className='relative text-gray-900 left-8 top-2' />
+                // </div>
+                // ************************************************************************
+              }
+            </div>
+            <div className='avatar flex flex-row justify-center'>
+              <div
+                className={`w-36 borderAvatar rounded-full drop-shadow-lg hover:drop-shadow-xl justify-self-start border-4`}
+              >
                 <img src={profileUser?.image} alt='avatar' />
               </div>
             </div>
@@ -143,7 +164,7 @@ const Profile = () => {
                 </p>
               </div>
             </div>
-            <div className='flex mt-2 justify-between'>
+            <div className='flex flex-row mt-2 justify-evenly items-center'>
               {user.id !== profileUser.id && renderFriendButton()}
               {user.id === profileUser.id && (
                 <Link
