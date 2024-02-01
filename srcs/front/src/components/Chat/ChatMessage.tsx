@@ -1,12 +1,12 @@
 import clsx from 'clsx'
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
 import { useSocket } from '../../providers/SocketProvider'
 import { FrontEndMessage, IChannelMember } from '../../types/Chat'
 import { ChatSocketEvent } from '../../types/Events'
 import { IUser } from '../../types/User'
-import { NotificationPartyPersoModal } from '../NotificationPartyPerso'
 
 type ChatMessageProps = {
   user: IUser
@@ -16,14 +16,21 @@ type ChatMessageProps = {
 
 const ChatMessage = ({ user, message, members }: ChatMessageProps) => {
   const { gameSocket, isGameConnected, chatSocket, isChatConnected } = useSocket()
-  const [messageNotification, setMessageNotification] = useState('')
-  const [showNotificationPartyModal, setShowNotificationPartyModal] = useState(false)
   if (!isGameConnected) gameSocket.connect()
   const sender = members.find((member) => member.userId === message.senderId)
   if (!sender) return <span>Error</span>
   gameSocket.on('errorPartyPerso', (msgError: string) => {
-    setMessageNotification(msgError)
-    setShowNotificationPartyModal(true)
+    console.log('Je passe bien dans le on de la socket')
+    toast.error(msgError, {
+      position: 'top-right',
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: 'dark',
+    })
   })
   const messagePosition = clsx({
     ['flex space-y-2 text-xs max-w-xs mx-2']: true,
@@ -50,7 +57,19 @@ const ChatMessage = ({ user, message, members }: ChatMessageProps) => {
   })
 
   const acceptGame = (message: any) => {
-    console.log(message.content)
+    if (user.id === message.senderId) {
+      toast.error("You can't join your own party!", {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      })
+      return
+    }
     chatSocket?.emit(ChatSocketEvent.UPDATE, {
       messageId: message.id,
       channelId: message.channelId,
@@ -82,11 +101,6 @@ const ChatMessage = ({ user, message, members }: ChatMessageProps) => {
       <Link to={`/profile/${sender.userId}`}>
         <img src={sender.user.image} alt='My profile' className={imageStyle} />
       </Link>
-      <NotificationPartyPersoModal
-        openModal={showNotificationPartyModal}
-        setOpenModal={setShowNotificationPartyModal}
-        errorMessage={messageNotification}
-      />
     </div>
   )
 }

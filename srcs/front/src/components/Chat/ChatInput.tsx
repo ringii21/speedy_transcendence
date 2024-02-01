@@ -9,7 +9,6 @@ import { useAuth } from '../../providers/AuthProvider'
 import { useSocket } from '../../providers/SocketProvider'
 import { FrontEndMessage } from '../../types/Chat'
 import { ChatSocketEvent } from '../../types/Events'
-import { NotificationPartyPersoModal } from '../NotificationPartyPerso'
 
 const ChatInput = ({
   channelId,

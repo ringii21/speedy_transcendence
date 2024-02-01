@@ -129,10 +129,14 @@ export class GameService {
         const game = this.queueGamePerso[i].find(game => game.partyNumber === data.partyNumber);
         if (game) {
           console.log('J ai trouver la partie');
-          if (game.userData?.id == client.data.user.id)
+          console.log('---------------------------------------------------------------- gameid:', game.userData?.id, 'user.id:', client.data.user.id)
+          /* if (game.userData?.id == client.data.user.id) {
+            console.log('JE PASSE bien laaaaaaaaa')
+            client.emit('errorPartyPerso', { msgError: "You can't join your own party!" })
             return;
+          } */
           if (game.socket.disconnected) {
-            client.emit('errorPartyPerso', { msgError: 'Cannot join the party, the sender left the webapp!' });
+            client.emit('errorPartyPerso', { msgError: 'Cannot join the party, the sender left the app!' });
             return;
           }
           game.opponentData = client.data.user;
