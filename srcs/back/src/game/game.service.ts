@@ -94,7 +94,7 @@ export class GameService {
           client.emit('gamePersoAlreadyCreated', { message: 'You have already created a game.' });
           return;
         }
-        
+
         const partyNumber = crypto.randomBytes(16).toString('hex');
         const newGame: WaitingPlayerGameCustom = {
             socket: client,
@@ -132,7 +132,7 @@ export class GameService {
           if (game.userData?.id == client.data.user.id)
             return;
           if (game.socket.disconnected) {
-            client.emit('errorPartyPerso', { msgError: 'Cannot join the party, the sender left the conversation!' });
+            client.emit('errorPartyPerso', { msgError: 'Cannot join the party, the sender left the webapp!' });
             return;
           }
           game.opponentData = client.data.user;

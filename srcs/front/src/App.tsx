@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import React from 'react'
 import { Route, Routes } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify'
 
 import { Modal } from './components/Pong/Modal'
 import { GameWithNavbar } from './components/Pong/Pong'
@@ -28,6 +29,7 @@ const App = () => {
       <AuthProvider>
         <ChatProvider>
           <SocketProvider>
+            <ToastContainer />
             <Modal />
             <Routes>
               {/* authenticated */}

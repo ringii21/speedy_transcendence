@@ -1,6 +1,9 @@
+import 'react-toastify/dist/ReactToastify.css'
+
 import React, { useState } from 'react'
 import { FaRocket } from 'react-icons/fa'
 import { MdPartyMode, MdSend } from 'react-icons/md'
+import { toast } from 'react-toastify'
 
 import { useAuth } from '../../providers/AuthProvider'
 import { useSocket } from '../../providers/SocketProvider'
@@ -18,8 +21,6 @@ const ChatInput = ({
   const { chatSocket, isChatConnected, gameSocket, isGameConnected } = useSocket()
   const { user } = useAuth()
   const [inputMessage, setInputMessage] = useState<string>('')
-  const [messageNotification, setMessageNotification] = useState('')
-  const [showNotificationPartyModal, setShowNotificationPartyModal] = useState(false)
 
   if (!user) return <></>
 
@@ -32,8 +33,17 @@ const ChatInput = ({
       gameSocket?.emit('createGamePerso')
 
       gameSocket?.once('gamePersoAlreadyCreated', (response) => {
-        setMessageNotification(response.message)
-        setShowNotificationPartyModal(true)
+        console.log(response)
+        toast.error(response.message, {
+          position: 'top-right',
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'dark',
+        })
       })
 
       const partyNumber = await new Promise<string>((resolve) => {
@@ -100,11 +110,6 @@ const ChatInput = ({
           <MdSend className='text-primary-content text-lg' />
         </button>
       </div>
-      <NotificationPartyPersoModal
-        openModal={showNotificationPartyModal}
-        setOpenModal={setShowNotificationPartyModal}
-        errorMessage={messageNotification}
-      />
     </div>
   )
 }
