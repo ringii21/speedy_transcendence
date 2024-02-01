@@ -10,22 +10,29 @@ import { EChannelType, IChannel } from '../../../types/Chat'
 import { editChannel } from '../../../utils/chatHttpRequests'
 
 type EditChannelModalProps = {
-  isEditChannelModalOpen: boolean
-  setEditChannelModalOpen: React.Dispatch<React.SetStateAction<boolean>>
-  channel: IChannel
+  isEditChannelModalOpen: {
+    isOpen: boolean
+    channel?: IChannel
+  }
+  setEditChannelModalOpen: React.Dispatch<
+    React.SetStateAction<{
+      isOpen: boolean
+      channel?: IChannel
+    }>
+  >
 }
 
 type FormValues = {
   name: string
   type: EChannelType
-  password?: string
+  password: string
 }
 
 const EditChannelModal = ({
   isEditChannelModalOpen,
   setEditChannelModalOpen,
-  channel,
 }: EditChannelModalProps) => {
+  const { channel, isOpen } = isEditChannelModalOpen
   const {
     watch,
     register,
@@ -36,25 +43,20 @@ const EditChannelModal = ({
     unregister,
   } = useForm<FormValues>({
     defaultValues: {
-      type: channel.type,
-      name: channel.name,
+      type: channel?.type,
+      name: channel?.name,
     },
   })
 
   const { mutate, isPending } = useMutation({
     mutationKey: [ChatQueryKey.MY_CHANNELS],
-    mutationFn: ({
-      name,
-      type,
-      password,
-    }: {
-      name: string
-      type: EChannelType
-      password?: string
-    }) => editChannel(channel.id, name, type, password),
+    mutationFn: editChannel,
     onSuccess: () => {
       reset()
-      setEditChannelModalOpen(false)
+      setEditChannelModalOpen((prev) => ({
+        ...prev,
+        isOpen: false,
+      }))
     },
     onError: (error) => {
       if (error instanceof AxiosError) {
@@ -79,7 +81,14 @@ const EditChannelModal = ({
       }
     },
   })
-  const onSubmit = async (data: FormValues) => mutate(data)
+
+  const onSubmit = async (data: FormValues) => {
+    if (!channel) return
+    mutate({
+      id: channel.id,
+      ...data,
+    })
+  }
 
   const type = watch('type')
   useEffect(() => {
@@ -91,13 +100,17 @@ const EditChannelModal = ({
     ['btn-disabled']: isPending,
   })
 
-  const onClose = () => {
+  const onClose = (e: any) => {
+    e.preventDefault()
     reset()
-    setEditChannelModalOpen(false)
+    setEditChannelModalOpen((prev) => ({
+      ...prev,
+      isOpen: false,
+    }))
   }
 
   return (
-    <Transition appear show={isEditChannelModalOpen} as={Fragment}>
+    <Transition appear show={isOpen} as={Fragment}>
       <Dialog as='div' className='relative z-10' onClose={onClose}>
         <Transition.Child
           as={Fragment}
@@ -141,6 +154,7 @@ const EditChannelModal = ({
                           aria-invalid={errors.name ? 'true' : 'false'}
                           {...register('name', {
                             required: true,
+                            value: channel?.name,
                             maxLength: {
                               value: 10,
                               message: 'Channel name must be less than 10 characters',

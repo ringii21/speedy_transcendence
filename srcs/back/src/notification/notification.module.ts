@@ -7,6 +7,7 @@ import { FriendsService } from '../friends/friends.service'
 import { FriendsModule } from '../friends/friends.module'
 import { NotificationGateway } from './notification.gateway'
 import { AuthService } from '../auth/auth.service'
+import { StatusService } from 'src/status/status.service'
 
 @Module({
   providers: [
@@ -15,6 +16,7 @@ import { AuthService } from '../auth/auth.service'
     FriendsService,
     NotificationGateway,
     AuthService,
+    StatusService,
   ],
   imports: [JwtAuthModule, UsersModule, FriendsModule],
 })

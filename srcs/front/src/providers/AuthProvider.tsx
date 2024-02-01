@@ -4,6 +4,7 @@ import React, { createContext, ReactNode, useContext, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { IUser } from '../types/User'
+import { chatSocket, disconnectAll, gameSocket, notificationSocket } from '../utils/socketService'
 import { fetchUser, logout } from '../utils/userHttpRequests'
 
 interface AuthContextData {
@@ -33,7 +34,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     queryKey: ['user'],
     queryFn: fetchUser,
     retry: false,
-    refetchOnWindowFocus: false,
   })
 
   const signinMutation = useMutation({
@@ -60,6 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     onSuccess: () => {
       queryClient.setQueryData(['user'], null)
       navigate('/login', { replace: true })
+      disconnectAll()
     },
   })
 

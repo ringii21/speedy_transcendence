@@ -9,6 +9,7 @@ import { JwtAuthService } from 'src/auth/jwt/jwt-auth.service'
 import { MessageService } from 'src/message/message.service'
 import { ChannelService } from 'src/channel/channel.service'
 import { AuthService } from 'src/auth/auth.service'
+import { StatusService } from 'src/status/status.service'
 
 @Module({
   controllers: [GameController],
@@ -21,6 +22,7 @@ import { AuthService } from 'src/auth/auth.service'
     MessageService,
     ChannelService,
     AuthService,
+    StatusService,
   ],
 })
 export class GameModule {}

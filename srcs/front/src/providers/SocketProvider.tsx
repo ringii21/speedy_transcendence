@@ -3,6 +3,7 @@ import { Socket } from 'socket.io-client'
 
 import { ChatSocketEvent } from '../types/Events'
 import { chatSocket, gameSocket, notificationSocket } from '../utils/socketService'
+import { useAuth } from './AuthProvider'
 
 interface SocketContextData {
   chatSocket: Socket
@@ -26,73 +27,64 @@ export const SocketContext = createContext<SocketContextData>({
   isNotificationConnected: false,
 })
 
-export const logSocketEvent = (socket: Socket, event: string) =>
-  console.log(socket.io['uri'], event + ' event emitted')
-
 export const SocketProvider = ({ children }: Props) => {
+  const { user } = useAuth()
   const [isChatConnected, setChatIsConnected] = useState<boolean>(false)
   const [isGameConnected, setGameIsConnected] = useState<boolean>(false)
   const [isNotificationConnected, setisNotificationConnected] = useState<boolean>(false)
 
   useEffect(() => {
-    if (!isChatConnected) chatSocket.connect()
-  }, [isChatConnected])
+    if (!isChatConnected && user) chatSocket.connect()
+  }, [isChatConnected, user])
 
   useEffect(() => {
-    if (!isGameConnected) gameSocket.connect()
-  }, [isGameConnected])
+    if (!isGameConnected && user) gameSocket.connect()
+  }, [isGameConnected, user])
 
   useEffect(() => {
-    if (!isNotificationConnected) notificationSocket.connect()
-  }, [isNotificationConnected])
+    if (!isNotificationConnected && user) notificationSocket.connect()
+  }, [isNotificationConnected, user])
 
   useEffect(() => {
     chatSocket.on('connect', () => {
-      logSocketEvent(chatSocket, 'connect')
-      chatSocket.emit(ChatSocketEvent.SUBSCRIBE)
-      logSocketEvent(chatSocket, 'subscribed')
       setChatIsConnected(true)
+      chatSocket.emit(ChatSocketEvent.SUBSCRIBE)
+      console.log('ChatSocket connect')
     })
 
     chatSocket.on('disconnect', () => {
-      logSocketEvent(chatSocket, 'disconnect')
-      chatSocket.emit(ChatSocketEvent.UNSUBSCRIBE)
-      logSocketEvent(chatSocket, 'unsubscribed')
       setChatIsConnected(false)
+      chatSocket.emit(ChatSocketEvent.UNSUBSCRIBE)
+      console.log('ChatSocket disconnect')
     })
 
     chatSocket.on('connect_error', (e: Error) => {
-      logSocketEvent(chatSocket, 'connect_error')
       console.warn('Connection error', e)
     })
 
     gameSocket.on('connect', () => {
-      logSocketEvent(gameSocket, 'connect')
       setGameIsConnected(true)
+      console.log('GameSocket connect')
     })
 
     gameSocket.on('disconnect', () => {
-      logSocketEvent(gameSocket, 'disconnect')
       setGameIsConnected(false)
+      console.log('GameSocket disconnect')
     })
 
     gameSocket.on('connect_error', (e: Error) => {
-      logSocketEvent(gameSocket, 'connect_error')
       console.warn('Connection error', e)
     })
 
     notificationSocket.on('connect', () => {
-      logSocketEvent(notificationSocket, 'connect')
-      console.log('NotificationSocket connect')
       setisNotificationConnected(true)
+      console.log('NotificationSocket connect')
     })
     notificationSocket.on('disconnect', () => {
-      logSocketEvent(notificationSocket, 'disconnect')
-      console.log('NotificationSocket disconnect')
       setisNotificationConnected(false)
+      console.log('NotificationSocket disconnect')
     })
     notificationSocket.on('connect_error', (e: Error) => {
-      logSocketEvent(notificationSocket, 'connect_error')
       console.warn('Connection error', e)
     })
 

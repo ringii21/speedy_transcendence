@@ -10,9 +10,16 @@ import { IUser } from '../../../types/User'
 import { getUsersNotInChannel, inviteUser } from '../../../utils/chatHttpRequests'
 
 type InviteChannelModalProps = {
-  isInviteModalOpen: boolean
-  setInviteModalOpen: React.Dispatch<React.SetStateAction<boolean>>
-  channel: IChannel
+  isInviteModalOpen: {
+    isOpen: boolean
+    channel?: IChannel
+  }
+  setInviteModalOpen: React.Dispatch<
+    React.SetStateAction<{
+      isOpen: boolean
+      channel?: IChannel
+    }>
+  >
 }
 
 type FormValues = {
@@ -20,14 +27,11 @@ type FormValues = {
   userId: number
 }
 
-const InviteChannelModal = ({
-  isInviteModalOpen: isOpen,
-  setInviteModalOpen: setIsOpen,
-  channel,
-}: InviteChannelModalProps) => {
+const InviteChannelModal = ({ isInviteModalOpen, setInviteModalOpen }: InviteChannelModalProps) => {
+  const { channel, isOpen } = isInviteModalOpen
   const { register, handleSubmit } = useForm<FormValues>({
     defaultValues: {
-      channelId: channel.id,
+      channelId: channel?.id,
     },
   })
 
@@ -37,22 +41,26 @@ const InviteChannelModal = ({
   }, [isOpen])
 
   const userListQuery = useQuery({
-    queryKey: [ChatQueryKey.USER_LIST, channel.id],
+    queryKey: [ChatQueryKey.USER_LIST, channel?.id ?? ''],
     queryFn: ({ queryKey }) => getUsersNotInChannel({ channelId: queryKey[1] }),
     initialData: [],
-    enabled: isOpen,
+    enabled: channel !== undefined,
   })
 
   const { mutate } = useMutation({
-    mutationFn: ({ channelId, userId }: { channelId: string; userId: number }) =>
-      inviteUser({
-        channelId,
-        userId,
-      }),
-    onSuccess: () => setIsOpen(false),
+    mutationFn: inviteUser,
+    onSuccess: () =>
+      setInviteModalOpen((prev) => ({
+        ...prev,
+        isOpen: false,
+      })),
   })
 
-  const onSubmit = (data: FormValues) => mutate(data)
+  const onSubmit = (data: FormValues) =>
+    mutate({
+      channelId: channel?.id ?? '',
+      userId: data.userId,
+    })
 
   const buttonStyle = clsx({
     ['btn']: true,
@@ -76,7 +84,16 @@ const InviteChannelModal = ({
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as='div' className='relative z-10' onClose={() => setIsOpen(false)}>
+      <Dialog
+        as='div'
+        className='relative z-10'
+        onClose={() =>
+          setInviteModalOpen((prev) => ({
+            ...prev,
+            isOpen: false,
+          }))
+        }
+      >
         <Transition.Child
           as={Fragment}
           enter='ease-out duration-300'
@@ -137,7 +154,10 @@ const InviteChannelModal = ({
                         <button
                           onClick={(e) => {
                             e.preventDefault()
-                            setIsOpen(false)
+                            setInviteModalOpen((prev) => ({
+                              ...prev,
+                              isOpen: false,
+                            }))
                           }}
                           className={`${buttonStyle} btn-error`}
                         >
