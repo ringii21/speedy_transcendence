@@ -17,13 +17,16 @@ export class GameController {
 
   @Get('stats/:userId')
   async getUserStats(@Param('userId') userId: number) {
-    return await this.gameService.getHistory(userId)
+    return this.gameService.getHistory(userId)
   }
 
   @Get('match_history/:userId')
   async getMatchHistory(@Param('userId') userId: number) {
-    const game = await this.gameService.getMatchHistory(userId)
-    console.log('------------------------------------------------', game)
-    return game
+    return this.gameService.getMatchHistory(userId)
+  }
+
+  @Get('ladder/:userId')
+  async getladder(@Param('userId') userId: number) {
+    return this.gameService.getLadder(userId)
   }
 }

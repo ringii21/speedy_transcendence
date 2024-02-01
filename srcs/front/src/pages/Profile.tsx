@@ -9,7 +9,7 @@ import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
 import { getFriends, removeFriend } from '../utils/friendService'
 import { createFriendRequest } from '../utils/friendService'
-import { getStats } from '../utils/historyHttpRequest'
+import { getLadder, getStats } from '../utils/historyHttpRequest'
 import { fetchUser, getUser } from '../utils/userHttpRequests'
 import { RatingHistory } from './../components/RatingHistory'
 
@@ -35,11 +35,7 @@ const Profile = () => {
   }
 
   const userId = user.id
-  const {
-    data: userStats,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data: userStats, error } = useQuery({
     queryKey: ['stats', userId],
     queryFn: getStats,
   })
@@ -109,7 +105,8 @@ const Profile = () => {
           }}
           className='btn btn-info drop-shadow-xl rounded-lg'
         >
-          Remove Friend
+          {' '}
+          isLoading, Remove Friend
         </button>
       )
     } else {

@@ -232,4 +232,27 @@ export class GameService {
     });
     return game;
     }
+
+    async getLadder(userId: number) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { elo: true },
+        });
+    
+        if (!user) {
+            throw new Error('User not found');
+        }
+    
+        const userElo = user.elo;
+    
+        const rank = await this.prisma.user.count({
+            where: {
+                elo: {
+                    gt: userElo
+                }
+            }
+        }) + 1;
+    
+        return { elo: userElo, rank };
+    }
 }

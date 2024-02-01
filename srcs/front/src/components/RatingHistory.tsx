@@ -1,12 +1,19 @@
+import { useQuery } from '@tanstack/react-query'
 import React from 'react'
 
 import { IUser } from '../types/User'
+import { getLadder } from '../utils/historyHttpRequest'
 
 type MatchProps = {
   user: IUser
 }
 
 const RatingHistory: React.FC<MatchProps> = ({ user }) => {
+  const userId = user.id
+  const { data: userLadder, isLoading } = useQuery({
+    queryKey: ['ladder', userId],
+    queryFn: getLadder,
+  })
   return (
     <div className='hero-overlay relative bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 drop-shadow-md rounded-lg bg-opacity-60'>
       <div className='hero-content text-center text-neutral-content'>
@@ -42,10 +49,12 @@ const RatingHistory: React.FC<MatchProps> = ({ user }) => {
                     </div>
                   </td>
                   <td className='text-sm pt-2' role='cell'>
-                    <p className='text-md font-medium text-purple-100 mr-10'>9821</p>
+                    <p className='text-md font-medium text-purple-100 mr-10'>{userLadder?.elo}</p>
                   </td>
                   <td className='text-sm pt-2' role='cell'>
-                    <p className='text-md font-medium text-purple-100 break-all mr-10'>9821</p>
+                    <p className='text-md font-medium text-purple-100 break-all mr-10'>
+                      {userLadder?.rank}
+                    </p>
                   </td>
                   {/***************************************************/}
                 </tr>
