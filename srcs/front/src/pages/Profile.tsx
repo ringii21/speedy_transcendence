@@ -61,11 +61,13 @@ const Profile = () => {
   )
   if (!profileUser) return <></>
 
-  const userIsConnect = clsx({
-    ['border-4']: true,
-    ['border-green-600']: user,
-    ['border-red-600']: !user,
-  })
+  // Regle css. User offline/online
+  // const userIsConnect = clsx({
+  //   ['border-4']: true,
+  //   ['border-green-600']: ,
+  //   ['border-red-600']: ,
+  // })
+  // ***************************
 
   // profile not in friends-> not friend
   // profile in friends but not confirmed -> pending
@@ -127,7 +129,7 @@ const Profile = () => {
             </h1>
             <div className='avatar flex flex-row justify-center'>
               <div
-                className={`w-36 ${userIsConnect} borderAvatar rounded-full drop-shadow-lg hover:drop-shadow-xl justify-self-start border-4`}
+                className={`w-36 borderAvatar rounded-full drop-shadow-lg hover:drop-shadow-xl justify-self-start border-4`}
               >
                 <img src={profileUser?.image} alt='avatar' />
               </div>
