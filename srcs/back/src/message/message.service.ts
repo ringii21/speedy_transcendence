@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 
 @Injectable()
@@ -58,9 +58,7 @@ export class MessageService {
       });
       return true
     } catch (error) {
-      // Gérer les erreurs, par exemple en enregistrant dans les logs
-      console.error('Error occurred while deleting message:', error);
-      throw error;
+      throw new BadRequestException();
     }
   }
 }

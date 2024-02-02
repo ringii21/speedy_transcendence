@@ -3,7 +3,6 @@ import { Si42 } from 'react-icons/si'
 import { Navigate } from 'react-router-dom'
 
 import { useAuth } from '../providers/AuthProvider'
-import httpInstance from '../utils/httpClient'
 
 const Login = () => {
   const { user, signin } = useAuth()
@@ -14,16 +13,7 @@ const Login = () => {
   const login42Click = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault()
     setLoading(true)
-    window.open('http://localhost:3000/api/auth/42', '_self')
-  }
-
-  const loginDevClick = async (e: React.MouseEvent<HTMLElement>) => {
-    e.preventDefault()
-    setLoading(true)
-    try {
-      await httpInstance().post('/api/auth/dev')
-      await signin()
-    } catch (e) {}
+    window.open(process.env['REACT_APP_42_URL'] ?? 'http://localhost:3000/api/auth/42', '_self')
   }
 
   return (
@@ -39,14 +29,6 @@ const Login = () => {
             >
               <span className={loading ? 'loading loading-spinner' : ''}></span>
               Login with <Si42 style={{ fontSize: '2em' }} />
-            </button>
-            <button
-              onClick={loginDevClick}
-              className='btn btn-lg btn-secondary mt-10'
-              disabled={loading}
-            >
-              <span className={loading ? 'loading loading-spinner' : ''}></span>
-              Login dev
             </button>
           </div>
         </div>

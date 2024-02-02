@@ -11,6 +11,12 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
 
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
   backend:
     build: ./srcs/back
     environment:

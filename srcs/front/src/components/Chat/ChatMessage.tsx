@@ -106,9 +106,7 @@ const ChatMessage = ({ user, message, members, blocked }: ChatMessageProps) => {
         content: message.content,
       })
       gameSocket.emit('acceptGameInvite', { partyNumber: message.content })
-    } catch (error) {
-      console.error(error)
-    }
+    } catch (error) {}
   }
 
   return (
