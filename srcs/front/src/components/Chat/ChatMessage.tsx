@@ -85,19 +85,19 @@ const ChatMessage = ({ user, message, members, blocked }: ChatMessageProps) => {
         <div className={messageJustify}>
           <div className={messagePosition}>
             <div>
-            {message.gameInvite && (
-            <a
-              className='link-success'
-              href='#'
-              onClick={(e) => {
-                e.preventDefault() // Empêche le comportement par défaut du lien
-                // Ici, appelez votre fonction
-                acceptGame(message)
-              }}
-            >
-              Play with me!
-            </a>
-          )}
+              {message.gameInvite && (
+                <a
+                  className='link-success'
+                  href='#'
+                  onClick={(e) => {
+                    e.preventDefault() // Empêche le comportement par défaut du lien
+                    // Ici, appelez votre fonction
+                    acceptGame(message)
+                  }}
+                >
+                  Play with me!
+                </a>
+              )}
               {!message.gameInvite && <span className={messageStyle}>{message.content}</span>}
             </div>
           </div>

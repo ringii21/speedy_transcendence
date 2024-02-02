@@ -33,39 +33,14 @@ interface GameInvite {
     credentials: true,
   },
 })
-export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  constructor(
-    private prisma: PrismaService,
-    private readonly eventEmitter: EventEmitter2,
-    private readonly usersService: UsersService,
-    private readonly authService: AuthService,
-    private readonly statusService: StatusService,
-  ) {}
 
-  @WebSocketServer() private server: Server
-  private games_map = new Map<string, Game>()
-  private game_invites = new Set<GameInvite>()
-  async handleConnection(client: Socket) {
-    const user = await this.authService.getSocketUser(client)
-    if (!user) {
-      client.disconnect()
-      return
-    }
-  }
-  
-  @WebSocketGateway({
-    namespace: 'game',
-    cors: {
-      origin: process.env.FRONT_URL ?? 'http://localhost:3001',
-      credentials: true,
-    },
-  })
   export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     constructor(
       private prisma: PrismaService,
       private readonly eventEmitter: EventEmitter2,
       private readonly usersService: UsersService,
       private readonly authService: AuthService,
+      private readonly statusService: StatusService,
     ) {}
   
     @WebSocketServer() private server: Server;
@@ -250,7 +225,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         game_invite.gameMode,
       );
     }
-  }
 
   @OnEvent('game.launched')
   async handleGameLaunchedEvent(clients: any, mode: string) {
@@ -287,31 +261,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       newStatus: this.statusService.getStatus(clients[1].userData.id),
     })
   }
-  
-    @OnEvent('game.launched')
-    async handleGameLaunchedEvent(clients: any, mode: string) {
-      // Create id of the game
-      const game_channel = crypto.randomBytes(16).toString('hex');
-  
-      clients.forEach((client: any) => {
-        client.socket.join(game_channel);
-        client.socket.data.user.inGame = true;
-        client.socket.data.user.inQueue = false;
-      });
-      // Create new object game
-      const new_game = new Game(this.eventEmitter, this.server, mode);
-  
-      new_game.setplayerSockets(
-        game_channel,
-        clients[0].socket,
-        clients[1].socket,
-        clients[0].userData,
-        clients[1].userData,
-      );
-      new_game.start(game_channel);
-      this.games_map.set(game_channel, new_game);
-      this.server.to(game_channel).emit('game.launched', game_channel);
-    }
   
     @OnEvent('game.end')
     async handleGameEndEvent(data: any) {
