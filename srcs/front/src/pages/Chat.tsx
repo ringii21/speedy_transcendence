@@ -26,7 +26,7 @@ const Chat = () => {
   }, [channelId, allChannels])
 
   return (
-    <div className='container mx-auto'>
+    <div className='container mx-auto border rounded-t-lg'>
       {CreateChannelModal({ isCreateModalOpen, setCreateModalOpen })}
       {JoinChannelModal({ isJoinModalOpen, setJoinModalOpen })}
       <div className='flex flex-row'>

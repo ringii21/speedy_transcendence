@@ -100,7 +100,7 @@ const ChatConversation = ({ currentChannel, me }: ChatChannelProps) => {
   return (
     <main
       data-component-name='chat-conv'
-      className='flex-1 p:2 pb-36 pt-10 justify-between bg-white flex flex-col h-screen border-t'
+      className='flex-1 p:2 pb-36 pt-10 justify-between bg-white flex flex-col h-screen border-l border-r'
     >
       <div className='gap-6 inset-x-0 top-0 border-b '>
         <div className='flex justify-center align-middle items-center text-gray-900 w-full h-5 pb-8'>
