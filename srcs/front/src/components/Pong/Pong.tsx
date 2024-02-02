@@ -166,11 +166,6 @@ export const Game = () => {
       <div className="flex items-center justify-center gap-x10 w-full xl:pt-4">
         <div className="flex items-center justify-center w-1/4 gap-6">
           <div className="flex flex-col items-center justify-center w-1/4">
-{/*             <img
-              alt=""
-              className="rounded-full w-auto h-auto max-w-[10vw] md:max-w-[20vw]"
-              src={gameState?.p1?.image}
-            /> */}
             <span>{ gameState?.p1?.username }</span>
             <span className="font-lexend font-extrabold text-[4vw] xl:text-[2vw] text-current">
                 {gameState.ball.p1Score}
@@ -179,11 +174,6 @@ export const Game = () => {
         </div>
         <div className="flex items-center justify-center w-1/4 gap-6">
           <div className="flex flex-col items-center justify-center w-1/4">
-{/*             <img
-              alt="avatar"
-              className="rounded-full w-auto h-auto max-w-[10vw] md:max-w-[20vw]"
-              src={gameState?.p2?.image}
-            /> */}
             <span>{ gameState?.p2?.username }</span>
             <span className="font-lexend font-extrabold text-[4vw] xl:text-[2vw] text-current">
                 {gameState?.ball.p2Score}

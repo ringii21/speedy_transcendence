@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { FaHashtag, FaLock } from 'react-icons/fa'
-import { IoEyeOffSharp } from 'react-icons/io5'
 import { Navigate, useParams } from 'react-router-dom'
 
 import { ChatConversation, ChatSelection, ChatUsers } from '../components/Chat'
@@ -9,12 +7,14 @@ import { JoinChannelModal } from '../components/Chat/Modals/JoinChannelModal'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
 import { useChat } from '../providers/ChatProvider'
+import { useSocket } from '../providers/SocketProvider'
 import { IChannel } from '../types/Chat'
 
 const Chat = () => {
   const { channelId } = useParams<{ channelId: string | undefined }>()
   const { user } = useAuth()
   const { allChannels } = useChat()
+  const { chatSocket, gameSocket } = useSocket()
 
   const [isCreateModalOpen, setCreateModalOpen] = useState(false)
   const [isJoinModalOpen, setJoinModalOpen] = useState(false)
@@ -26,6 +26,18 @@ const Chat = () => {
     const currChannel = allChannels.find((channel) => channel.id === channelId)
     setCurrentChannel(currChannel)
   }, [channelId, allChannels])
+
+  useEffect(() => {
+    if (!chatSocket.connected) {
+      chatSocket.connect()
+    }
+    if (!gameSocket.connected) {
+      gameSocket.connect()
+    }
+    return () => {
+      chatSocket.disconnect()
+    }
+  }, [])
 
   return (
     <div className='container mx-auto'>

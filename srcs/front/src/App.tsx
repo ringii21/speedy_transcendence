@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import React from 'react'
 import { Route, Routes } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify'
 
 import { Modal } from './components/Pong/Modal'
 import { GameWithNavbar } from './components/Pong/Pong'
@@ -28,80 +29,72 @@ const App = () => {
       <AuthProvider>
         <ChatProvider>
           <SocketProvider>
-            <NotificationProvider>
-              <Modal />
-              <Routes>
-                {/* authenticated */}
-                <Route
-                  path='/'
-                  element={
-                    <RequireAuth>
-                      <HomeWithNavbar />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path='/play'
-                  element={
-                    <RequireAuth>
-                      <PlayWithNavbar />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path='/game/:id'
-                  element={
-                    <RequireAuth>
-                      <GameWithNavbar />
-                    </RequireAuth>
-                  }
-                ></Route>
-                <Route
-                  path='/settings'
-                  element={
-                    <RequireAuth>
-                      <SettingsWithNavbar />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path='/settings/2fa'
-                  element={
-                    <RequireAuth>
-                      <TwoFactorSettingsWithNavbar />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path='/chat/:channelId?'
-                  element={
-                    <RequireAuth>
-                      <ChatWithNavbar />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path='/profile/:id'
-                  element={
-                    <RequireAuth>
-                      <ProfileWithNavbar />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path='/friends'
-                  element={
-                    <RequireAuth>
-                      <FriendsWithNavbar />
-                    </RequireAuth>
-                  }
-                />
-                {/* non authenticated */}
-                <Route path='/login' element={<Login />} />
-                <Route path='/login/2fa' element={<TwoFactorSignin />} />
-                <Route path='*' element={<NotFound />} />
-              </Routes>
-            </NotificationProvider>
+            <ToastContainer />
+            <Modal />
+            <Routes>
+              {/* authenticated */}
+              <Route
+                path='/'
+                element={
+                  <RequireAuth>
+                    <HomeWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path='/play'
+                element={
+                  <RequireAuth>
+                    <PlayWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path='/game/:id'
+                element={
+                  <RequireAuth>
+                    <GameWithNavbar />
+                  </RequireAuth>
+                }
+              ></Route>
+              <Route
+                path='/settings'
+                element={
+                  <RequireAuth>
+                    <SettingsWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path='/settings/2fa'
+                element={
+                  <RequireAuth>
+                    <TwoFactorSettingsWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path='/chat/:channelId?'
+                element={
+                  <RequireAuth>
+                    <ChatWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path='/profile/:id'
+                element={
+                  <RequireAuth>
+                    <ProfileWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              {/* non authenticated */}
+              <Route path='/login' element={<Login />} />
+              <Route path='/login/2fa' element={<TwoFactorSignin />} />
+              <Route path='*' element={<NotFound />} />
+            </Routes>
+            {/* <Footer /> */}
           </SocketProvider>
         </ChatProvider>
       </AuthProvider>

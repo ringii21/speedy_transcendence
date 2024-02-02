@@ -7,8 +7,11 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useDeleteFriends, useGetFriends } from '../components/hook/Friends.hook'
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
+
+import { getFriends, removeFriend } from '../utils/friendService'
 import { Status, useNotification } from '../providers/NotificationProvider'
 import { createFriendRequest } from '../utils/friendService'
+import { getLadder, getStats } from '../utils/historyHttpRequest'
 import { fetchUser, getUser } from '../utils/userHttpRequests'
 import { RatingHistory } from './../components/RatingHistory'
 
@@ -32,6 +35,12 @@ const Profile = () => {
     queryKey: ['profile', 'me'],
     queryFn: fetchUser,
   }
+
+  const userId = user.id
+  const { data: userStats, error } = useQuery({
+    queryKey: ['stats', userId],
+    queryFn: getStats,
+  })
 
   const queryConfigOtherProfile = {
     queryKey: ['profile', id],
@@ -99,7 +108,8 @@ const Profile = () => {
           }}
           className='btn btn-info drop-shadow-xl rounded-lg'
         >
-          Remove Friend
+          {' '}
+          isLoading, Remove Friend
         </button>
       )
     } else {
@@ -146,13 +156,13 @@ const Profile = () => {
               <div className='grid-cols-2 space-x-0 shadow-xl'>
                 <p className='font-bold rounded-t-lg drop-shadow-md'>Win</p>
                 <p className='px-10 text-black rounded-b-lg backdrop-opacity-10 backdrop-invert bg-white/50'>
-                  5
+                  {userStats?.victories}
                 </p>
               </div>
               <div className='grid-cols-2 space-x-0 shadow-xl'>
                 <p className='font-bold rounded-t-lg drop-shadow-md'>Lose</p>
                 <p className='px-10 text-black rounded-b-lg backdrop-opacity-10 backdrop-invert bg-white/50'>
-                  5
+                  {userStats?.defeats}
                 </p>
               </div>
               <div className='grid-cols-2 space-x-0 rounded-lg  shadow-xl'>

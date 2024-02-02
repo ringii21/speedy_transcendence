@@ -1,6 +1,9 @@
+import 'react-toastify/dist/ReactToastify.css'
+
 import React, { useState } from 'react'
 import { FaRocket } from 'react-icons/fa'
-import { MdSend } from 'react-icons/md'
+import { MdPartyMode, MdSend } from 'react-icons/md'
+import { toast } from 'react-toastify'
 
 import { useAuth } from '../../providers/AuthProvider'
 import { useSocket } from '../../providers/SocketProvider'
@@ -14,13 +17,41 @@ const ChatInput = ({
   channelId: string
   setMessage: React.Dispatch<React.SetStateAction<FrontEndMessage[]>>
 }) => {
-  const { chatSocket } = useSocket()
+  const { chatSocket, isChatConnected, gameSocket, isGameConnected } = useSocket()
   const { user } = useAuth()
   const [inputMessage, setInputMessage] = useState<string>('')
 
   if (!user) return <></>
 
-  const sendMessage = (message: FrontEndMessage) => {
+  const sendMessage = async (message: FrontEndMessage) => {
+    if (!isChatConnected) return
+    console.log(chatSocket)
+    console.log(isGameConnected)
+    if (!isGameConnected) gameSocket.connect()
+    if (message.gameInvite && isGameConnected) {
+      gameSocket?.emit('createGamePerso')
+
+      gameSocket?.once('gamePersoAlreadyCreated', (response) => {
+        console.log(response)
+        toast.error(response.message, {
+          position: 'top-right',
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'dark',
+        })
+      })
+
+      const partyNumber = await new Promise<string>((resolve) => {
+        gameSocket?.once('gamePersoCreated', ({ partyNumber }) => {
+          resolve(partyNumber)
+        })
+      })
+      message.content = partyNumber
+    }
     chatSocket.emit(ChatSocketEvent.MESSAGE, message)
     setMessage((messages) => [...messages, message])
   }
@@ -50,9 +81,9 @@ const ChatInput = ({
         onKeyDown={handleKeyDown}
         onChange={(e) => setInputMessage(e.target.value)}
         placeholder='Message'
-        className='input ring-offset-1 ring-2 ring-gray-900 w-full focus:ring-2 bg-white shadow-2xl'
+        className='input input-bordered input-primary w-full'
       />
-      <div className='absolute right-0 items-center inset-y-0 flex flex-row'>
+      <div className='absolute right-0 items-center inset-y-0 flex'>
         <button
           type='button'
           onClick={() => {
@@ -74,8 +105,8 @@ const ChatInput = ({
           className='btn btn-primary'
           disabled={!inputMessage.trim()}
         >
-          <span className='font-bold'>Send</span>
-          <MdSend className='text-lg' />
+          <span className='font-bold text-primary-content'>Send</span>
+          <MdSend className='text-primary-content text-lg' />
         </button>
       </div>
     </div>

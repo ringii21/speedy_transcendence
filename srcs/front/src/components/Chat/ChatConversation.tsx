@@ -78,12 +78,22 @@ const ChatConversation = ({ currentChannel, me }: ChatChannelProps) => {
         setMessages((messages) => [...messages, newMessage])
       }
     }
+    const deleteMessageListener = (data: { content: string; channelId: string }) => {
+      if (data.channelId === currentChannel.id) {
+        setMessages((currentMessages) =>
+          currentMessages.filter((message) => message.content !== data.content),
+        )
+      }
+    }
 
     chatSocket.on(ChatSocketEvent.MESSAGE, messageListener)
+
+    chatSocket.on(ChatSocketEvent.MESSAGE_DELETED, deleteMessageListener)
 
     // Fonction de nettoyage pour supprimer l'écouteur lors du démontage
     return () => {
       chatSocket.off(ChatSocketEvent.MESSAGE, messageListener)
+      chatSocket.off(ChatSocketEvent.MESSAGE_DELETED, deleteMessageListener)
     }
   }, [currentChannel.id, chatSocket])
 

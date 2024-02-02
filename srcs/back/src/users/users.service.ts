@@ -134,4 +134,28 @@ export class UsersService {
     })
     return !!exists
   }
+
+  async updateElo(winner_id: number, loser_id: number) {
+
+    await this.prisma.user.update({
+        where: {
+            id: winner_id
+        },
+        data: {
+            elo: {
+                increment: 50,
+            }
+        }
+    })
+    await this.prisma.user.update({
+        where: {
+            id: loser_id
+        },
+        data: {
+            elo: {
+                decrement: 20,
+            }
+        }
+    })
+  }
 }
