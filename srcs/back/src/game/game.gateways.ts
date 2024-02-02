@@ -1,27 +1,56 @@
 import {
-    MessageBody,
-    OnGatewayConnection,
-    OnGatewayDisconnect,
-    SubscribeMessage,
-    WebSocketGateway,
-    WebSocketServer,
-    WsException
-  } from '@nestjs/websockets';
-  import { Server, Socket } from 'socket.io';
-  import {} from '@nestjs/platform-socket.io';
-  import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-  import { PrismaService } from 'src/prisma/prisma.service';
-  import { Game } from 'src/game/game';
-  import * as crypto from 'crypto';
-  import { UsersService } from 'src/users/users.service';
-import { AuthService } from 'src/auth/auth.service';
- 
-  interface GameInvite {
-    inviter: string;
-    opponentId: string;
-    gameMode: string;
-    client: Socket;
-    gameId: string;
+  MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets'
+import { Server, Socket } from 'socket.io'
+import {} from '@nestjs/platform-socket.io'
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter'
+import { PrismaService } from 'src/prisma/prisma.service'
+import { Game } from 'src/game/game'
+import * as crypto from 'crypto'
+import { UsersService } from 'src/users/users.service'
+import { AuthService } from 'src/auth/auth.service'
+import { StatusChangeEvent } from 'src/notification/events/notification.event'
+import { Status } from 'src/status/types/Status'
+import { StatusService } from 'src/status/status.service'
+
+interface GameInvite {
+  inviter: string
+  opponentId: string
+  gameMode: string
+  client: Socket
+  gameId: string
+}
+
+@WebSocketGateway({
+  namespace: 'game',
+  cors: {
+    origin: process.env.FRONT_URL ?? 'http://localhost:3001',
+    credentials: true,
+  },
+})
+export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  constructor(
+    private prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
+    private readonly usersService: UsersService,
+    private readonly authService: AuthService,
+    private readonly statusService: StatusService,
+  ) {}
+
+  @WebSocketServer() private server: Server
+  private games_map = new Map<string, Game>()
+  private game_invites = new Set<GameInvite>()
+  async handleConnection(client: Socket) {
+    const user = await this.authService.getSocketUser(client)
+    if (!user) {
+      client.disconnect()
+      return
+    }
   }
   
   @WebSocketGateway({
@@ -221,30 +250,43 @@ import { AuthService } from 'src/auth/auth.service';
         game_invite.gameMode,
       );
     }
-  
-    @SubscribeMessage('declineGame')
-    async handleDeclineGameEvent(client: Socket, data: any) {
-      const game_invite = Array.from(this.game_invites).find(
-        (invite) => invite.gameId === data.gameId,
-      );
-      if (!game_invite) {
-        return;
-      }
-  
-      this.game_invites.delete(game_invite);
-  
-      if (game_invite.inviter === client.data.user.sub) {
-        this.server.to(`User:${game_invite.opponentId}`).emit('game.declined', {
-          decliner: client.data.user.sub,
-          gameId: data.gameId,
-        });
-      } else {
-        this.server.to(`User:${game_invite.inviter}`).emit('game.declined', {
-          decliner: client.data.user.sub,
-          gameId: data.gameId,
-        });
-      }
-    }
+  }
+
+  @OnEvent('game.launched')
+  async handleGameLaunchedEvent(clients: any, mode: string) {
+    // Create id of the game
+    const game_channel = crypto.randomBytes(16).toString('hex')
+
+    clients.forEach((client: any) => {
+      client.socket.join(game_channel)
+      client.socket.data.user.inGame = true
+      client.socket.data.user.inQueue = false
+    })
+    // Create new object game
+    const new_game = new Game(this.eventEmitter, this.server, mode)
+
+    new_game.setplayerSockets(
+      game_channel,
+      clients[0].socket,
+      clients[1].socket,
+      clients[0].userData,
+      clients[1].userData,
+    )
+    new_game.start(game_channel)
+    this.games_map.set(game_channel, new_game)
+    this.server.to(game_channel).emit('game.launched', game_channel)
+    // Set status of the players
+    this.statusService.setStatus(clients[0].userData.id, Status.IN_GAME)
+    this.statusService.setStatus(clients[1].userData.id, Status.IN_GAME)
+    this.eventEmitter.emit(StatusChangeEvent.name, {
+      userId: clients[0].userData.id,
+      newStatus: this.statusService.getStatus(clients[0].userData.id),
+    })
+    this.eventEmitter.emit(StatusChangeEvent.name, {
+      userId: clients[1].userData.id,
+      newStatus: this.statusService.getStatus(clients[1].userData.id),
+    })
+  }
   
     @OnEvent('game.launched')
     async handleGameLaunchedEvent(clients: any, mode: string) {
@@ -323,7 +365,19 @@ import { AuthService } from 'src/auth/auth.service';
         });
         await this.usersService.updateElo(data.p1Data.id, data.p2Data.id)
       }
-    }
+
+    this.statusService.setStatus(data.p1Data.id, Status.ONLINE)
+    this.statusService.setStatus(data.p2Data.id, Status.ONLINE)
+    this.eventEmitter.emit(StatusChangeEvent.name, {
+      userId: data.p1Data.id,
+      newStatus: this.statusService.getStatus(data.p1Data.id),
+    })
+    this.eventEmitter.emit(StatusChangeEvent.name, {
+      userId: data.p2Data.id,
+      newStatus: this.statusService.getStatus(data.p2Data.id),
+    })
+  }
+
   
     @SubscribeMessage('PingOnline')
     async handlePingOnlineEvent(client: Socket, data: any) {

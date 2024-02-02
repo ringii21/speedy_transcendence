@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { Friends, Prisma } from '@prisma/client'
 
 @Injectable()
 export class FriendsService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async findFriend(friendId: number, friendOfId: number) {
     return this.prisma.friends.findFirst({
@@ -92,7 +91,6 @@ export class FriendsService {
         ],
       },
     })
-    console.log(friend)
     return !!friend
   }
 }

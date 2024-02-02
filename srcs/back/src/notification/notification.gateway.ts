@@ -2,13 +2,25 @@ import { Logger } from '@nestjs/common'
 import { Socket, Server } from 'socket.io'
 import { AuthService } from '../auth/auth.service'
 import { OnEvent } from '@nestjs/event-emitter'
-import { FriendRequestEvent } from './events/notification.event'
+import {
+  FriendRequestEvent,
+  StatusChangeEvent,
+} from './events/notification.event'
 import {
   WebSocketGateway,
   OnGatewayConnection,
   OnGatewayDisconnect,
   WebSocketServer,
+  SubscribeMessage,
 } from '@nestjs/websockets'
+import { Status } from '../status/types/Status'
+import { StatusService } from 'src/status/status.service'
+
+export enum NotificationEvent {
+  REFRESH = 'refresh',
+  STATUS_CHANGE = 'status_change',
+  GET_STATUS = 'get_status',
+}
 
 @WebSocketGateway({
   namespace: 'notification',
@@ -26,11 +38,24 @@ export class NotificationGateway
   userSockets = new Map<number, Socket>()
   socketUsers = new Map<string, number>()
 
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly statusService: StatusService,
+  ) {}
 
   @OnEvent(FriendRequestEvent.name)
   async sentFriendRequest({ friendOfId }: FriendRequestEvent) {
-    this.getSocketByUserId(friendOfId)?.emit('refresh')
+    this.getSocketByUserId(friendOfId)?.emit(NotificationEvent.REFRESH)
+  }
+
+  @SubscribeMessage(NotificationEvent.GET_STATUS)
+  async getStatus(client: Socket) {
+    for (const [id, status] of this.statusService.getAllStatus()) {
+      client.emit(NotificationEvent.STATUS_CHANGE, {
+        userId: id,
+        status,
+      })
+    }
   }
 
   async handleConnection(socket: Socket) {
@@ -40,7 +65,9 @@ export class NotificationGateway
       return
     }
     this.addSocketToUser(user.id, socket)
-    this.logger.log(`Client connected: ${socket.id}`)
+    this.statusService.setStatus(user.id, Status.ONLINE)
+    for (const [id, status] of this.statusService.getAllStatus())
+      this.sendStatus(new StatusChangeEvent(id, status))
   }
 
   async handleDisconnect(socket: Socket) {
@@ -49,8 +76,9 @@ export class NotificationGateway
       socket.disconnect()
       return
     }
-    this.removeSocketFromUser(user.id, socket.id)
-    this.logger.log(`Client disconnected: ${socket.id}`)
+    this.statusService.setStatus(user.id, Status.OFFLINE)
+    for (const [id, status] of this.statusService.getAllStatus())
+      this.sendStatus(new StatusChangeEvent(id, status))
   }
 
   getSocketByUserId(userId: number) {
@@ -65,5 +93,13 @@ export class NotificationGateway
   private removeSocketFromUser(userId: number, socketId: string) {
     this.userSockets.delete(userId)
     this.socketUsers.delete(socketId)
+  }
+
+  @OnEvent(StatusChangeEvent.name)
+  private sendStatus({ userId, newStatus }: StatusChangeEvent) {
+    this.socket.emit(NotificationEvent.STATUS_CHANGE, {
+      userId,
+      status: newStatus,
+    })
   }
 }
