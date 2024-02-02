@@ -1,13 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import toast from 'react-hot-toast'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 
 import { useAuth } from '../../providers/AuthProvider'
 import { useSocket } from '../../providers/SocketProvider'
 import { QueueWaitModal } from './QueueModal'
 
 /* const createGame = async () => {
- 
+
 } */
 
 export const Play = () => {
@@ -19,8 +19,7 @@ export const Play = () => {
   const { gameSocket, isGameConnected } = useSocket()
   const [gameMode, setGameMode] = useState('')
   const queueModalRef = useRef<HTMLDialogElement>(null)
-  const location = useLocation()
-  
+
   const subscribeToGame = async () => {
     try {
       gameSocket?.emit('startGame', { gameMode: 'classic' })

@@ -47,6 +47,7 @@ const Profile = () => {
   const { data: userStats } = useQuery({
     queryKey: ['stats', userId],
     queryFn: getStats,
+    enabled: userId !== undefined,
   })
 
   const friendRequestMutation = useMutation({
