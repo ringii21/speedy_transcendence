@@ -101,12 +101,20 @@ const EditChannelModal = ({
   })
 
   const onClose = (e: any) => {
-    e.preventDefault()
-    reset()
-    setEditChannelModalOpen((prev) => ({
-      ...prev,
-      isOpen: false,
-    }))
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      reset()
+      setEditChannelModalOpen((prev) => ({
+        ...prev,
+        isOpen: false,
+      }))
+    } else {
+      reset()
+      setEditChannelModalOpen((prev) => ({
+        ...prev,
+        isOpen: false,
+      }))
+    }
   }
 
   return (
