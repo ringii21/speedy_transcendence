@@ -34,12 +34,6 @@ const Profile = () => {
     queryFn: fetchUser,
   }
 
-  const userId = user.id
-  const { data: userStats } = useQuery({
-    queryKey: ['stats', userId],
-    queryFn: getStats,
-  })
-
   const queryConfigOtherProfile = {
     queryKey: ['profile', id],
     queryFn: getUser,
@@ -48,6 +42,12 @@ const Profile = () => {
   const { data: profileUser } = useQuery(
     id !== 'me' ? queryConfigOtherProfile : queryConfigMyProfile,
   )
+
+  const userId = id !== 'me' ? profileUser?.id : user.id
+  const { data: userStats } = useQuery({
+    queryKey: ['stats', userId],
+    queryFn: getStats,
+  })
 
   const friendRequestMutation = useMutation({
     mutationKey: ['friends'],
@@ -107,7 +107,7 @@ const Profile = () => {
           className='btn btn-info drop-shadow-xl rounded-lg'
         >
           {' '}
-          isLoading, Remove Friend
+          Remove Friend
         </button>
       )
     } else {
@@ -125,7 +125,7 @@ const Profile = () => {
   }
 
   return (
-    <div className='flex lg:flex-row flex-col justify-center align-middle'>
+    <div className='flex lg:flex-row flex-col justify-center align-middle bg-gray-900'>
       <div
         className='hero'
         style={{
@@ -170,7 +170,7 @@ const Profile = () => {
                 </p>
               </div>
             </div>
-            <div className='flex flex-row mt-2 justify-evenly items-center'>
+            <div className='flex flex-row mt-8 justify-evenly items-center'>
               {user.id !== profileUser.id && renderFriendButton()}
               {user.id === profileUser.id && (
                 <Link
@@ -199,7 +199,7 @@ const Profile = () => {
           padding: '10px',
         }}
       >
-        <RatingHistory user={user} />
+        <RatingHistory user={user} id={id} profileUser={profileUser} />
       </div>
     </div>
   )

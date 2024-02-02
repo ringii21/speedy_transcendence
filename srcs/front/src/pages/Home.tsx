@@ -13,7 +13,7 @@ import { useAuth } from '../providers/AuthProvider'
 const Home = () => {
   const { user } = useAuth()
   return (
-    <div className='w-screen'>
+    <div className='w-screen bg-gray-900'>
       <h1 className='text-center text-4xl uppercase welcome md:text-7xl'>FT_TRANSCENDENCE</h1>
       <div className='pongRule'>
         <WordFlick />

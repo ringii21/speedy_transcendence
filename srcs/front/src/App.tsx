@@ -105,7 +105,7 @@ const App = () => {
           </SocketProvider>
         </ChatProvider>
       </AuthProvider>
-      <ReactQueryDevtools initialIsOpen={true} />
+      {/* <ReactQueryDevtools initialIsOpen={true} /> */}
     </QueryClientProvider>
   )
 }

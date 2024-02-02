@@ -6,10 +6,12 @@ import { getLadder } from '../utils/historyHttpRequest'
 
 type MatchProps = {
   user: IUser
+  id: string
+  profileUser: IUser
 }
 
-const RatingHistory: React.FC<MatchProps> = ({ user }) => {
-  const userId = user.id
+const RatingHistory: React.FC<MatchProps> = ({ user, id, profileUser }) => {
+  const userId = id !== 'me' ? profileUser?.id : user.id
   const { data: userLadder, isLoading } = useQuery({
     queryKey: ['ladder', userId],
     queryFn: getLadder,
@@ -45,7 +47,7 @@ const RatingHistory: React.FC<MatchProps> = ({ user }) => {
                   {/************* USER HOST **************************/}
                   <td className='text-sm pt-2' role='cell'>
                     <div className='flex items-center mr-10'>
-                      <img src={user.image} className='rounded-full w-10 h-10' alt='' />
+                      <img src={profileUser.image} className='rounded-full w-10 h-10' alt='' />
                     </div>
                   </td>
                   <td className='text-sm pt-2' role='cell'>

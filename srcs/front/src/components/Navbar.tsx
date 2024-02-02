@@ -43,7 +43,7 @@ const Navbar = () => {
       .filter((friend) => user.id !== friend.friendId)
       .filter((friend) => friend.confirmed === false).length > 0
   return (
-    <div className='navbar nav relative bg-base-300'>
+    <div className='navbar nav relative bg-gray-100'>
       <div className='navbar-start'>
         <div className='dropdown'>
           <div tabIndex={0} role='button' className='btn btn-ghost lg:hidden'>
@@ -119,7 +119,7 @@ const Navbar = () => {
           </div>
           <ul
             tabIndex={1}
-            className='menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box'
+            className='menu menu-sm dropdown-content mt-3 z-40 p-2 shadow bg-base-100 rounded-box'
           >
             {hasNofitication ? (
               friends
