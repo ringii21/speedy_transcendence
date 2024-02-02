@@ -19,7 +19,6 @@ import { TwoFactorSettingsWithNavbar } from './pages/TwoFactor/TwoFactorSettings
 import { TwoFactorSignin } from './pages/TwoFactor/TwoFactorSignin'
 import { AuthProvider } from './providers/AuthProvider'
 import { ChatProvider } from './providers/ChatProvider'
-import { NotificationProvider } from './providers/NotificationProvider'
 import { SocketProvider } from './providers/SocketProvider'
 
 const App = () => {
@@ -86,6 +85,14 @@ const App = () => {
                 element={
                   <RequireAuth>
                     <ProfileWithNavbar />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path='/friends'
+                element={
+                  <RequireAuth>
+                    <FriendsWithNavbar />
                   </RequireAuth>
                 }
               />

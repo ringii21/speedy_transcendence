@@ -8,7 +8,6 @@ import { useDeleteFriends, useGetFriends } from '../components/hook/Friends.hook
 import { WithNavbar } from '../hoc/WithNavbar'
 import { useAuth } from '../providers/AuthProvider'
 import { Status, useNotification } from '../providers/NotificationProvider'
-import { getFriends, removeFriend } from '../utils/friendService'
 import { createFriendRequest } from '../utils/friendService'
 import { getLadder, getStats } from '../utils/historyHttpRequest'
 import { fetchUser, getUser } from '../utils/userHttpRequests'
@@ -36,7 +35,7 @@ const Profile = () => {
   }
 
   const userId = user.id
-  const { data: userStats, error } = useQuery({
+  const { data: userStats } = useQuery({
     queryKey: ['stats', userId],
     queryFn: getStats,
   })
