@@ -17,21 +17,17 @@ const ChatInput = ({
   channelId: string
   setMessage: React.Dispatch<React.SetStateAction<FrontEndMessage[]>>
 }) => {
-  const { chatSocket, isChatConnected, gameSocket, isGameConnected } = useSocket()
+  const { chatSocket, gameSocket } = useSocket()
   const { user } = useAuth()
   const [inputMessage, setInputMessage] = useState<string>('')
 
   if (!user) return <></>
 
   const sendMessage = async (message: FrontEndMessage) => {
-    if (!isChatConnected) return
-    console.log(chatSocket)
-    console.log(isGameConnected)
-    if (!isGameConnected) gameSocket.connect()
-    if (message.gameInvite && isGameConnected) {
-      gameSocket?.emit('createGamePerso')
+    if (message.gameInvite) {
+      gameSocket.emit('createGamePerso')
 
-      gameSocket?.once('gamePersoAlreadyCreated', (response) => {
+      gameSocket.once('gamePersoAlreadyCreated', (response) => {
         console.log(response)
         toast.error(response.message, {
           position: 'top-right',
@@ -46,7 +42,7 @@ const ChatInput = ({
       })
 
       const partyNumber = await new Promise<string>((resolve) => {
-        gameSocket?.once('gamePersoCreated', ({ partyNumber }) => {
+        gameSocket.once('gamePersoCreated', ({ partyNumber }) => {
           resolve(partyNumber)
         })
       })

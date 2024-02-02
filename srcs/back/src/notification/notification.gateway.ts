@@ -32,8 +32,6 @@ export enum NotificationEvent {
 export class NotificationGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
-  private readonly logger = new Logger('NotificationGateway')
-
   @WebSocketServer() socket: Server
   userSockets = new Map<number, Socket>()
   socketUsers = new Map<string, number>()

@@ -1,20 +1,21 @@
 import { Injectable } from '@nestjs/common'
 import { Status } from './types/Status'
 
+export const userStatus = new Map<number, Status>()
+
 @Injectable()
 export class StatusService {
-  private userStatus = new Map<number, Status>()
   constructor() {}
 
   setStatus(userId: number, status: Status) {
-    this.userStatus.set(userId, status)
+    userStatus.set(userId, status)
   }
 
   getStatus(userId: number) {
-    return this.userStatus.get(userId)
+    return userStatus.get(userId)
   }
 
   getAllStatus() {
-    return this.userStatus.entries()
+    return userStatus.entries()
   }
 }
