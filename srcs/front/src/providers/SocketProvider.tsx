@@ -58,10 +58,6 @@ export const SocketProvider = ({ children }: Props) => {
       console.log('ChatSocket disconnect')
     })
 
-    chatSocket.on('connect_error', (e: Error) => {
-      console.warn('Connection error', e)
-    })
-
     gameSocket.on('connect', () => {
       setGameIsConnected(true)
       console.log('GameSocket connect')
@@ -72,10 +68,6 @@ export const SocketProvider = ({ children }: Props) => {
       console.log('GameSocket disconnect')
     })
 
-    gameSocket.on('connect_error', (e: Error) => {
-      console.warn('Connection error', e)
-    })
-
     notificationSocket.on('connect', () => {
       setisNotificationConnected(true)
       console.log('NotificationSocket connect')
@@ -83,9 +75,6 @@ export const SocketProvider = ({ children }: Props) => {
     notificationSocket.on('disconnect', () => {
       setisNotificationConnected(false)
       console.log('NotificationSocket disconnect')
-    })
-    notificationSocket.on('connect_error', (e: Error) => {
-      console.warn('Connection error', e)
     })
 
     return () => {

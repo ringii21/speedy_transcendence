@@ -1,4 +1,3 @@
-import { Logger } from '@nestjs/common'
 import { Socket, Server } from 'socket.io'
 import { AuthService } from '../auth/auth.service'
 import { OnEvent } from '@nestjs/event-emitter'

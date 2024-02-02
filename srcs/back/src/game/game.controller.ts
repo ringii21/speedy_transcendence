@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common'
 import JwtTwoFaGuard from '../auth/jwt/jwt-2fa.guard'
 import { GameService } from './game.service'
+import { GameEntity } from './entity/game.entity'
 
 @Controller('game')
 @UseGuards(JwtTwoFaGuard)
@@ -22,7 +23,9 @@ export class GameController {
 
   @Get('match_history/:userId')
   async getMatchHistory(@Param('userId') userId: number) {
-    return this.gameService.getMatchHistory(userId)
+    const matchHistory = await this.gameService.getMatchHistory(userId)
+    if (matchHistory) return new GameEntity(matchHistory)
+    return {}
   }
 
   @Get('ladder/:userId')
