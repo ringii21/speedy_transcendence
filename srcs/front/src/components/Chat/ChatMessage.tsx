@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
@@ -20,19 +20,27 @@ const ChatMessage = ({ user, message, members, blocked }: ChatMessageProps) => {
 
   const sender = members.find((member) => member.userId === message.senderId)
   if (!sender) return <span>Error</span>
-  gameSocket.on('errorPartyPerso', (msgError: string) => {
-    console.log('Je passe bien dans le on de la socket')
-    toast.error(msgError, {
-      position: 'top-right',
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      theme: 'dark',
-    })
-  })
+  useEffect(() => {
+    const errorHandler = (msgError: string) => {
+      toast.error(msgError, {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      })
+    }
+
+    gameSocket.on('errorPartyPerso', errorHandler)
+
+    return () => {
+      gameSocket.off('errorPartyPerso', errorHandler)
+    }
+  }, [gameSocket])
+
   const messagePosition = clsx({
     ['flex space-y-2 text-xs max-w-xs mx-2']: true,
     ['order-1 items-end']: message.senderId === user.id,
@@ -57,7 +65,7 @@ const ChatMessage = ({ user, message, members, blocked }: ChatMessageProps) => {
     ['order-1']: message.senderId !== user.id,
   })
 
-  const acceptGame = (message: any) => {
+  const acceptGame = async (message: any) => {
     if (user.id === message.senderId) {
       toast.error("You can't join your own party!", {
         position: 'top-right',
@@ -71,12 +79,36 @@ const ChatMessage = ({ user, message, members, blocked }: ChatMessageProps) => {
       })
       return
     }
-    chatSocket?.emit(ChatSocketEvent.UPDATE, {
-      messageId: message.id,
-      channelId: message.channelId,
-      content: message.content,
-    })
-    gameSocket?.emit('acceptGameInvite', { partyNumber: message.content })
+    gameSocket.emit('ownerIsOnline', { partyNumber: message.content })
+    try {
+      await new Promise<void>((resolve, reject) => {
+        gameSocket.once('errorPartyPerso', (data) => {
+          toast.error(data.msgError, {
+            position: 'top-right',
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: 'dark',
+          })
+          reject(new Error('Party owner is not online.'))
+        })
+        setTimeout(() => {
+          resolve()
+        }, 1000)
+      })
+
+      chatSocket.emit(ChatSocketEvent.UPDATE, {
+        messageId: message.id,
+        channelId: message.channelId,
+        content: message.content,
+      })
+      gameSocket.emit('acceptGameInvite', { partyNumber: message.content })
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   return (

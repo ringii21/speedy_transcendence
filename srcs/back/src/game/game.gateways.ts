@@ -18,14 +18,6 @@ import { StatusChangeEvent } from 'src/notification/events/notification.event'
 import { Status } from 'src/status/types/Status'
 import { StatusService } from 'src/status/status.service'
 
-interface GameInvite {
-  inviter: string
-  opponentId: string
-  gameMode: string
-  client: Socket
-  gameId: string
-}
-
 @WebSocketGateway({
   namespace: 'game',
   cors: {
@@ -44,17 +36,20 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @WebSocketServer() private server: Server
   private games_map = new Map<string, Game>()
-  private game_invites = new Set<GameInvite>()
+
   async handleConnection(client: Socket) {
     const user = await this.authService.getSocketUser(client)
     if (!user) {
       client.disconnect()
       return
     }
+    // For reset socket in partyPerso tabs
+    this.eventEmitter.emit('resetSocketPartyPerso', {
+      client,
+    })
   }
 
   async handleDisconnect(client: Socket) {
-    console.log('Je passe dans le handleDisconnect')
     const user = await this.authService.getSocketUser(client)
     if (!user) {
       client.disconnect()
@@ -111,6 +106,14 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     })
   }
 
+  @SubscribeMessage('ownerIsOnline')
+  handleOwnerIsOnline(client: Socket, data: { partyNumber: string }) {
+    this.eventEmitter.emit('checkOwnerIsOnline', {
+      client,
+      partyNumber: data.partyNumber,
+    })
+  }
+
   @SubscribeMessage('quitQueue')
   async handleQuitQueueEvent(client: Socket, data: { gameMode: string }) {
     this.eventEmitter.emit('game.start', {
@@ -134,94 +137,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (data.gameState.ball.p1Score < 11 && data.gameState.ball.p2Score < 11) {
       client.emit('finish')
     }
-  }
-
-  private async checkIfCanInvite(userId: string) {
-    const opententSockets = await this.server
-      .in(`User:${userId}`)
-      .fetchSockets()
-    if (opententSockets.length === 0) {
-      return { error: 'offline' }
-    }
-    for await (const socket of opententSockets) {
-      if (socket.data.user?.inGame) {
-        return { error: 'already in game' }
-      }
-      if (socket.data.user?.inQueue) {
-        return { error: 'already in queue' }
-      }
-    }
-    const invite = Array.from(this.game_invites).find(
-      (invite) => invite.opponentId === userId || invite.inviter === userId,
-    )
-    if (invite) {
-      return { error: 'already Invited or Inviting to a game' }
-    }
-    return { error: null }
-  }
-
-  @SubscribeMessage('inviteToGame')
-  async handleInviteToGameEvent(client: Socket, data: any) {
-    const [inviter, opponent] = await Promise.all([
-      this.checkIfCanInvite(client.data.user.sub),
-      this.checkIfCanInvite(data.opponentId),
-    ])
-
-    if (inviter.error || opponent.error) {
-      return {
-        error: inviter.error ? `You are ${inviter.error}` : opponent.error,
-      }
-    }
-
-    const gameId = crypto.randomBytes(16).toString('hex')
-    this.server.to(`User:${data.opponentId}`).emit('invitedToGame', {
-      inviterId: client.data.user.sub,
-      gameId,
-    })
-    this.game_invites.add({
-      inviter: client.data.user.sub,
-      gameMode: data.gameMode,
-      client,
-      gameId,
-      opponentId: data.opponentId,
-    })
-    return { error: null, gameId }
-  }
-
-  @SubscribeMessage('acceptGame')
-  async handleAcceptGameEvent(client: Socket, data: any) {
-    const game_invite = Array.from(this.game_invites).find(
-      (invite) => invite.gameId === data.gameId,
-    )
-    if (!game_invite) {
-      client.emit('game.declined', {
-        gameId: data.gameId,
-      })
-      return
-    }
-    this.game_invites.delete(game_invite)
-    this.server.to(`User:${data.inviterId}`).emit('game.accepted', {
-      accepter: client.data.user.sub,
-    })
-
-    const invterData = await this.usersService.find(data.inviterId)
-    const opponentData = await this.usersService.find(client.data.user.sub)
-
-    // launch the game
-    this.eventEmitter.emit(
-      'game.launched',
-      [
-        {
-          socket: game_invite.client,
-          userData: invterData,
-        },
-        {
-          socket: client,
-          userData: opponentData,
-        },
-      ],
-      game_invite.gameMode,
-    )
   }
 
   @OnEvent('game.launched')

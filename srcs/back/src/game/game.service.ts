@@ -5,6 +5,7 @@ import { Socket } from 'socket.io'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { AuthService } from 'src/auth/auth.service'
 import * as crypto from 'crypto'
+import { StatusService } from 'src/status/status.service'
 
 interface WaitingPlayerGameCustom {
   socket: Socket
@@ -13,12 +14,14 @@ interface WaitingPlayerGameCustom {
   opponentData: Partial<User> | null
   partyNumber: string
 }
+
 @Injectable()
 export class GameService {
   constructor(
     private readonly prisma: PrismaService,
     private eventEmitter: EventEmitter2,
     private readonly authService: AuthService,
+    private readonly statusService: StatusService,
   ) {
     this.launchGame()
   }
@@ -34,8 +37,6 @@ export class GameService {
   }[] = []
 
   private queueGamePerso: WaitingPlayerGameCustom[][] = []
-
-  private nextPartyNumber = 1
 
   @OnEvent('game.start')
   async handleGameStartEvent(data: {
@@ -105,20 +106,16 @@ export class GameService {
         socket: client,
         userData: client.data.user,
         socketOpponent: client,
-        opponentData: null, // L'adversaire sera ajouté plus tard
+        opponentData: null,
         partyNumber: partyNumber,
       }
 
-      // Ajouter ce jeu à une nouvelle ligne dans le tableau en deux dimensions
+      // Ajouter la partie dans la queue
       this.queueGamePerso.push([newGame])
       client.emit('gamePersoCreated', { partyNumber: newGame.partyNumber })
     } else if (data.mode === 'unregister') {
-      const client = data.client //moi?
+      const client = data.client
       client.data.user = await this.authService.getSocketUser(client)
-      //if (si je quitte la page?)
-      //le lien nest plus valide
-      /* Le cas ou je lance la partie mais que je quitte le chat
-       */
     }
   }
 
@@ -132,24 +129,17 @@ export class GameService {
         (game) => game.partyNumber === data.partyNumber,
       )
       if (game) {
-        console.log('J ai trouver la partie')
-        console.log(
-          '---------------------------------------------------------------- gameid:',
-          game.userData?.id,
-          'user.id:',
-          client.data.user.id,
-        )
-        /* if (game.userData?.id == client.data.user.id) {
-            console.log('JE PASSE bien laaaaaaaaa')
-            client.emit('errorPartyPerso', { msgError: "You can't join your own party!" })
-            return;
-          } */
-        if (game.socket.disconnected) {
-          client.emit('errorPartyPerso', {
-            msgError: 'Cannot join the party, the sender left the app!',
-          })
-          return
+        const userId = game.userData?.id
+        if (userId != undefined) {
+          const status = await this.statusService.getStatus(userId)
+          if (status === 'in_game') {
+            client.emit('errorPartyPerso', {
+              msgError: `Sorry, ${game.userData?.username} is already in game!`,
+            })
+            return
+          }
         }
+
         game.opponentData = client.data.user
         game.socketOpponent = client
         two_players = [
@@ -162,20 +152,52 @@ export class GameService {
 
         // Supprimer la partie du tableau
         this.queueGamePerso.splice(i, 1)
-        console.log(
-          'Tableau apres avoir supprimer la partie:',
-          this.queueGamePerso,
-        )
         break
       }
     }
   }
+
+  @OnEvent('checkOwnerIsOnline')
+  handleCheckOwnerIsOnline(data: { client: Socket; partyNumber: string }) {
+    const client = data.client
+
+    for (let i = 0; i < this.queueGamePerso.length; i++) {
+      const game = this.queueGamePerso[i].find(
+        (game) => game.partyNumber === data.partyNumber,
+      )
+      if (game) {
+        if (game.socket.disconnected) {
+          client.emit('errorPartyPerso', {
+            msgError: 'Cannot join the party, the sender left the app!',
+          })
+          return
+        }
+        break
+      }
+    }
+  }
+
+  @OnEvent('resetSocketPartyPerso')
+  async handleResetSocketPartyPerso(data: { client: Socket }) {
+    const client = data.client
+    client.data.user = await this.authService.getSocketUser(client)
+
+    for (let i = 0; i < this.queueGamePerso.length; i++) {
+      const game = this.queueGamePerso[i].find(
+        (game) => game.userData?.id === client.data.user.id,
+      )
+      if (game) {
+        game.socket = client
+        break
+      }
+    }
+  }
+
   //NOTE: add game modes here
   private launchGame() {
     setInterval(() => {
       if (this.classicwaitingPlayers.length >= 2) {
         const two_players = this.classicwaitingPlayers.splice(0, 2)
-        console.log(two_players)
         this.eventEmitter.emit('game.launched', two_players, 'classic')
       }
       if (this.extraWaitingPlayers.length >= 2) {
@@ -238,7 +260,6 @@ export class GameService {
       include: {
         participant1: true,
         participant2: true,
-        // Incluez d'autres relations ici si nécessaire
       },
     })
     return game

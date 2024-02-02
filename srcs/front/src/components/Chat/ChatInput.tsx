@@ -1,6 +1,6 @@
 import 'react-toastify/dist/ReactToastify.css'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FaRocket } from 'react-icons/fa'
 import { MdPartyMode, MdSend } from 'react-icons/md'
 import { toast } from 'react-toastify'
@@ -23,24 +23,30 @@ const ChatInput = ({
 
   if (!user) return <></>
 
+  useEffect(() => {
+    const handleGameAlreadyCreated = (response: any) => {
+      toast.error(response.message, {
+        position: 'top-right',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      })
+    }
+
+    gameSocket?.on('gamePersoAlreadyCreated', handleGameAlreadyCreated)
+
+    return () => {
+      gameSocket?.off('gamePersoAlreadyCreated', handleGameAlreadyCreated)
+    }
+  }, [gameSocket])
+
   const sendMessage = async (message: FrontEndMessage) => {
     if (message.gameInvite) {
       gameSocket.emit('createGamePerso')
-
-      gameSocket.once('gamePersoAlreadyCreated', (response) => {
-        console.log(response)
-        toast.error(response.message, {
-          position: 'top-right',
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: 'dark',
-        })
-      })
-
       const partyNumber = await new Promise<string>((resolve) => {
         gameSocket.once('gamePersoCreated', ({ partyNumber }) => {
           resolve(partyNumber)
