@@ -20,20 +20,7 @@ export const Play = () => {
   const [gameMode, setGameMode] = useState('')
   const queueModalRef = useRef<HTMLDialogElement>(null)
   const location = useLocation()
-  console.log(location.state)
-  /* const isInvite = location.state?.isInvite
-  const senderInvite = location.state?.senderInvite
-  useEffect(() => {
-    if (senderInvite) {
-      console.log('COUCOU')
-      gameSocket?.emit('startGame', { gameMode: 'classic' })
-      setGameMode('classic')
-      queueModalRef.current?.showModal()
-    }
-    if (isInvite) {
-      console.log('J ai ete inviter')
-    }
-  }, [senderInvite, isInvite]) */
+  
   const subscribeToGame = async () => {
     try {
       gameSocket?.emit('startGame', { gameMode: 'classic' })

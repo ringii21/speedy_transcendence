@@ -47,7 +47,6 @@ const ChatInput = ({
   const sendMessage = async (message: FrontEndMessage) => {
     if (message.gameInvite) {
       gameSocket.emit('createGamePerso')
-
       const partyNumber = await new Promise<string>((resolve) => {
         gameSocket.once('gamePersoCreated', ({ partyNumber }) => {
           resolve(partyNumber)

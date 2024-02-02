@@ -52,6 +52,9 @@ export class GameService {
         return
       }
       const gameMode = data.gameMode
+      if (client.data.user) {
+        const userId = client.data.user.id
+      }
       client.data.user.inQueue = true
 
       if (gameMode === 'classic')
