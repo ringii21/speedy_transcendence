@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     onSuccess: () => {
       queryClient.setQueryData(['user'], null)
       navigate('/login', { replace: true })
-      disconnectAll()
+      // disconnectAll()
     },
   })
 
