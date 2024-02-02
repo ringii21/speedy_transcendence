@@ -26,38 +26,40 @@ const Friends = () => {
           </thead>
           <tbody>
             {friendsSuccess &&
-              friends.map(({ friend, friendOf }, i) => {
-                const f = friend.id === user.id ? friendOf : friend
-                return (
-                  <tr key={i}>
-                    <td>{f.id}</td>
-                    <td>
-                      <Link to={`/profile/${f.id}`}>
-                        <div className='flex items-center gap-3'>
-                          <div className='avatar'>
-                            <div className='mask mask-squircle w-12 h-12'>
-                              <img src={f.image} alt={f.username} />
+              friends
+                .filter((friend) => friend.confirmed)
+                .map(({ friend, friendOf }, i) => {
+                  const f = friend.id === user.id ? friendOf : friend
+                  return (
+                    <tr key={i}>
+                      <td>{f.id}</td>
+                      <td>
+                        <Link to={`/profile/${f.id}`}>
+                          <div className='flex items-center gap-3'>
+                            <div className='avatar'>
+                              <div className='mask mask-squircle w-12 h-12'>
+                                <img src={f.image} alt={f.username} />
+                              </div>
+                            </div>
+                            <div>
+                              <div className='font-bold'>{f.username}</div>
                             </div>
                           </div>
-                          <div>
-                            <div className='font-bold'>{f.username}</div>
-                          </div>
-                        </div>
-                      </Link>
-                    </td>
-                    <td>
-                      <button
-                        onClick={() => {
-                          deleteFriend(f.id)
-                        }}
-                        className='btn btn-ghost btn-xs'
-                      >
-                        Remove
-                      </button>
-                    </td>
-                  </tr>
-                )
-              })}
+                        </Link>
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => {
+                            deleteFriend(f.id)
+                          }}
+                          className='btn btn-ghost btn-xs'
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
           </tbody>
           {/* foot */}
         </table>

@@ -106,7 +106,6 @@ const Profile = () => {
           }}
           className='btn btn-info drop-shadow-xl rounded-lg'
         >
-          {' '}
           Remove Friend
         </button>
       )

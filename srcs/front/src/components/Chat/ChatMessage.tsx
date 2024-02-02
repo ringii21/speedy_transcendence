@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import React, { useState } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
@@ -16,8 +16,8 @@ type ChatMessageProps = {
 }
 
 const ChatMessage = ({ user, message, members, blocked }: ChatMessageProps) => {
-  const { gameSocket, isGameConnected, chatSocket, isChatConnected } = useSocket()
-  if (!isGameConnected) gameSocket.connect()
+  const { gameSocket, chatSocket } = useSocket()
+
   const sender = members.find((member) => member.userId === message.senderId)
   if (!sender) return <span>Error</span>
   gameSocket.on('errorPartyPerso', (msgError: string) => {
